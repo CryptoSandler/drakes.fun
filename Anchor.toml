@@ -5,10 +5,10 @@ resolution = true
 skip-lint = false
 
 [programs.devnet]
-issuance = "A6vnmLcrppzSqCubRdJoXzs1oDJc23swLSGDCTKu7jGt"
+issuance = "7qHEeK3Q5UW5jKykXqWeShqpWCypm4hey2EzYGotkTUs"
 
 [programs.localnet]
-issuance = "A6vnmLcrppzSqCubRdJoXzs1oDJc23swLSGDCTKu7jGt"
+issuance = "7qHEeK3Q5UW5jKykXqWeShqpWCypm4hey2EzYGotkTUs"
 
 [provider]
 cluster = "devnet"

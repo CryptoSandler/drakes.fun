@@ -9,12 +9,12 @@
 // `scripts/rebuild-snapshot.ts`, which is the published check.
 
 import { encodeBase58 } from '../solana/base58.ts'
+import { HOLDER_DOMAIN, uniformIndex } from '../protocol/survivors.ts'
 import {
   hashLeaf,
   merkleProof,
   merkleRoot,
   snapshotCommitment,
-  toHex,
   type Leaf,
 } from './merkle.ts'
 
@@ -120,16 +120,13 @@ export interface Resolution {
 }
 
 /**
- * The full 256-bit value modulo the eligible supply, exactly as the program
- * does it and exactly as the verify page instructs a reader to do it by hand.
- *
- * The modulo bias is real and is documented rather than rejection-sampled: at a
- * supply below 2^32 it is on the order of 2^-224, and "compute this, and if it
- * exceeds a threshold do it again" is a procedure readers get wrong.
+ * The holder half of the revealed value, domain-separated from the piece half
+ * so one number is not answering two questions, and rejection-sampled so the
+ * distribution is uniform rather than uniform-to-244-bits (`survivors.ts`).
  */
 export function resolveRecipient(snapshot: Snapshot, randomness: Uint8Array): Resolution {
   if (randomness.length !== 32) throw new RangeError('randomness must be 32 bytes')
-  const point = BigInt(`0x${toHex(randomness)}`) % snapshot.eligibleSupply
+  const point = uniformIndex(randomness, snapshot.eligibleSupply, HOLDER_DOMAIN)
   const leafIndex = snapshot.leaves.findIndex((l) => point >= l.rangeStart && point < l.rangeEnd)
   // ponytail: linear scan. The tree is a few thousand leaves and this runs once
   // an hour; make it a binary search over rangeStart if it ever outgrows that.

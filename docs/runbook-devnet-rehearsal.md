@@ -195,8 +195,26 @@ same member of a six-oracle live set. **That oracle passed every on-chain check
 This is T12's residual risk, measured: **on-chain liveness is not gateway
 liveness**, and one bad member of six cost 15% of the hours. The fix is in the
 crank, not the program: **health-check the gateway before committing to an
-oracle**, and prefer oracles that recently served. The program cannot help,
-because the oracle is chosen at request time and there is no re-request.
+oracle**. The program cannot help, because the oracle is chosen at request time
+and there is no re-request.
+
+That check now lives in `src/lib/crank/oracles.ts` and
+`scripts/crank.ts select`. It applies the same conditions the program will
+assert on chain, then sends a real `POST /gateway/api/v1/ping` to each
+candidate in round-robin order and takes the first that answers. An oracle that
+just failed goes to the back of the order rather than being dropped — a gateway
+down a minute ago may be the only one up now. **When nobody answers, no request
+is sent** and the hour is recorded as "no oracle available": requesting with a
+silent gateway strands the hour, and there is no re-request.
+
+**The probe route is read from the SDK, not invented, and that matters.** The
+first version guessed a `gateway_health` path; every gateway answered 404, the
+crank concluded all six oracles were dead, and it refused to issue anything. A
+health check that fails closed on its own bug halts the collection more
+thoroughly than the fault it was written to catch. The route is
+`POST /gateway/api/v1/ping` with `{"api_version":"1.0.0"}`, taken from
+`@switchboard-xyz/common`. And the URI is **concatenated, not resolved**: the
+gateway address carries a path segment, and `new URL(path, base)` discards it.
 
 ### The three forced failures
 

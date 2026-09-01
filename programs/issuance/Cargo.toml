@@ -34,6 +34,8 @@ mpl-core = "0.12.1"
 # OS randomness (the randomness comes from Switchboard, on chain, by design), so
 # there is no handler to register and nothing to call it.
 getrandom = { version = "0.2", features = ["custom"] }
+# zero_copy expands to bytemuck derives, which need the crate in scope.
+bytemuck = { version = "1", features = ["derive", "min_const_generics"] }
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

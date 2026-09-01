@@ -3,6 +3,7 @@
 //   node scripts/snapshot.ts live   --rpc <url> --mint <addr> [--index N]
 //                                   [--exclude a,b,c]
 //   node scripts/snapshot.ts verify <artifact.json> [--randomness <64 hex>]
+//   node scripts/snapshot.ts pieces <dir> [--size 4000]
 //
 // `live` reads the chain and emits the artifact the cranker commits.
 // `verify` takes that artifact and recomputes everything from it with **no
@@ -25,6 +26,9 @@ import {
 } from '../src/lib/snapshot/build.ts'
 import { merkleRoot, snapshotCommitment, toHex, verifyProof } from '../src/lib/snapshot/merkle.ts'
 import { clusterName, fetchHoldings } from '../src/lib/snapshot/rpc.ts'
+import { SurvivorSet } from '../src/lib/protocol/survivors.ts'
+import { readdirSync } from 'node:fs'
+import { join } from 'node:path'
 
 interface Artifact {
   cluster: string
@@ -151,6 +155,47 @@ function verify(path: string): void {
   )
 }
 
+/**
+ * Replays the survivor array from the published issuances, in order, and checks
+ * every piece id against it.
+ *
+ * **Nothing here reads the survivor account.** The point is that a stranger can
+ * derive which piece went out each hour from the revealed values alone, without
+ * trusting the array we wrote — and that a piece is never issued twice.
+ */
+function pieces(dir: string): void {
+  const files = readdirSync(dir)
+    .filter((f) => /^snap-\d+\.json$/.test(f))
+    .sort((a, b) => Number(a.match(/\d+/)![0]) - Number(b.match(/\d+/)![0]))
+  if (files.length === 0) throw new Error(`no published issuances in ${dir}`)
+
+  const size = Number(flag('size') ?? 4_000)
+  const set = new SurvivorSet(size)
+  const seen = new Map<number, string>()
+  let checked = 0
+  let mismatched = 0
+  for (const f of files) {
+    const a = JSON.parse(readFileSync(join(dir, f), 'utf8')) as { randomness: string; piece?: number }
+    const value = Uint8Array.from(a.randomness.match(/../g)!.map((b) => parseInt(b, 16)))
+    const replayed = set.issue(value)
+    const twice = seen.get(replayed)
+    if (twice !== undefined) throw new Error(`piece ${replayed} issued twice: ${twice} and ${f}`)
+    seen.set(replayed, f)
+    if (a.piece !== undefined) {
+      checked += 1
+      if (a.piece !== replayed) {
+        mismatched += 1
+        process.stdout.write(`FAIL ${f}: published piece ${a.piece}, replay says ${replayed}\n`)
+      }
+    }
+  }
+  process.stdout.write(`OK   issuances    ${files.length}\n`)
+  process.stdout.write(`OK   distinct     ${seen.size}  (no piece issued twice)\n`)
+  process.stdout.write(`${mismatched === 0 ? 'OK  ' : 'FAIL'} piece ids    ${checked - mismatched}/${checked} match the replay\n`)
+  process.stdout.write(`     remaining    ${set.remaining} of ${size}\n`)
+  if (mismatched > 0) process.exitCode = 1
+}
+
 function check(label: string, computed: string, published: string): void {
   const ok = computed === published
   process.stdout.write(`${ok ? 'OK  ' : 'FAIL'} ${label.padEnd(14)} ${computed}\n`)
@@ -162,12 +207,18 @@ function check(label: string, computed: string, published: string): void {
 
 const [subcommand] = process.argv.slice(2)
 if (subcommand === 'live') await live()
-else if (subcommand === 'verify') {
+else if (subcommand === 'pieces') {
+  const dir = process.argv[3]
+  if (dir === undefined || dir.startsWith('--')) throw new Error('pieces needs a directory')
+  pieces(dir)
+} else if (subcommand === 'verify') {
   const path = process.argv[3]
   if (path === undefined || path.startsWith('--')) throw new Error('verify needs a file path')
   verify(path)
 }
 else {
-  process.stderr.write('usage: snapshot.ts live --rpc <url> --mint <addr> | verify <file.json>\n')
+  process.stderr.write(
+    'usage: snapshot.ts live --rpc <url> --mint <addr> | verify <file.json> | pieces <dir>\n',
+  )
   process.exitCode = 2
 }

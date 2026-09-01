@@ -9,8 +9,9 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { encodeBase58 } from '../../src/lib/solana/base58.ts'
-import { buildSnapshot } from '../../src/lib/snapshot/build.ts'
+import { buildSnapshot, resolveRecipient } from '../../src/lib/snapshot/build.ts'
 import { toHex } from '../../src/lib/snapshot/merkle.ts'
+import { SurvivorSet } from '../../src/lib/protocol/survivors.ts'
 
 const SCRIPT = join(import.meta.dirname, '..', 'snapshot.ts')
 const dir = mkdtempSync(join(tmpdir(), 'snapshot-'))
@@ -52,6 +53,42 @@ const artifactFile = (mutate: (a: Record<string, unknown>) => void = () => {}): 
 const run = (args: string[]) =>
   execFileSync('node', [SCRIPT, ...args], { encoding: 'utf8', stdio: 'pipe' })
 
+describe('scripts/snapshot.ts pieces', () => {
+  const pieceDir = mkdtempSync(join(tmpdir(), 'pieces-'))
+  const write = (index: number, randomness: string, piece?: number) =>
+    writeFileSync(
+      join(pieceDir, `snap-${index}.json`),
+      JSON.stringify({ index: String(index), randomness, ...(piece === undefined ? {} : { piece }) }),
+    )
+
+  it('replays the survivor array from the values alone and matches the published ids', () => {
+    const set = new SurvivorSet(64)
+    for (let i = 0; i < 20; i += 1) {
+      const hex = i.toString(16).padStart(64, '0')
+      const value = Uint8Array.from(hex.match(/../g)!.map((b) => parseInt(b, 16)))
+      write(i, hex, set.issue(value))
+    }
+    const out = run(['pieces', pieceDir, '--size', '64'])
+    expect(out).toMatch(/OK {3}issuances +20/)
+    expect(out).toMatch(/OK {3}distinct +20/)
+    expect(out).toMatch(/OK {3}piece ids +20\/20/)
+    expect(out).toMatch(/remaining +44 of 64/)
+  })
+
+  it('fails when a published piece id is not what the replay derives', () => {
+    const hex = (99).toString(16).padStart(64, '0')
+    write(20, hex, 63)
+    try {
+      run(['pieces', pieceDir, '--size', '64'])
+      throw new Error('should have exited non-zero')
+    } catch (error) {
+      const e = error as { status: number; stdout: string }
+      expect(e.status).toBe(1)
+      expect(e.stdout).toMatch(/FAIL snap-20\.json/)
+    }
+  })
+})
+
 describe('scripts/snapshot.ts verify', () => {
   it('recomputes the root and the commitment from the leaves alone', () => {
     const out = run(['verify', artifactFile()])
@@ -61,13 +98,28 @@ describe('scripts/snapshot.ts verify', () => {
     expect(out).toMatch(/holders {8}3/)
   })
 
-  it('resolves the recipient and verifies the proof', () => {
-    // 35 mod 100 = 35, which falls in the third holder's range [30, 100).
-    const value = (35n).toString(16).padStart(64, '0')
-    const out = run(['verify', artifactFile(), '--randomness', value])
-    expect(out).toContain(`recipient      ${encodeBase58(owner(3))}`)
-    expect(out).toContain('range          [30, 100)')
-    expect(out).toContain('point          35')
+  it('resolves the recipient the library resolves, in a separate process', () => {
+    // The point of driving the CLI is that it is a different process: this
+    // compares what the published command prints against what the library
+    // computes here, so a divergence between the two shows up as a failure
+    // rather than as agreement with itself.
+    const hex = 'a3'.repeat(32)
+    const bytes = Uint8Array.from(hex.match(/../g)!.map((b) => parseInt(b, 16)))
+    const snapshot = buildSnapshot({
+      holdings: [
+        { owner: owner(1), balance: 10n },
+        { owner: owner(2), balance: 20n },
+        { owner: owner(3), balance: 70n },
+      ],
+      excluded: [],
+      slot: 12_345n,
+      index: 3n,
+    })
+    const expected = resolveRecipient(snapshot, bytes)
+    const out = run(['verify', artifactFile(), '--randomness', hex])
+    expect(out).toContain(`recipient      ${encodeBase58(expected.leaf.owner)}`)
+    expect(out).toContain(`point          ${expected.point}`)
+    expect(out).toContain(`range          [${expected.leaf.rangeStart}, ${expected.leaf.rangeEnd})`)
   })
 
   it('fails, loudly and with a non-zero exit, on a root that was tampered with', () => {

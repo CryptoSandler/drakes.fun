@@ -8,6 +8,7 @@ import {
   type Holding,
 } from '../build.ts'
 import { toHex, verifyProof } from '../merkle.ts'
+import { HOLDER_DOMAIN, PIECE_DOMAIN, uniformIndex } from '../../protocol/survivors.ts'
 
 const addr = (n: number) => Uint8Array.from({ length: 32 }, (_, i) => (i === 31 ? n : 0))
 const holding = (n: number, balance: bigint): Holding => ({ owner: addr(n), balance })
@@ -79,32 +80,33 @@ describe('the snapshot', () => {
 describe('resolving the recipient', () => {
   const s = build([holding(1, 10n), holding(2, 20n), holding(3, 70n)])
 
-  it('lands in the range that contains the point, with a valid proof', () => {
-    for (const [value, ownerByte] of [
-      [0n, 1],
-      [9n, 1],
-      [10n, 2],
-      [29n, 2],
-      [30n, 3],
-      [99n, 3],
-    ] as const) {
-      const r = resolveRecipient(s, randomness(value))
-      expect(r.point).toBe(value)
-      expect(r.leaf.owner[31]).toBe(ownerByte)
+  it('always lands in the range that contains the point, with a valid proof', () => {
+    for (let i = 0n; i < 200n; i += 1n) {
+      const r = resolveRecipient(s, randomness(i * 7919n))
+      expect(r.point).toBeGreaterThanOrEqual(r.leaf.rangeStart)
+      expect(r.point).toBeLessThan(r.leaf.rangeEnd)
       expect(verifyProof(r.leaf, r.proof, s.root)).toBe(true)
     }
   })
 
-  it('reduces the full 256-bit value modulo the eligible supply', () => {
-    // 2^256 - 1 mod 100. Computed here the same way the verify page tells a
-    // reader to compute it by hand.
-    const max = (1n << 256n) - 1n
-    expect(resolveRecipient(s, randomness(max)).point).toBe(max % 100n)
+  // The holder half must not be the raw value: that is what "domain-separated"
+  // means, and it is what stops one number answering two questions.
+  it('is not the raw value modulo the supply', () => {
+    const v = randomness(12345n)
+    const raw = 12345n % s.eligibleSupply
+    expect(resolveRecipient(s, v).point).not.toBe(raw)
+  })
+
+  it('disagrees with the piece derivation on the same value', () => {
+    const v = randomness(999n)
+    const holder = uniformIndex(v, 100n, HOLDER_DOMAIN)
+    const piece = uniformIndex(v, 100n, PIECE_DOMAIN)
+    expect(holder).not.toBe(piece)
   })
 
   it('is proportional over the whole space, which is the eligibility claim', () => {
     const counts = new Map<number, number>()
-    for (let i = 0n; i < 1_000n; i += 1n) {
+    for (let i = 0n; i < 2_000n; i += 1n) {
       const r = resolveRecipient(s, randomness(i * 7919n))
       counts.set(r.leaf.owner[31]!, (counts.get(r.leaf.owner[31]!) ?? 0) + 1)
     }

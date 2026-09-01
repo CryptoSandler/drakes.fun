@@ -30,13 +30,22 @@ use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
 use anchor_lang::solana_program::program::invoke_signed;
 use switchboard_on_demand::OracleAccountData;
 
-declare_id!("A6vnmLcrppzSqCubRdJoXzs1oDJc23swLSGDCTKu7jGt");
+declare_id!("7qHEeK3Q5UW5jKykXqWeShqpWCypm4hey2EzYGotkTUs");
 
 /// Domain separation on the Merkle hashing. Without distinct prefixes an inner
 /// node can be presented as a leaf. These bytes match `src/lib/snapshot`
 /// exactly, and the tests in that directory are the other half of this claim.
 const LEAF_PREFIX: [u8; 1] = [0x00];
 const NODE_PREFIX: [u8; 1] = [0x01];
+
+/// Domain separation on the two derivations taken from one revealed value.
+/// Without distinct prefixes, "which piece" and "to whom" are functions of each
+/// other and one number is answering two questions.
+const PIECE_DOMAIN: u8 = 0x03;
+const HOLDER_DOMAIN: u8 = 0x04;
+
+/// A rejection has probability about 2^-244, so eight rounds is 2^-1952.
+const MAX_SAMPLE_ROUNDS: u8 = 8;
 
 /// How stale a snapshot may be when it is committed. The root has to describe
 /// roughly the chain state at request time; an old one would let a caller
@@ -98,6 +107,13 @@ pub mod issuance {
         config.live_supply = 0;
         config.excluded = params.excluded;
         config.manifest_hash = params.manifest_hash;
+
+        {
+            let mut survivors = ctx.accounts.survivors.load_init()?;
+            survivors.bump = ctx.bumps.survivors;
+            survivors.remaining = params.collection_size as u16;
+            // `slots` stays zeroed on purpose: zero is the identity.
+        }
 
         // **This instruction creates the randomness account**, and it has to.
         // Switchboard's `randomness_init` requires its `authority` to sign, and
@@ -370,7 +386,7 @@ pub mod issuance {
         // 2^-224 and is documented rather than rejection-sampled, because the
         // verify page's instructions have to be followable by a person with a
         // hash tool.
-        let point = u256_mod(&value, issuance.eligible_supply);
+        let point = uniform_index(&value, issuance.eligible_supply, HOLDER_DOMAIN)?;
         require!(
             point >= params.range_start && point < params.range_end,
             IssuanceError::PointOutsideRange
@@ -385,6 +401,20 @@ pub mod issuance {
         );
 
         let minting = ctx.accounts.config.issued_count < ctx.accounts.config.collection_size;
+
+        // Which piece, from the same value, under the other domain. Scoped so
+        // the zero-copy borrow is released before the mint CPI -- the same
+        // shape of mistake that made every `request_issuance` fail on the first
+        // devnet run.
+        let piece_id: u16 = if minting {
+            let mut survivors = ctx.accounts.survivors.load_mut()?;
+            let piece_point =
+                uniform_index(&value, survivors.remaining as u64, PIECE_DOMAIN)?;
+            survivors.take(piece_point)?
+        } else {
+            u16::MAX
+        };
+
         if minting {
             require_keys_eq!(
                 ctx.accounts.recipient.key(),
@@ -422,12 +452,14 @@ pub mod issuance {
         issuance.settled = true;
         issuance.recipient = params.owner;
         issuance.point = point;
+        issuance.piece_id = piece_id;
 
         emit!(IssuanceSettled {
             config: config_key,
             hour: issuance.hour,
             piece_index: issuance.piece_index,
             minted: minting,
+            piece_id,
             snapshot_slot: issuance.snapshot_slot,
             root: issuance.root,
             randomness: issuance.randomness,
@@ -464,6 +496,51 @@ fn u256_mod(value: &[u8; 32], m: u64) -> u64 {
     acc as u64
 }
 
+/// `2^256 mod m`, by 256 doublings. Everything stays inside u128.
+fn pow2_256_mod(m: u64) -> u64 {
+    let mut acc: u128 = 1;
+    for _ in 0..256 {
+        acc = (acc * 2) % m as u128;
+    }
+    acc as u64
+}
+
+/// Whether a 256-bit big-endian value is at or above `2^256 - rem`.
+///
+/// Comparing against that threshold directly would need a 256-bit constant, so
+/// it is done as an addition instead: `h >= 2^256 - rem` exactly when `h + rem`
+/// carries out of 256 bits.
+fn at_or_above_limit(h: &[u8; 32], rem: u64) -> bool {
+    let mut carry = rem as u128;
+    for i in (0..32).rev() {
+        let sum = h[i] as u128 + (carry & 0xff);
+        carry = (carry >> 8) + (sum >> 8);
+        if carry == 0 {
+            return false;
+        }
+    }
+    carry != 0
+}
+
+/// A uniform value in `[0, modulus)` — exactly uniform, with no modulo bias at
+/// all rather than bias too small to measure. A sample at or above the largest
+/// multiple of `modulus` that fits in 256 bits is discarded and the hash is
+/// taken again with the round counter appended.
+///
+/// The first round has always succeeded. The loop exists so the verify page can
+/// say "uniform" without a footnote.
+fn uniform_index(value: &[u8; 32], modulus: u64, domain: u8) -> Result<u64> {
+    require!(modulus > 0, IssuanceError::EmptyRange);
+    let rem = pow2_256_mod(modulus);
+    for round in 0..MAX_SAMPLE_ROUNDS {
+        let h = hashv(&[&[domain], value, &[round]]).to_bytes();
+        if rem == 0 || !at_or_above_limit(&h, rem) {
+            return Ok(u256_mod(&h, modulus));
+        }
+    }
+    err!(IssuanceError::SamplingDidNotTerminate)
+}
+
 fn verify_proof(params: &SettleParams, root: &[u8; 32]) -> bool {
     let mut node = hashv(&[
         &LEAF_PREFIX,
@@ -488,6 +565,50 @@ fn verify_proof(params: &SettleParams, root: &[u8; 32]) -> bool {
 // ------------------------------------------------------------------ accounts
 
 pub const CONFIG_SEED: &[u8] = b"config";
+pub const SURVIVORS_SEED: &[u8] = b"survivors";
+
+/// The unissued pieces, as a Fisher-Yates array with swap-with-last (D19).
+///
+/// **Stored one-based so a zeroed account is the identity permutation**: slot
+/// `i` holding `0` means "never written, so this slot still holds piece `i`".
+/// That removes a 4,000-iteration write from `initialize` and it is the same
+/// convention `src/lib/protocol/survivors.ts` uses, so the two replay
+/// identically.
+///
+/// Zero-copy because 8 KB does not want deserialising once an hour forever.
+#[account(zero_copy)]
+#[repr(C)]
+pub struct Survivors {
+    pub remaining: u16,
+    pub bump: u8,
+    pub _pad: [u8; 5],
+    pub slots: [u16; 4000],
+}
+
+impl Survivors {
+    pub const SIZE: usize = 8 + 8 + 2 * 4000;
+
+    fn read(&self, i: usize) -> u16 {
+        let v = self.slots[i];
+        if v == 0 {
+            i as u16
+        } else {
+            v - 1
+        }
+    }
+
+    /// Takes the survivor at `point` and closes the gap with the last one.
+    fn take(&mut self, point: u64) -> Result<u16> {
+        require!(self.remaining > 0, IssuanceError::NoSurvivorsLeft);
+        let j = point as usize;
+        require!(j < self.remaining as usize, IssuanceError::PointOutsideRange);
+        let picked = self.read(j);
+        let last = self.read(self.remaining as usize - 1);
+        self.slots[j] = last + 1;
+        self.remaining -= 1;
+        Ok(picked)
+    }
+}
 pub const ISSUANCE_SEED: &[u8] = b"issuance";
 
 #[account]
@@ -536,10 +657,11 @@ pub struct Issuance {
     pub settled: bool,
     pub recipient: Pubkey,
     pub point: u64,
+    pub piece_id: u16,
 }
 
 impl Issuance {
-    pub const SIZE: usize = 8 + 1 + 8 + 4 + 8 + 32 + 32 + 8 + 32 + 8 + 1 + 32 + 8;
+    pub const SIZE: usize = 8 + 1 + 8 + 4 + 8 + 32 + 32 + 8 + 32 + 8 + 1 + 32 + 8 + 2;
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -599,6 +721,14 @@ pub struct Initialize<'info> {
         bump
     )]
     pub config: Account<'info, Config>,
+    #[account(
+        init,
+        payer = deployer,
+        space = Survivors::SIZE,
+        seeds = [SURVIVORS_SEED],
+        bump
+    )]
+    pub survivors: AccountLoader<'info, Survivors>,
     /// CHECK: recorded, and its update authority is checked by mpl-core at mint.
     pub collection: UncheckedAccount<'info>,
     /// CHECK: recorded and asserted against the randomness account's own queue.
@@ -677,6 +807,8 @@ pub struct SettleIssuance<'info> {
     pub config: Account<'info, Config>,
     #[account(mut, seeds = [ISSUANCE_SEED, &issuance.hour.to_le_bytes()], bump = issuance.bump)]
     pub issuance: Account<'info, Issuance>,
+    #[account(mut, seeds = [SURVIVORS_SEED], bump = survivors.load()?.bump)]
+    pub survivors: AccountLoader<'info, Survivors>,
     /// CHECK: parsed as Switchboard randomness; asserted equal to the issuance.
     #[account(mut)]
     pub randomness: UncheckedAccount<'info>,
@@ -743,6 +875,8 @@ pub struct IssuanceSettled {
     pub hour: u64,
     pub piece_index: u32,
     pub minted: bool,
+    /// Which of the 4,000 went out. `u16::MAX` when nothing was minted.
+    pub piece_id: u16,
     pub snapshot_slot: u64,
     pub root: [u8; 32],
     pub randomness: Pubkey,
@@ -810,6 +944,12 @@ pub enum IssuanceError {
     RevealFailed,
     #[msg("the switchboard randomness_init CPI failed")]
     RandomnessInitFailed,
+    #[msg("no survivors left to issue")]
+    NoSurvivorsLeft,
+    #[msg("modulus must be positive")]
+    EmptyRange,
+    #[msg("uniform sampling did not terminate")]
+    SamplingDidNotTerminate,
 }
 
 // --------------------------------------------------------------------- tests
@@ -907,6 +1047,92 @@ mod tests {
         assert_ne!(u256_mod(&high, ELIGIBLE_SUPPLY), 0);
         assert_eq!(u256_mod(&[0u8; 32], ELIGIBLE_SUPPLY), 0);
         assert_eq!(u256_mod(&[0xff; 32], 1), 0);
+    }
+
+    /// Vectors from `src/lib/protocol/survivors.ts`. Both domains, and moduli
+    /// chosen to exercise a power of two, a prime, an enormous supply and 1.
+    #[test]
+    fn both_derivations_match_the_published_verifier() {
+        let cases: [(&str, u64, u64, u64); 6] = [
+            ("0000000000000000000000000000000000000000000000000000000000000000", 4000, 2887, 1369),
+            ("0000000000000000000000000000000000000000000000000000000000000001", 4000, 2661, 3065),
+            ("8000000000000000000000000000000000000000000000000000000000003039", 4000, 203, 106),
+            ("00000000000000000000000000000000000000000000000000000000deadbeef", 10750001000000, 6249465603117, 5792342451978),
+            ("ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", 7, 1, 1),
+            ("000000000000000000000000000000000000000000000000000000000000002a", 1, 0, 0),
+        ];
+        for (hex, m, piece, holder) in cases {
+            let v = hex32(hex);
+            assert_eq!(uniform_index(&v, m, PIECE_DOMAIN).unwrap(), piece, "piece {hex}");
+            assert_eq!(uniform_index(&v, m, HOLDER_DOMAIN).unwrap(), holder, "holder {hex}");
+        }
+    }
+
+    /// The two domains must not agree, or one number is answering both
+    /// questions and the piece is a function of the recipient.
+    #[test]
+    fn the_domains_are_separated() {
+        for i in 0u64..64 {
+            let mut v = [0u8; 32];
+            v[24..32].copy_from_slice(&(i * 104_729).to_be_bytes());
+            assert_ne!(
+                uniform_index(&v, 4000, PIECE_DOMAIN).unwrap(),
+                uniform_index(&v, 4000, HOLDER_DOMAIN).unwrap()
+            );
+        }
+    }
+
+    /// The survivor array replays to the same permutation as the TypeScript,
+    /// which is what the published verify command replays from the events.
+    #[test]
+    fn the_survivor_replay_matches_the_published_verifier() {
+        let expected: [u16; 16] = [7, 10, 9, 15, 6, 1, 13, 3, 2, 4, 14, 12, 0, 8, 5, 11];
+        let mut s = Survivors { remaining: 16, bump: 0, _pad: [0; 5], slots: [0u16; 4000] };
+        for (i, want) in expected.iter().enumerate() {
+            let mut v = [0u8; 32];
+            v[24..32].copy_from_slice(&((i as u64) * 7919).to_be_bytes());
+            let point = uniform_index(&v, s.remaining as u64, PIECE_DOMAIN).unwrap();
+            assert_eq!(s.take(point).unwrap(), *want, "issuance {i}");
+        }
+        assert_eq!(s.remaining, 0);
+        assert!(s.take(0).is_err());
+    }
+
+    /// Every piece exactly once, and the order is not the identity -- a
+    /// "random survivor" that issues 0,1,2,... is sequential issuance in a hat.
+    #[test]
+    fn the_survivor_set_is_a_permutation() {
+        let n: u16 = 1000;
+        let mut s = Survivors { remaining: n, bump: 0, _pad: [0; 5], slots: [0u16; 4000] };
+        let mut seen = vec![false; n as usize];
+        let mut identity = 0;
+        for i in 0..n as u64 {
+            let mut v = [0u8; 32];
+            v[24..32].copy_from_slice(&(i * 31).to_be_bytes());
+            let point = uniform_index(&v, s.remaining as u64, PIECE_DOMAIN).unwrap();
+            let id = s.take(point).unwrap();
+            assert!(!seen[id as usize], "piece {id} issued twice");
+            seen[id as usize] = true;
+            if id as u64 == i {
+                identity += 1;
+            }
+        }
+        assert!(seen.iter().all(|x| *x));
+        assert!(identity < 50, "issuance order looks sequential: {identity} fixed points");
+    }
+
+    /// `at_or_above_limit` is the only hand-rolled 256-bit arithmetic here.
+    #[test]
+    fn the_rejection_threshold_is_arithmetic_not_a_guess() {
+        // 2^256 - 1 is above every threshold with a non-zero remainder.
+        assert!(at_or_above_limit(&[0xff; 32], 1));
+        // 0 is below every threshold.
+        assert!(!at_or_above_limit(&[0u8; 32], 1));
+        // A modulus that divides 2^256 leaves no remainder and never rejects.
+        assert_eq!(pow2_256_mod(2), 0);
+        assert_eq!(pow2_256_mod(1 << 16), 0);
+        // And a modulus that does not.
+        assert_ne!(pow2_256_mod(4000), 0);
     }
 
     /// The schedule is computed from the index and the period, never from the
