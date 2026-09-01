@@ -17,6 +17,10 @@ export const CORPUS_PATTERNS = [
   // The placeholder is the most public copy this project has. It is scanned.
   'public/**/*.html',
   'public/**/*.txt',
+  // The README is the second-most public copy, and it is the document a
+  // sceptical reader opens first. Named exactly rather than as `*.md`, because
+  // DESIGN.md and CLAUDE.md quote the forbidden vocabulary in order to ban it.
+  'README.md',
   'content/**/*.md',
   'content/**/*.json',
 ]

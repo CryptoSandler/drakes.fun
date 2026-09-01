@@ -407,6 +407,40 @@ records which route paid for it.
 **Cost:** a paid dependency in the issuance path, and a second thing that can
 be down at the top of the hour.
 
+### D21 — The verifier reads the chain; the published set is a cache it reconciles
+
+`snapshot.ts pieces` rebuilds the survivor permutation from the
+`IssuanceSettled` events, paginated over the program's signatures, and checks
+each hour against the `piece_id` the program emitted. It reads no account of
+ours and, since this decision, no artifact of ours.
+
+**Forced by the 2026-09-01 rehearsal.** The replay ran off the published
+artifacts, two of which had been deleted while the issuances they described were
+on chain. It was two takes behind from its first line and reported **0 of 49
+matching** — indistinguishable from the arithmetic being wrong. An afternoon
+went into looking for a defect that did not exist.
+
+**The three findings are kept apart**, because they call for three different
+responses and the old tool collapsed them into one:
+
+| | Means | Exit |
+|---|---|---|
+| `GAP missing` | we failed to publish an artifact; our record has a hole | 4 |
+| `WARN partial` | a recovery stub with no leaf set, so the root was not checked | 0 |
+| `FAIL disagrees` | an artifact contradicts the chain — the only one that is a defect | 1 |
+
+**`minted` gates the take.** `settle_issuance` calls `survivors.take` only while
+`issued_count < collection_size`. Past 4,000 the issuance still fires and emits
+with `piece_id = u16::MAX`, consuming no survivor. A replay that takes on every
+event runs one ahead of the chain from that hour on and never recovers — the
+same failure shape as a missing artifact, from the opposite cause. Not reachable
+on devnet at 51 issuances, and it would have been a live defect at 4,000.
+
+**Cost:** the replay now needs an RPC with full history, where before it needed
+only a directory. That is the right trade — the offline form is still there as
+`pieces <dir>` and prints, in its own output, that it is replaying our record
+rather than the chain.
+
 ## Still open
 
 - **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*

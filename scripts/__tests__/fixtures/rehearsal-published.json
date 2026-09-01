@@ -1,0 +1,2714 @@
+{
+ "recorded": "2026-09-01",
+ "cluster": "devnet",
+ "note": "The published artifact set as the 2026-09-01 rehearsal left it, including snap-3 and snap-4, which are the two that had been deleted and were rebuilt from IssuanceSettled events. The test materialises this into a temp directory; it never edits the fixture.",
+ "files": {
+  "snap-3.json": {
+   "index": "3",
+   "piece": 2158,
+   "randomness": "1d5be83f95d69122db27fc2e3af4b7bb8724378477dee3286d7beafe6aa6c0df",
+   "recoveredFrom": "IssuanceSettled event; the artifact was lost and the value was read back off chain"
+  },
+  "snap-4.json": {
+   "index": "4",
+   "piece": 2087,
+   "randomness": "30cf17dcb3df74831e1dd01a5ca6c4645b7f6b90d5ef7fca41916926bded7c69",
+   "recoveredFrom": "IssuanceSettled event; the artifact was lost and the value was read back off chain"
+  },
+  "snap-6.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491551402",
+   "index": "6",
+   "piece": 3301,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "e0cb3ce8f548e9775233a9052860ccb4109439b866918c2f015e6a41a46ade81",
+   "randomness": "c28314491ba508676290ff84be3c9ae5895100ddb1657640b6cbd1c7c064c9c5",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-7.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491551759",
+   "index": "7",
+   "piece": 3197,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "0680fc0a28005d1d120cb4df53f2018e9fdaa98f25776a0ed994051e7ad54c61",
+   "randomness": "52444293261440d554807f3e343d0034fe02303772d72d857b5de53adef01e48",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-8.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491552124",
+   "index": "8",
+   "piece": 3964,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "66b4e463384d3629f756c4d12f4863eb84ece21809f7ba0be599fffddd1da465",
+   "randomness": "106a793323896dcd2ca33d61a0acc34c1145584aa34ed0ae2965340fd8d36908",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-9.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491552484",
+   "index": "9",
+   "piece": 275,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "a418c4a7b7e1c051e939d306891e315ac4f9ad8f5d9f8b35b8f1562d07ef86a3",
+   "randomness": "1a6516a8630e832ec4eb3ada73598fb5ecc4fb8f8a914c42b2363cbfd9759063",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-10.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491552839",
+   "index": "10",
+   "piece": 555,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "bf75f5f663aa46d3f014c961cadca07ec1daad7f4a9219709acb44e5db620b0b",
+   "randomness": "5c7ea863ffe9795b36eeee35f194bb7b2ec609ad4016068a605b4007e60ef869",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-11.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491553209",
+   "index": "11",
+   "piece": 1828,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "e4b2351f6fbb841e266ef7cfe098fa466d8df24ae745447eed876bb4f6fbad93",
+   "randomness": "424de9fe6732a84c4c8fb771ca32edb83008c4183441eeacd50d8b0dfed7006a",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-12.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491553570",
+   "index": "12",
+   "piece": 627,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "40a6e1acc6d22ff73392e5e6187415022111580fdff31aba848111f40939c1ca",
+   "randomness": "ce8a43fc508e137ea26127e3f673f0393ef70a930fb8eae00ebb8dc5f77dd0d3",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-14.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491554289",
+   "index": "14",
+   "piece": 2971,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "799de733a006a94adf2fb6047e4c5f7c1554803b2dc4cc4b94a7fcffaa8cb0e2",
+   "randomness": "edbcd0573cd0e83b3b0786990e649fdd97ea6109b7819c8b6417afdaeded2a68",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-15.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491554652",
+   "index": "15",
+   "piece": 1167,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "1ff9eec7ce8fe8aa180f02cccff23c8c4f444f98cca51ea0fe91863fc56f4907",
+   "randomness": "9ed9c5239e4c262216fe43dbfacc06b791a6eabc9f72b771257c24492b402ecb",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-16.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491555015",
+   "index": "16",
+   "piece": 3534,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "052669412899f77d49e5eecaf419b48de3d7a156cb51584a3290a01e6dd21003",
+   "randomness": "421ab6aacc564ca28043e96c0d31424eb2786ac7c714868e266ac46aebebcc94",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-17.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491555375",
+   "index": "17",
+   "piece": 465,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "9e9db74e1a59a831bdfb3d08ef6f22fd3e7c43a50142493516172754d72a1033",
+   "randomness": "06372ed0d51aed61684e34b0eafdc6091bf320c8aeac137dd8f4e6a6fc240d43",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-18.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491555740",
+   "index": "18",
+   "piece": 3345,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "db20df3ca731fcc05c13d57d447aa230e5ec05296509419ee6fffeb88ab21189",
+   "randomness": "5a88fd2a85c5c4b0044bd172f568827d1b04ef52cf3364971b7c08a7ed85c202",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-19.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491556100",
+   "index": "19",
+   "piece": 290,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "ad7a25cefc01fb23770cc8d51ebee585527f4c5d412053d640652bb3e45af2f9",
+   "randomness": "861badec51c90923a4c1fe823e049460794dd30df8c4b6eb9cca74097fc0cec7",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-20.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491556463",
+   "index": "20",
+   "piece": 1948,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "ddd974e82bb8abab599edbe683df976c4a7d4c824533ef2f40f05afd6b151889",
+   "randomness": "b05de44fefcc08fa222f1a92e6d2b283c7cadfed9779891c9b91c5759297c9e1",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-21.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491556827",
+   "index": "21",
+   "piece": 3994,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "328e4db06c35c594ed2c9ad5f7daf39f2c8cec4270dc17e516a27b0209cdce25",
+   "randomness": "19bb5a01ba265b4fb989e0e2b3d800bb0c42b2ad6e55f123926e7ea6e414ad49",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-22.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491557204",
+   "index": "22",
+   "piece": 2640,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "59bc09f514df5e50c0c3beabe4c5488750c4bbe1a26324723821bffe6c8850d4",
+   "randomness": "7136d50143b75bd4f125fe904d7bd913b8203053a0eca7c99f2060f65a13dede",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-23.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491557556",
+   "index": "23",
+   "piece": 546,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "7c9df48f1e84ac1abd02c8bcc0a9c636ef828f3d8060cac50735ab7a5a67de67",
+   "randomness": "9ced85b07bee2791c3b51c3780023e53921b3afb7e1bee70823ce323b8991bdc",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-24.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491557910",
+   "index": "24",
+   "piece": 2615,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "20c735439324a4415e2b1e2cea334fbec4cb62ae21432a2534a82622c7f62ee4",
+   "randomness": "6589e6f4ad4a6c85d9accfe36ab41710d37dde017c3e493905ab76db03267be1",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-25.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491558275",
+   "index": "25",
+   "piece": 458,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "26f9fded86caff14f8c28199ab3d266ca774be25736585e0d897de426c04866a",
+   "randomness": "8624c7b0d1ffcf2a9560839ef5106d3c5bbd85070cf56bd1c88d258968e94892",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-26.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491558641",
+   "index": "26",
+   "piece": 225,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "f8d460ede055ef9400cc1df95e6e111c4f46c00e9db020fc962bfe94ffb02217",
+   "randomness": "5647483dcc44ea85ed5446479b81aaad9a9cd3f06b675f3d46147fd82ca77daa",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-27.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491558992",
+   "index": "27",
+   "piece": 2797,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "d666b9dc1bb5f27bb77ead032532ac684f05a88516bced52284192e80e5e976b",
+   "randomness": "5521ae612087ee8144cfc2edb24ecdee358519b63a16b695afcc69f231904356",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-28.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491559362",
+   "index": "28",
+   "piece": 2780,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "f929b1c4eb034276e152af463243c01bdd4a0ba0e6d355360e38009035241e25",
+   "randomness": "5ea4e40edb90a64363350a6ce3b668e165d252fcdca43bd1ccbe2641bb9e2b2e",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-29.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491559734",
+   "index": "29",
+   "piece": 388,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "f2084ebe6332b17d497b744c06a8f03a6244ef4a04e884ed66404e3c7c067659",
+   "randomness": "c882f81ef26a5135ecb09e00a03f6f6ca52fc5389c5484cf5b73c1b00627b598",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-30.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491560088",
+   "index": "30",
+   "piece": 1482,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "cc17d003a3bea02792dbdb7352bc7911a48dfb8dd1173a80a6d5974aeed4fa00",
+   "randomness": "1850e8d61106e9665c7ce20b303f4cfec8249f73e92748ed743805c229728700",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-31.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491560451",
+   "index": "31",
+   "piece": 1719,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "757edaa28b65d579c607f215d30ff589e371d869c76acc8a61e5cfdc6b57d79d",
+   "randomness": "e0129c3c2a52d6c83b8426fcbbb11f1853c334774194ff927845b48dd91fde4c",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-32.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491560821",
+   "index": "32",
+   "piece": 287,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "094ed742a6b1625ace90f022251abf4657b3c8f62dddb4baa78a37ce914bb2fd",
+   "randomness": "3bf44c97fa69502aefacab4b550187596011bedb32bccc310d9d87f92fc66d0c",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-33.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491561180",
+   "index": "33",
+   "piece": 1216,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "891d2880e183ec9fe726277e2797dcc2cd7bd2f794ebcf816ecc56194c5ecaa3",
+   "randomness": "019caa0be65e06ec2496a606f90bffdb4884805def9338ebdbb5511239d9b2cd",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-34.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491561540",
+   "index": "34",
+   "piece": 1552,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "c0bcea63e4da9085b040d9643a928e9cd195fb7f7b0e589556f20c0a81c4ca9a",
+   "randomness": "2beb96b4aef300a856e165ec4e601a4f074023d48867dd1ab8ff6d71c77aa825",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-35.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491561896",
+   "index": "35",
+   "piece": 3169,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "9aeafa43cbf752818964a1dd4124a190a10399d9fa0b2f03374aef8851d0700e",
+   "randomness": "85d7a9105420761f97c8c381dd2c40cbe486db9d4e29ef595a62cdd218f9e963",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-36.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491562256",
+   "index": "36",
+   "piece": 3204,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "48aeb1167aa9d321ad89272c1616cf8f030ec3ceb661ab3e92e566a2daa1b34e",
+   "randomness": "beebd21f553fa52d4797c61a208e0b4586716f98445d95d77c24aa05ee031e8a",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-37.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491562628",
+   "index": "37",
+   "piece": 3920,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "aea4d6c6135ab84b9cc56d63e25b3972b3f3fff1643a49fe250d9ea56595d698",
+   "randomness": "a623020e06dd8bbd84d8b88d1bb18e92fea6e4461917082291b45ac0a17c82d6",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-38.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491562990",
+   "index": "38",
+   "piece": 2358,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "0175b7fc1fc13f3f0eeb42bfb56387f99d952598eacb9c4c57126dca59ad4fcf",
+   "randomness": "28a4d547a52aa8e0bc78cfcdd9756c695ba4ad3dc334c28b7cbc61e7605ecb8c",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-39.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491563348",
+   "index": "39",
+   "piece": 3107,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "86ebf024f2993870950c0b5582688acd32fb78b42df5c77fbab18e4ddccf7803",
+   "randomness": "01c1080d2bb50a66e3450a49b7b7c2ea60b397c9f3d5986a2d7bf8344104fa72",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-40.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491563719",
+   "index": "40",
+   "piece": 986,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "4063e127226face1e238dd625c21b8d413439c402e6b99af1472e98d62574970",
+   "randomness": "87e6567db9c9b07efc7d8511f25f37ee2abe6de564537aa3128972a3c2fdc7a9",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-41.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491564085",
+   "index": "41",
+   "piece": 54,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "2843f6b9347aa425687f5d92a2595875cfac94cc5a039ee758b6c12f14587c1d",
+   "randomness": "3e88eb3c5df4bf5acc957f25759fe76d090d7f3895d19358c1c41381d65a8067",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-42.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491564449",
+   "index": "42",
+   "piece": 2815,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "d70a5040b5509162eb6eff45d2d6ac54868fd0edc2fc0270867b4d5df3846bc1",
+   "randomness": "dd96f3dc01db8fcb823c92b41372ff083937c5add808f9ffe78094860a68e6d0",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-43.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491564812",
+   "index": "43",
+   "piece": 34,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "202c014bca5aa9ed5cef3f2f2d337c6bd2e51262de5f540618dff61fa1cb138d",
+   "randomness": "8f13a6b2acf5b8828429451d25a4ed5133d527d3ced4acda04bebd2b2375c7a1",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-44.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491565185",
+   "index": "44",
+   "piece": 1651,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "a0d510049055d210e47623720dde84e56ea1965831e87dd8143a2128f4cec645",
+   "randomness": "caf27151ef9ef995cc6bef2c6a53cb054e41a9d5eabd115d670b8b75ec9f8aa2",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-45.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491565533",
+   "index": "45",
+   "piece": 1960,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "bdc7b5192ca728bd88f78ac82c2a3e8730c259a127303b9c649c9b1d37c63d15",
+   "randomness": "f3d63440eb5027d35785dcd37063093a76873491f242fec46fb5c78b5ed47151",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-46.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491565900",
+   "index": "46",
+   "piece": 383,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "fdccbcd35e0b5cc23efe3595630865d39dcfce93dbc88aaba540f4ddaf3ee98d",
+   "randomness": "27459c5b24bc84c7c9b4a86edd47c558a7d2d073cf335d7047198a1d76c95a5b",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-47.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491566263",
+   "index": "47",
+   "piece": 2939,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "c3929c70259cf384d692290490b18a7649e84ea9e4c384cf556f1f1db1a17ded",
+   "randomness": "1850376e9018277290fa358123388296e4c8d9be978533fc5b7d244037389618",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-48.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491566628",
+   "index": "48",
+   "piece": 3415,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "2363a2df32d97348b8311e4a606da3dc720e9465acb2abcb26b6a0655743b4e0",
+   "randomness": "963b6ac7b52a368ac5748accbf4f8476419b985c5794b305154e05f1cc5af030",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-49.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491566991",
+   "index": "49",
+   "piece": 3911,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "294416c5dd09a9f06d826381de5dd29e8451a3e28a45a07adfb89e8cc45a5175",
+   "randomness": "98f1a9732207928876494908c469662a2f7673683c5a5209a9f8e76f7fda2144",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-50.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491567355",
+   "index": "50",
+   "piece": 2053,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "6e209daeb630e30f88fe02e6ff5c3bc96534ab59f371497dca0ee37c47803182",
+   "randomness": "75c40e2dacc82309476237f193934258dda8fdd876ef99c073189abc2fe56ac3",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-51.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491567713",
+   "index": "51",
+   "piece": 1580,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "63ee643d95dc46599a3de3201f202380f89317674dea2e45a6a576dcb9898740",
+   "randomness": "a914567d93f2c821eefd963f22980788e585ab573df5da8e4ca9ec01434ea317",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-52.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491568077",
+   "index": "52",
+   "piece": 3544,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "39ca6b88dc4d4b0ca797c7ec410f35ed39152aa72d8c85d04f4bb96ed43df549",
+   "randomness": "eaec88d7e4122aab0ef39c2c7538546a87cd3a98d514b143f56ff99bfe9cbd17",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-53.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491568435",
+   "index": "53",
+   "piece": 740,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "576ca60e9649b0c496dce6bdb098194e8209375563148524646fd2ba6a8b9b8d",
+   "randomness": "a9069940ace12ba3aac6efd0c375cda9ff3fd135f8fcc2798f69fa9636c54889",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-54.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491568803",
+   "index": "54",
+   "piece": 2256,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "c1c73655c454f2bed0bc02eec0b8e9563cd669a81464ccd0d5d141333683fed2",
+   "randomness": "394efd9ef08027b3dcb1e3cb41ec0503878762af791726e1870ede7c4e24226e",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  },
+  "snap-55.json": {
+   "cluster": "devnet",
+   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
+   "slot": "491569164",
+   "index": "55",
+   "piece": 913,
+   "eligibleSupply": "14500001000000",
+   "root": "82a2aab73aa24251b38e6b9688f416ca43a749750d12cbb462e67e96790d4d22",
+   "commitment": "a88f6f2bf4771095de56682e223c5761c4fe58f1b7a58d96c4f45565e793dac8",
+   "randomness": "27211ae9d072b3e79fdc52333ae7c620cfad6bf49595810edc6be3c8a5d81b55",
+   "leaves": [
+    {
+     "owner": "2B7taMK2LvaJx7Rsf3cX4vUQAJbXbkX6FFH7Ud1ZfxHu",
+     "balance": "6000000000000",
+     "rangeStart": "0",
+     "rangeEnd": "6000000000000"
+    },
+    {
+     "owner": "4xujQ2sBiDWdgirxFw8m7wZLDJJafZkXCrStqSsS9HJh",
+     "balance": "2500000000000",
+     "rangeStart": "6000000000000",
+     "rangeEnd": "8500000000000"
+    },
+    {
+     "owner": "8M2uZAvBwdKNh8rqcYZoePTA4fSwqjVKv2tyD5DutNcp",
+     "balance": "3000000000000",
+     "rangeStart": "8500000000000",
+     "rangeEnd": "11500000000000"
+    },
+    {
+     "owner": "9seUirSExiaAfBFnvDC97UKtaa8PV7M63QnXnWxe7Mw2",
+     "balance": "1000000000000",
+     "rangeStart": "11500000000000",
+     "rangeEnd": "12500000000000"
+    },
+    {
+     "owner": "AxeWFeUWZLBxGgp6mhpni9q8KfkHhoGbcsTBsrxw6Usp",
+     "balance": "500000000000",
+     "rangeStart": "12500000000000",
+     "rangeEnd": "13000000000000"
+    },
+    {
+     "owner": "FhSincZGvL6Xy3KG1y73Yu6q4mWpfiCyPnALiSQYpPks",
+     "balance": "1500000000000",
+     "rangeStart": "13000000000000",
+     "rangeEnd": "14500000000000"
+    },
+    {
+     "owner": "GXvHdYodicyjjkZ7o3u1UDjTeepyQePh7JzUo9KPEa54",
+     "balance": "1000000",
+     "rangeStart": "14500000000000",
+     "rangeEnd": "14500001000000"
+    }
+   ]
+  }
+ }
+}
