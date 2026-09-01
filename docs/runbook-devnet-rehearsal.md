@@ -164,98 +164,76 @@ that is not made on both sides turns those tests red, which is the point.
 - Everything the rehearsal asserts is read back from the chain. The cranker's
   own log is evidence of what the cranker thought, and nothing more.
 
-## 4b. The rehearsal, run 2026-09-01 — 48 hours, 39 settled
+## 4b. The rehearsal — two runs, 2026-09-01
 
-Program `A6vnmLcrppzSqCubRdJoXzs1oDJc23swLSGDCTKu7jGt`, period 60 s, a rehearsal
-mint with 8 token accounts (2 holding zero), all through Helius.
+Program `7qHEeK3Q5UW5jKykXqWeShqpWCypm4hey2EzYGotkTUs`, period 60 s, a rehearsal
+mint with 8 token accounts (2 holding zero), everything through Helius.
 
-| | |
+| | First run | **Second run** |
+|---|---|---|
+| Hours | 48 | 48 |
+| Settled | 39 | **47** |
+| Skipped | 9 | **1** (the forced one) |
+| Gateway failures | **7** | **0** |
+| Schedule drift | zero | **zero** |
+
+**The eight-hour difference is one function.** The first run round-robined the
+queue's on-chain live set and lost every sixth hour to a member whose gateway
+answered 503. The second probes each gateway before committing to it
+(`src/lib/crank/oracles.ts`), and lost none.
+
+### Verification, all of it under plain `node`
+
+| Check | Result |
 |---|---|
-| Hours run | 48 |
-| **Settled** | **39** |
-| Skipped | 9 |
-| Schedule drift | **zero** — every `issue_at` was exactly `genesis + h·60`, 2,820 s across 47 hours |
-| Public verify (`node scripts/snapshot.ts verify`) | **39 / 39 pass**, no network, no install |
-| Program vs TypeScript | **39 / 39 agree** on recipient, point, root and eligible supply |
+| `snapshot.ts verify` per snapshot | **49 / 49 pass** |
+| `snapshot.ts pieces` — survivor array replayed from the values alone | **51 / 51 match**, all distinct |
+| Program vs TypeScript, **holder** | **51 / 51 agree** |
+| Program vs TypeScript, **piece** | **51 / 51 agree** |
+| Drift | every `issue_at` exactly `genesis + h·60`; 2,820 s over 47 hours |
 
-### Why the nine hours skipped
+### Distributions
 
-| Count | Cause |
-|---|---|
-| **7** | the oracle's gateway answered **503** |
-| 1 | forced: the reveal was deliberately withheld |
-| 1 | RPC returned "blockhash not found" |
+**Recipients**, 49 settlements with a leaf set: chi-square **1.918** on 6 degrees
+of freedom against **12.592** at p = 0.05 — consistent with the balances. The
+41.4% holder took 18; the holder with one raw unit took none.
 
-**The seven are one oracle, not seven.** They fell on hours 8, 14, 20, 26, 32,
-38, 44 — every `h ≡ 2 (mod 6)`, which is the crank's round-robin landing on the
-same member of a six-oracle live set. **That oracle passed every on-chain check
-— it was in `oracle_keys`, `is_on_queue == 1`, and heartbeating inside
-`node_timeout` — and its gateway was dead.**
-
-This is T12's residual risk, measured: **on-chain liveness is not gateway
-liveness**, and one bad member of six cost 15% of the hours. The fix is in the
-crank, not the program: **health-check the gateway before committing to an
-oracle**. The program cannot help, because the oracle is chosen at request time
-and there is no re-request.
-
-That check now lives in `src/lib/crank/oracles.ts` and
-`scripts/crank.ts select`. It applies the same conditions the program will
-assert on chain, then sends a real `POST /gateway/api/v1/ping` to each
-candidate in round-robin order and takes the first that answers. An oracle that
-just failed goes to the back of the order rather than being dropped — a gateway
-down a minute ago may be the only one up now. **When nobody answers, no request
-is sent** and the hour is recorded as "no oracle available": requesting with a
-silent gateway strands the hour, and there is no re-request.
-
-**The probe route is read from the SDK, not invented, and that matters.** The
-first version guessed a `gateway_health` path; every gateway answered 404, the
-crank concluded all six oracles were dead, and it refused to issue anything. A
-health check that fails closed on its own bug halts the collection more
-thoroughly than the fault it was written to catch. The route is
-`POST /gateway/api/v1/ping` with `{"api_version":"1.0.0"}`, taken from
-`@switchboard-xyz/common`. And the URI is **concatenated, not resolved**: the
-gateway address carries a path segment, and `new URL(path, base)` discards it.
+**Pieces**, 51 issuances over `[0, 4000)`: **51 distinct**, buckets of 500
+`[10, 6, 3, 7, 5, 7, 7, 6]`, chi-square **4.373** on 7 df against **14.067** —
+consistent with uniform. Mean 1,949 against an expected 1,999.5; lowest 34,
+highest 3,994. Fifty-one samples is a thin test of uniformity and the unit
+tests carry the wider one (4,000 samples over 8 buckets).
 
 ### The three forced failures
 
 | Hour | Probe | Result |
 |---|---|---|
-| 10 | request the same hour twice | **refused — the issuance account already exists.** Structural, not a check. |
-| 15 | settle an hour that has passed | **rejected, `IssuanceExpired`** |
-| 20 | request naming an oracle outside the live set | **rejected, `OracleStale`** |
+| 13 | request the same hour twice | **refused — the account already exists** |
+| 18 | settle an hour that has passed | **rejected, `IssuanceExpired`** |
+| 23 | request naming an oracle outside the live set | **rejected, `OracleStale`** |
 
-### The freeze, demonstrated rather than asserted
+### The replay is only as good as the published set
 
-A holder bought 3,000,000 tokens **two seconds after hour 7's boundary**, i.e.
-between that hour's request and its settle. Hour 7 settled against 6 leaves and
-11,500,001 eligible — **without them**. Hour 8 carried 7 leaves and 14,500,001.
-This is the sentence §7 requires the site to print.
+`snapshot.ts pieces` failed on **every** issuance at first — 0 of 49. The cause
+was not a disagreement: two artifacts had been deleted while the issuances they
+described were on chain, so the replay was two takes behind from its first line
+and never recovered.
 
-Both zero-balance accounts stayed out of every tree: 8 token accounts, 6 leaves.
-
-### Winners against weights
-
-39 settlements, chi-square **5.286** on 6 degrees of freedom against a critical
-value of **12.592** at p = 0.05 — consistent with the balances. The largest
-holder (42.2% of supply) took 18 of 39; the 1-unit holder took none.
+**A gap in the published set breaks every issuance after it, and it looks
+exactly like a total mismatch.** It is also repairable from the chain and only
+from the chain: both values came back out of the `IssuanceSettled` events, the
+artifacts were rebuilt, and the replay went to 51/51. The operational rule is
+that **every settled issuance is published, without exception** — and the reason
+the events carry `randomness_value` is so a lost artifact is recoverable rather
+than fatal.
 
 ### Cost
 
 | | SOL |
 |---|---|
-| The 48-hour rehearsal | **0.2166** |
-| — per settled issuance | ~0.0056 |
-| Program rent (recoverable by closing) | 2.0902 |
-| **Net burned across every deploy, the mint, the holders and the run** | **~0.278** |
-
-### The bug the rehearsal found, which no unit test could
-
-`request_issuance` failed every time with `AccountBorrowFailed`.
-`QueueAccountData::new` and its oracle counterpart each return a `Ref` into
-account data, and **a CPI refuses to run while any account it is passed is still
-borrowed** — the T12 assertions held both borrows open across
-`randomness_commit`. Scoping them in a block fixed it. It is unreachable off
-chain, and it is exactly what a rehearsal is for.
+| Both runs plus setup (98 issuances attempted, 51 settled) | **0.3144** |
+| — per settled issuance | ~0.0048 |
+| Program rent (recoverable by closing) | 2.2363 |
 
 ## 5. What the rehearsal does not cover
 
