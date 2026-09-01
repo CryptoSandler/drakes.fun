@@ -1,10 +1,19 @@
+# The Rust program, its toolchain and its build output are never part of a web
+# deployment. `docs` and `scripts` are not either -- nothing the site renders
+# reads them.
 target
 programs
 Cargo.lock
 Cargo.toml
 Anchor.toml
 docs
-src
 scripts
+migrations
 node_modules
 .anchor
+
+# `src` used to be here, from when the deployment was the static placeholder in
+# public/ and nothing under src was imported. The app imports src/lib/chain,
+# src/lib/snapshot, src/lib/solana and src/lib/site, so excluding it builds
+# locally and fails on Vercel with five "module not found" errors -- which is
+# exactly what it did on 2026-09-01.
