@@ -9,6 +9,8 @@ export interface SiteConfig {
   rpcUrl: string
   programId: string
   config?: string
+  /** The survivor array. Without it the gallery cannot know what is issued. */
+  survivors?: string
   collectionSize: number
   /**
    * The address whose `$PUMP` balance is the reserve.
@@ -35,6 +37,7 @@ export function readConfig(env: Record<string, string | undefined> = process.env
     rpcUrl,
     programId,
     config: env.ISSUANCE_CONFIG || undefined,
+    survivors: env.ISSUANCE_SURVIVORS || undefined,
     collectionSize: Number(env.COLLECTION_SIZE ?? 4000),
     reserveOwner: env.RESERVE_OWNER || undefined,
     pumpMint: env.PUMP_MINT || PUMP_MINT,
