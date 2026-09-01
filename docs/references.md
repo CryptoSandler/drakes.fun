@@ -219,6 +219,26 @@ and `github.com/MeteoraAg/damm-v2`.
 - The program supports "creating permanent lock for position but still being
   able to claim fee".
 
+**Read from the chain and from the SDK on 2026-09-01, and two of these contradict
+what the plan assumed:**
+
+- cp-amm program id `cpamdpZCGKUy5JxQXB4dcpGPiikHawvSWAd6mEn1sGG`, deployed and
+  executable on **devnet as well as mainnet**, with config index 15 present at
+  the same address on both. `dynamic_fee.initialized = 0` on that config, so the
+  "no dynamic fee" claim above holds; the SDK returns a zeroed struct rather than
+  null, which reads like a dynamic fee until it is opened.
+- `base_fee.data` decodes to `20_000_000 / 1_000_000_000` = **2%**, and
+  `protocol_fee_percent = 20`, so **1.6% of a trade reaches the position**.
+  Measured, not derived: `docs/moneypath-devnet.md`.
+- **A Token-2022 mint carrying a `transferHook` extension needs a Meteora token
+  badge before a DAMM v2 pool can be created — even when the hook's `programId`
+  is null.** Isolated on devnet by creating the same pool twice, with and
+  without the extension. `create_token_badge` requires a Meteora `operator`.
+- **`$PUMP` has no token badge and there are zero DAMM v2 pools holding it**, on
+  either side, against 1,385,972 for wSOL and 21,641 for USDC as controls.
+- `CpAmm.claimPositionFee` takes `receiver`; destination accounts passed under
+  any other name are dropped in silence and the fee goes to `owner`.
+
 ### Pump.fun platform economics
 
 - Buyback programme began July 2025; >$300M of PUMP repurchased.

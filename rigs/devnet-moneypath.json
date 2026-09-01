@@ -1,0 +1,14 @@
+{
+  "_": "The money-path rehearsal rig, devnet 2026-09-01. Token B is a PLAIN Token-2022 mint with no transfer hook, because cp-amm refuses a hooked mint without a Meteora token badge -- see docs/moneypath-devnet.md. Every address here is public chain state; the keypairs are not in this file.",
+  "rpcEnv": "RPC_URL",
+  "payerKeypairEnv": "MONEYPATH_KEYPAIR",
+  "expectCluster": "devnet",
+  "pool": "Aq2f9wHQtZFvK6zC254iViiBh4ngJK7uXy2H6Tv9psNE",
+  "positionNftMint": "GsafcLmrrn1hdEwX35v35YDHY1x86rxvo9kgY3ArGjjt",
+  "tokenA": "BFRnWVZQTJXwpbdiJ4L373NjAGuqTdZqJBQgq4pYLPWu",
+  "tokenB": "EFiZ66mB6HCbUXpNcKsnP4uajGGVs59wLnjA1DwG5VDV",
+  "feeDestinationOwner": "8MxzqgfotX2vms5SnopoNpx7VKNtY5E7DgLYoFGrcL6Q",
+  "tokenBIsFeeToken": true,
+  "cpAmmConfig": "HQ6vW45Kug23h2A4LkyUqB4UFfGx4LqY1uZLLfQemEjU",
+  "multisig": "6bLDwCqseqJogbS1PaFzvJ3Mt8NGtjU5V2cP56x5TG3W"
+}

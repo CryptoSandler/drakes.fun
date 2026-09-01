@@ -90,6 +90,13 @@ Three things in order, each irreversible:
 Full devnet rehearsal first, including a fee claim that lands in the PUMP-side
 token, asserted rather than eyeballed.
 
+**⛔ BLOCKED as written, 2026-09-01 (D24).** DAMM v2 refuses a pool for a
+Token-2022 mint carrying a `transferHook` extension without a Meteora token
+badge, `$PUMP` has none, and there are zero DAMM v2 pools holding it. **Step 1 —
+grinding the mint keypair — must not run until the venue is settled**, because
+the sort order is a property of the pair. The rest of the money path was
+rehearsed against an equivalent pool and works: `docs/moneypath-devnet.md`.
+
 **Depends on:** B0. **Gate:** owner signs each mainnet transaction.
 
 ## B4 — Phase 1 program: issuance ⛔

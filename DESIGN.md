@@ -10,9 +10,15 @@ date they were read live in `docs/references.md`.
 
 **4,000 pieces that cannot be bought at issuance. One per hour, issued by the
 protocol to a `$DRAKES` holder chosen in proportion to their holding. Every
-trade of `$DRAKES` pays 2%, taken in `$PUMP`, into a reserve. Any piece can be
-burned to redeem its share of that reserve, and the slot it leaves never
-refills.**
+trade of `$DRAKES` pays a 2% fee, taken in `$PUMP`; Meteora keeps 20% of it and
+**1.6% of the trade reaches the hoard**. Any piece can be burned to redeem its
+share of that hoard, and the slot it leaves never refills.**
+
+*The 2%/1.6% distinction was measured on devnet on 2026-09-01 rather than
+inferred: a swap of 10,000 token B produced a 200,000,000-base-unit fee, of
+which 160,000,000 accrued to the position. `docs/moneypath-devnet.md`. The
+thesis said "pays 2% into a reserve", which is true of what the trader pays and
+false of what arrives.*
 
 Three properties follow, and a feature that serves none of them belongs to a
 different product:
@@ -271,6 +277,14 @@ readers get wrong.
 Permissionless. CPIs Meteora's `claim_position_fee` on the permanently locked
 position. Fees arrive as `$PUMP` because the pool is configured
 `collect_fee_mode = 1` and `$PUMP` is token B.
+
+**The destination is asserted on the built instruction, never taken from a
+helper.** On devnet 2026-09-01 a claim built with an SDK helper sent the whole
+fee to the operator key: the destination parameters passed were not in that
+helper's schema, were dropped in silence, and the transaction succeeded. The
+rule that "no destination is ever taken from a caller" has to extend to
+libraries, and the check is on the account in the instruction rather than on the
+argument that was meant to produce it (`scripts/verify-fee-path.ts`).
 
 Reads `issued_count`, derives the state, and splits: **Minting** → 85% to the
 reserve ATA, 15% to the creator ATA. **Mature** → 100% to the reserve ATA.

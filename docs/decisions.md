@@ -536,6 +536,47 @@ figure on the site is a cache of an on-chain read, labelled with its slot. The
 event runner fills `issuance_events` so a future list page does not make 8,000
 RPC calls; nothing in it is authoritative, and losing the table costs one re-run.
 
+### D24 — The `$DRAKES`/`$PUMP` pool is blocked on a Meteora token badge
+
+**B3 cannot be executed as written.** DAMM v2 refuses to create a pool for a
+Token-2022 mint that carries a `transferHook` extension unless a Meteora **token
+badge** exists for it — and it refuses even when the hook's `programId` is null,
+which is exactly `$PUMP`'s state today. `create_token_badge` is gated on a
+Meteora `operator` signature, `$PUMP` has no badge, and there are **zero DAMM v2
+pools holding `$PUMP`** on mainnet against 1.39M for wSOL as a control.
+
+Isolated on devnet for 0.04 SOL: the same pool, same payer, same config, same
+SPL-Token partner, created successfully with a plain Token-2022 mint and failed
+with `AccountOwnedByWrongProgram` on the badge PDA when the mint carried the
+extension. `docs/moneypath-devnet.md`.
+
+**Nothing is decided here, because the decision is not ours.** The three ways
+out are: ask Meteora to issue a badge for `$PUMP`; pair against something else;
+or use a venue that accepts hooked mints. Each is a different product, and the
+first is a dependency on a counterparty the design currently assumes it does not
+need.
+
+**What this changes immediately:** B3's step 1 — grinding a `$DRAKES` mint
+keypair so it sorts below `$PUMP` — must not be run until the venue is settled,
+because the sort order is a property of the *pair* and a ground keypair is only
+useful for the pair it was ground for.
+
+### D25 — A destination is asserted on the instruction, never taken from a library
+
+`DESIGN.md` §3 already said no destination is ever taken from a caller. The
+devnet money-path rehearsal showed that is not enough: a claim built with
+Meteora's SDK helper sent **the entire fee to the operator key** because the
+destination accounts passed were not in that helper's parameter schema, were
+dropped in silence, and the destination defaulted to `owner`. The transaction
+succeeded.
+
+**The rule now reads: the account occupying the destination slot of the built
+instruction is checked against the address we intend, before signing.** It does
+not depend on knowing a library's parameter names, which is why it is the check
+worth having. Implemented in `scripts/verify-fee-path.ts` and falsified by
+pointing the receiver at the operator — the script refuses and names both
+addresses.
+
 ## Still open
 
 - **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*

@@ -20,6 +20,8 @@
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.31.1",
+    "@meteora-ag/cp-amm-sdk": "^1.4.7",
+    "@sqds/multisig": "^2.1.4",
     "@types/node": "^22.10.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.5",
