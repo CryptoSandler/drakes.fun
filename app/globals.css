@@ -1,25 +1,161 @@
-/* Carried over from the placeholder so the page is legible. B6 designs a site;
-   this is not that batch. */
-:root { color-scheme: dark; --ink:#e8e4dc; --dim:#8a8478; --bg:#0b0b0c; --gold:#c8a250; }
-* { box-sizing: border-box }
-body { margin:0; background:var(--bg); color:var(--ink);
-       font:16px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
-       display:flex; min-height:100vh; justify-content:center; padding:3rem 2rem }
-main { max-width:60ch; width:100% }
-h1 { font-size:1.05rem; letter-spacing:.32em; text-transform:uppercase; margin:0 0 2rem;
-     font-weight:600; color:var(--gold) }
-h2 { font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim);
-     font-weight:600; margin:2.5rem 0 .9rem }
-section { border-top:1px solid #1e1c1a }
-dl { display:grid; grid-template-columns:minmax(9rem,auto) 1fr; gap:.35rem 1.5rem; margin:0 }
-dt { color:var(--dim); font-size:.85rem }
-dd { margin:0; overflow-wrap:anywhere }
-.mono { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.88rem;
-        font-variant-numeric:tabular-nums }
-.label { font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--dim) }
-.cluster { margin:0 0 1rem }
-.dim { color:var(--dim) }
-.refuse { border-left:2px solid var(--gold); padding-left:1rem }
-.foot { color:var(--dim); font-size:.85rem; margin-top:3rem; border-top:1px solid #1e1c1a;
-        padding-top:1.25rem }
-code { font-family:ui-monospace,SFMono-Regular,Menlo,monospace; font-size:.9em }
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap");
+@import "../tokens.css";
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: 1.6;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px; }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 3px; }
+
+.sheet { max-width: 74rem; margin: 0 auto; padding: 0 var(--space-16); }
+@media (min-width: 48rem) { .sheet { padding: 0 var(--space-32); } }
+
+/* --- masthead ----------------------------------------------------------- */
+.masthead { border-bottom: 2px solid var(--color-rule-firm); padding-top: var(--space-16); }
+.masthead__top {
+  /* Three slots that never wrap into each other. The flex version let the middle
+     slot break onto a second line at 390 px and shove the third one up. */
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: baseline; gap: var(--space-12);
+  font-size: var(--text-xs); letter-spacing: 0.18em; text-transform: uppercase; color: var(--color-ink-2);
+  padding-bottom: var(--space-12);
+}
+.masthead__top > span {
+  text-align: center;
+  /* At 390 px the middle slot is the one that has to give. */
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+@media (max-width: 30rem) { .masthead__top { letter-spacing: 0.12em; } }
+.masthead__top b { font-weight: 600; letter-spacing: 0.24em; color: var(--color-ink); }
+.dateline { padding: var(--space-24) 0 var(--space-16); }
+.dateline__label {
+  font-size: var(--text-xs); letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--color-ink-2); margin: 0 0 var(--space-4);
+}
+.dateline__clock {
+  display: block;
+  font-family: var(--font-display); font-weight: 400; font-style: normal;
+  font-size: var(--text-clock); line-height: 0.9; letter-spacing: -0.02em;
+  margin: 0; color: var(--color-ink);
+  overflow-wrap: anywhere; min-width: 0;
+}
+.dateline__meta {
+  display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-24);
+  margin-top: var(--space-12); font-size: var(--text-sm); color: var(--color-ink-2);
+}
+.dateline__meta b { font-weight: 600; color: var(--color-ink); }
+
+/* --- the plate ---------------------------------------------------------- */
+.plate { border-bottom: var(--rule) solid var(--color-rule); padding: var(--space-32) 0; }
+.plate__head {
+  display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between;
+  gap: var(--space-8) var(--space-24); margin-bottom: var(--space-16);
+}
+.plate__title { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 400; margin: 0; }
+.plate__note { font-size: var(--text-sm); color: var(--color-ink-2); margin: 0; }
+
+.specimens {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 48px);
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+.specimen {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: block; background: transparent;
+  /* Waiting reads as a ruled, empty slot on a plate. */
+  border: var(--rule) dashed var(--color-rule);
+}
+.specimen[data-issued="1"] {
+  border-style: solid; border-width: 2px;
+  border-color: var(--tier, var(--color-ink-3));
+  background: var(--color-paper-2);
+}
+.specimen.t--whelp     { --tier: oklch(72% 0.02 60); }
+.specimen.t--wyrm      { --tier: oklch(58% 0.03 60); }
+.specimen.t--elder     { --tier: oklch(40% 0.04 60); }
+.specimen.t--ancient   { --tier: var(--color-accent-2); }
+.specimen.t--sovereign { --tier: var(--color-accent); background: var(--color-accent); }
+
+/* --- catalogue entry ---------------------------------------------------- */
+.entry { border-bottom: var(--rule) solid var(--color-rule); padding: var(--space-32) 0; }
+.entry__grid { display: grid; gap: var(--space-24); }
+@media (min-width: 52rem) { .entry__grid { grid-template-columns: 8rem minmax(0, 1fr); } }
+.entry h2 {
+  font-family: var(--font-display); font-weight: 400; font-style: normal;
+  font-size: var(--text-2xl); line-height: 1.05; margin: 0 0 var(--space-8);
+  overflow-wrap: anywhere; min-width: 0;
+}
+.entry h2 small { font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-ink-2);
+                  display: block; letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: var(--space-8); }
+.facts { display: grid; gap: var(--space-2) var(--space-16); margin: var(--space-16) 0 0; }
+@media (min-width: 34rem) { .facts { grid-template-columns: 10rem minmax(0, 1fr); } }
+.facts dt { color: var(--color-ink-2); font-size: var(--text-sm); }
+.facts dd { margin: 0 0 var(--space-8); overflow-wrap: anywhere; }
+
+/* --- colophon ----------------------------------------------------------- */
+.colophon { padding: var(--space-32) 0; border-bottom: var(--rule) solid var(--color-rule); }
+.colophon p { max-width: 62ch; margin: 0 0 var(--space-16); color: var(--color-ink-2); }
+.colophon p:last-child { margin-bottom: 0; }
+.colophon strong { color: var(--color-ink); font-weight: 600; }
+.colophon .lede { font-family: var(--font-display); font-size: var(--text-xl); color: var(--color-ink); line-height: 1.25; }
+
+/* --- controls ----------------------------------------------------------- */
+.btn {
+  display: inline-flex; align-items: center; gap: var(--space-8);
+  font: inherit; font-size: var(--text-sm); font-weight: 500;
+  padding: var(--space-12) var(--space-24); cursor: pointer; text-decoration: none;
+  white-space: nowrap;
+  color: var(--color-paper); background: var(--color-ink);
+  border: var(--rule) solid var(--color-ink); border-radius: 0;
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.btn:hover, .btn.is-hover { background: var(--color-accent); border-color: var(--color-accent); }
+.btn:active { transform: translateY(1px); }
+.btn[disabled] { opacity: 0.45; cursor: not-allowed; }
+
+.tiers { display: flex; flex-wrap: wrap; gap: var(--space-8) var(--space-16);
+         font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-2); }
+.tiers i { display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+           border: 2px solid var(--color-rule); margin-right: var(--space-8); }
+.tiers i.t--ancient { border-color: var(--color-accent-2); }
+.tiers i.t--sovereign { border-color: var(--color-accent); background: var(--color-accent); }
+
+.pager { display: flex; flex-wrap: wrap; gap: var(--space-8); margin: var(--space-16) 0 var(--space-24); font-size: var(--text-xs); }
+.pager a { padding: var(--space-8) var(--space-12); border: var(--rule) solid var(--color-rule);
+           color: var(--color-ink-2); text-decoration: none; white-space: nowrap; }
+.pager a[aria-current="page"] { background: var(--color-ink); color: var(--color-paper); border-color: var(--color-ink); }
+.note { color: var(--color-ink-3); font-size: var(--text-sm); }
+
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+}
+
+/* The plate at full extent: 4,000 specimens on one sheet. Small enough that the
+   collection reads as an object, large enough that a single filled one is
+   findable. The 48 px PFP view lives at /gallery. */
+.specimens--dense {
+  grid-template-columns: repeat(auto-fill, minmax(9px, 1fr));
+  justify-content: start;
+  gap: 3px;
+}
+.specimens--dense .specimen {
+  width: auto; height: auto; aspect-ratio: 1;
+  /* Dashed reads as a sprocket at 9 px, not as an empty slot. The plate keeps
+     the dashed rule at 48 px and drops it here. */
+  border-style: solid; border-color: var(--color-rule);
+  opacity: 0.85;
+}
+.specimens--dense .specimen[data-issued="1"] { border-width: 1px; background: var(--tier, var(--color-ink-3)); }

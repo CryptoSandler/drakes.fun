@@ -1,0 +1,36 @@
+/* Hallmark · macrostructure: Catalogue · nav: N6 masthead · footer: Ft2 rule
+ * theme: custom "Bestiary" · vibe: "a plate in a natural-history catalogue"
+ * paper oklch(96% 0.008 85) light · display: high-contrast-serif · accent oklch(46% 0.18 27) warm
+ * enrichment: none — the plate IS the enrichment, and it is data
+ * pre-emit critique: P5 H4 E4 S5 R4 V5
+ */
+:root {
+  --font-display: "Instrument Serif", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --font-body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, sans-serif;
+
+  --color-paper:     oklch(96% 0.008 85);
+  --color-paper-2:   oklch(93% 0.011 85);
+  --color-ink:       oklch(21% 0.012 60);
+  --color-ink-2:     oklch(42% 0.012 60);
+  --color-ink-3:     oklch(60% 0.010 60);
+  --color-rule:      oklch(84% 0.012 70);
+  --color-rule-firm: oklch(21% 0.012 60);
+  --color-accent:    oklch(46% 0.18 27);
+  --color-accent-2:  oklch(70% 0.11 27);
+  --color-focus:     oklch(46% 0.18 27);
+
+  --space-2: 0.125rem; --space-4: 0.25rem; --space-8: 0.5rem;
+  --space-12: 0.75rem; --space-16: 1rem;  --space-24: 1.5rem;
+  --space-32: 2rem;    --space-48: 3rem;  --space-64: 4rem; --space-96: 6rem;
+
+  --text-xs: 0.75rem; --text-sm: 0.875rem; --text-base: 1rem;
+  --text-lg: 1.25rem; --text-xl: 1.75rem;
+  --text-2xl: clamp(2rem, 6vw, 3.25rem);
+  /* The date-line. Large, but the plate below it is what fills the screen. */
+  --text-clock: clamp(3rem, 13vw, 6.5rem);
+
+  --rule: 1px;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast: 120ms; --dur-base: 220ms;
+}
