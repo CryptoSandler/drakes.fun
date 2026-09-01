@@ -107,7 +107,7 @@ export function ntfySink(args: {
 
 /** ntfy header values are Latin-1; anything else is transliterated away. */
 function asciiOnly(value: string): string {
-  // eslint-disable-next-line no-control-regex
+
   return value.normalize('NFKD').replace(/[^\x20-\x7E]/g, '')
 }
 

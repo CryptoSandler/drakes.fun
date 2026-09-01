@@ -1,7 +1,7 @@
 // The whole collection's state, in one round trip, read from the chain.
 //
 // Caller: every direction's `app/page.tsx`. The three B6 directions differ in
-// how they draw this; none of them differs in where it comes from.
+// how they render this; none of them differs in where it comes from.
 //
 // **Two accounts, one `getMultipleAccounts`.** The config carries the schedule
 // and the counters; the survivor array carries which of the 4,000 are still

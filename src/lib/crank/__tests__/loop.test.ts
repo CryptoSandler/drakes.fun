@@ -275,7 +275,7 @@ describe('alerts', () => {
     })
     await sink({ title: 'DRAKES: emisión 7 — sin liquidar ✅', lines: [] })
     const title = (calls[0]!.headers as Record<string, string>).Title!
-    // eslint-disable-next-line no-control-regex
+
     expect(/^[\x20-\x7E]*$/.test(title)).toBe(true)
     expect(title).toContain('DRAKES')
   })
