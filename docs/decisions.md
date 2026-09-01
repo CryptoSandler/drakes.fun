@@ -8,34 +8,75 @@ person who needs it is an operator six months from now, not a reviewer.
 
 ## Decided 2026-09-01
 
-### D1 — ~~The species is **Cinders**~~ — **REOPENED 2026-09-01, the name is in review**
+### D1 — The species is **Drakes**: dragons. `$DRAKE`, `drakes.fun`. **Closed 2026-09-01.**
 
-The concept stands: the species is the ember of a dead memecoin, and the name
-marks the species rather than the mechanism. **The word does not.** `Cinders`
-and `$CINDER` are a **working name** in these documents and carry no commitment.
+A dragon asleep on its hoard. The name marks the species, not the mechanism —
+`Drakes` is a species of dragon, the way `Quantums` names a species.
 
-Binding while it is in review:
+**The domain `drakes.fun` was bought by the owner on 2026-09-01** (Namecheap,
+under the project identity). The name is settled and this decision is closed.
 
-- **No domain is bought.** `cinders.fun` is not registered, and nothing is
-  registered until the name is final — a registration is a paid receipt and a
-  WHOIS record (CLAUDE.md, the no-doxx guard).
-- **Nothing in code carries the name.** No identifier, no constant, no ticker,
-  no database value, no migration. `package.json` holds a neutral placeholder
-  and the slug is an unset environment variable, `PROJECT_SLUG`.
-- **The trademark search is postponed** until there is a name to search. It runs
-  before a domain is paid for, not after.
-- **Documents keep using the working name** so they stay readable. Replacing it
-  is a search-and-replace across `docs/` and `DESIGN.md`, and it is cheap
-  precisely because it never entered the code.
+**Why it fits the mechanism without describing it.** The reserve is a **hoard**:
+a pile of `$PUMP` a dragon sleeps on and guards. Every Drake custodies its share
+of it. Redeeming is taking your share of the hoard and leaving. Nothing in the
+name says "redemption", "vault" or "backed" — the metaphor carries it, which is
+exactly what the copy rule needs (`DESIGN.md` §6).
 
-**Cost:** everything downstream that wants a name waits — domain, ticker, X
-handle, wordmark, and any art that bakes a wordmark in. **Why:** the name is
-one-way in public. A ticker cannot be changed after a pool exists, and a handle
-cannot be un-seen.
+**What the checks found, all run 2026-09-01, before and around the purchase:**
 
-**Prior cost, still on the record if the word survives:** a defunct Solana
-project called `Cinder` (singular, WildWorks, shut down 2023-02-08) carries a
-faint negative memory. See `references.md`.
+| | Result |
+|---|---|
+| `drakes.fun` | **Bought.** My own RDAP probe never answered for `.fun` (no endpoint at `rdap.org`), so availability was confirmed by the registrar at purchase, not by me. |
+| `drakes.lol` (backup) | RDAP **404 — unregistered** at the time of the check. |
+| `$DRAKE` on Jupiter | **20 results, none material.** Deepest liquidity **US$8,952**, largest market cap **US$36,532** — an order of magnitude under the >$50k threshold this project set. **But the ticker is saturated**: almost every hit is a Drake-the-rapper memecoin. |
+| NFT collections | **Two exact collisions on Solana** — *Danger Valley Drakes* and *Lucid Drakes*, both live on Magic Eden — plus a crowded dragon field. EVM **not checked**. |
+| Trademark | Live US marks for **DRAKE'S** in food and drink classes (pastry, beer, cocktails). **Nothing found in software, digital goods or entertainment classes.** |
+
+**Cost, and it is real:**
+
+1. **The ticker collides with a famous person, not with a project.** `$DRAKE`
+   search results are dominated by rapper memecoins. That is a discovery
+   problem every day and a publicity-rights problem if the branding ever drifts
+   toward the person. **The art must never reference him**, and the brief says
+   so.
+2. **Two Solana collections already use the word "Drakes".** Neither is large,
+   but "Drakes" is not a distinctive name in this exact market.
+
+**Not an authoritative clearance search.** The trademark result came from a web
+search over Justia and Trademarkia — not from USPTO TESS, EUIPO eSearch or the
+WIPO Global Brand Database, none of which I queried directly. **A registered
+mark in class 9 or 41 could exist and not appear above.** If the project ever
+spends real money on the brand, that search gets run properly.
+
+**Revisit if:** a clearance search turns up a live mark in class 9, 35, 41 or
+42, or if the rapper association starts costing more than the name is worth.
+
+### D18 — The lore: a dragon asleep on its hoard
+
+The reserve is the **hoard**. Each Drake guards its share; burning one is that
+Drake giving up its share and leaving.
+
+**The index owns the hoard. The tier owns the form.** This is D13's rule with
+its axes renamed, and the rename made it more honest rather than less:
+
+- **Hoard** — derived from the issuance index. Piece 1 sleeps on a mountain of
+  gold; piece 4,000 sleeps on a single coin. The curve is published, rendered
+  across all 4,000, **before issuance 1** (D9).
+- **Slumber** — derived from the index. Shallow and alert at 1, deep at 4,000.
+- **Seam** and **Relic** stay the tier carriers, unchanged in role: geometry and
+  silhouette, never brightness (D13).
+
+**The shrinking hoard is not a mood, it is the arithmetic.** Backing per piece
+**falls structurally as the collection fills** — the reserve grows, but it is
+divided among more pieces, and early holders are always over-backed
+(`spec-round-2026-09-01.md` §7). The art depicts exactly that. This is the
+first time the derived curve tells the truth about the economics instead of
+merely being a clock, and it is the strongest argument for the lore.
+
+**Cost:** the previous lore is dead and the words that carried it — cinder,
+ember, ash, soot, charred — are now **banned in copy and identifiers alike**,
+enforced by the lexicon guard. A leftover `emberCurve` in a component is how a
+dead metaphor comes back and the site starts telling two stories.
 
 ### D2 — The issuance is weighted by the fungible token, not by pieces held
 

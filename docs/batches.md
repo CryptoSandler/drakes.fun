@@ -31,9 +31,9 @@ Caller: CI, on every push.
 ## B1 — Art pipeline, the published curve, the ladder, and the avatar guard
 
 Deterministic layered composition from `(index, trait_seed)`. Rolled traits from
-a seed published in advance; **Ember and Settle are pure functions of the
+a seed published in advance; **Hoard and Slumber are pure functions of the
 index** and their curves render as a 4,000-wide strip that goes public before
-issuance 1 (`docs/decisions.md` D9).
+issuance 1 (`docs/decisions.md` D9, D18).
 
 Runs against placeholder layers so the pipeline is finished and tested before
 the illustrator delivers. Rarity table generated, not hand-written.
@@ -51,7 +51,7 @@ retention after the crop.
 
 **Two tests, because they catch different failures:**
 1. *Distribution* — per-block tier counts are exact. Catches a biased ladder.
-2. *Legibility* — the epic seam forms, rendered at the **dimmest** ember state,
+2. *Legibility* — the epic seam forms, rendered at the **smallest** hoard state,
    masked to 48 px, still separate from the common forms. Catches the failure
    the distribution test passes straight through: unbiased counts with an epic
    nobody can see (`DESIGN.md` §9.4).
@@ -77,12 +77,12 @@ Arweave gateways and diff against local bytes.
 
 Three things in order, each irreversible:
 
-1. **Grind the `$CINDER` mint keypair until its pubkey sorts below
+1. **Grind the `$DRAKE` mint keypair until its pubkey sorts below
    `pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn`.** `DESIGN.md` T10. Getting
    this backwards inverts the entire fee design and cannot be fixed after the
    pool exists.
 2. Create the mint, whole supply, mint authority and freeze authority revoked.
-3. Create the `$CINDER`/`$PUMP` pool on config
+3. Create the `$DRAKE`/`$PUMP` pool on config
    `HQ6vW45Kug23h2A4LkyUqB4UFfGx4LqY1uZLLfQemEjU`, seed all liquidity,
    permanently lock the position. **One bundle**, before the mint is public
    (T10).

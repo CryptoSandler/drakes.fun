@@ -374,28 +374,53 @@ Recorded so nobody treats these as checked:
 
 ## Additions — 2026-09-01, name and cost verification
 
-### Name collision: "Cinder" / "Cinders"
+### Name: "Drakes" — checks run 2026-09-01
 
-- **`Cinder` (singular) was a Solana NFT project** by WildWorks / Cinder Studios
-  — "Cinder Fae", 4,444 avatars, announced November 2021. Its servers and
-  website were **shut down without prior announcement on 2023-02-08** and Cinder
-  Studios was disbanded. Listings survive on Solanart (`cindernft`) and SolSea.
-- **`Cinders` (plural) is free** as a project name in this space as far as the
-  search reached. No live collection, no token.
-- Ticker `$CINDER`: no Jupiter-listed token with that symbol above $50k
-  liquidity, 2026-09-01.
-- `cinders.fun`: available, $1.99/yr, checked 2026-09-01.
+**Superseded entry.** The name checks for the abandoned candidate are dropped
+rather than kept: they described a species this project no longer depicts, and a
+stale check is worse than none. What follows is for `Drakes`, the settled name
+(`decisions.md` D1).
 
-**The residual risk, stated rather than dismissed:** the singular name carries a
-small negative memory in Solana NFT circles — a studio that closed a beloved
-game to pivot to NFTs, then shut the NFT project down thirteen months later.
-Anyone who was around will half-remember it. Plural, different species,
-different mechanism, three years dead. Judged acceptable; it is the owner's call
-and it is recorded here so it was a call.
+**Domain.** `drakes.fun` **bought by the owner** on 2026-09-01 (Namecheap,
+project identity). My own RDAP probe never answered for `.fun` — `rdap.org` has
+no endpoint for that registry — so **availability was confirmed by the registrar
+at purchase, not independently by me.** `drakes.lol`, kept as a backup, returned
+RDAP **404 (unregistered)** at the time of the check.
 
-**Not checked:** USPTO / EUIPO trademark registers. A registered mark for
-"Cinder" in software or entertainment is plausible and a search of the register
-is a separate, cheap step that has not been run.
+**Ticker `$DRAKE` on Jupiter**, read 2026-09-01 via `lite-api.jup.ag/tokens/v2`:
+20 results. Deepest liquidity **US$8,952** (`Xqfwj8Pr…pump`, "DRAKE COIN",
+mcap US$36,532); everything else sits near US$2–3k. **All are an order of
+magnitude below the >US$50k liquidity threshold this project set**, so there is
+no material ticker collision.
+
+**But the ticker is saturated by a person, not a project.** Almost every result
+is a Drake-the-rapper memecoin — "Official Drake Coin", "I genuinely feel like
+Drake", "Drake Wif Hat", "Bark for Drake". That is a permanent discovery problem
+and a publicity-rights risk if the branding ever drifts toward him. The
+illustrator brief forbids referencing any real person for this reason.
+
+**NFT collections.** Two live Solana collections already use the exact word:
+**Danger Valley Drakes** (500 pieces) and **Lucid Drakes**, both on Magic Eden.
+Neither is large, and the dragon field generally is crowded (Doodled Dragons,
+Solana Dragons, Dragon Squads, Drazards, 1 Dragon SOL). **EVM was not checked** —
+OpenSea's API needs a key this project does not have.
+
+Method note: Magic Eden's public `v2/collections` listing was tried first and
+returned zero hits for "drake" across 500 rows — **and that result was
+discarded**, because a control against collections known to exist (Mad Lads,
+DeGods) found them missing too. The endpoint returns an arbitrary page, not a
+catalogue. The collisions above came from search instead.
+
+**Trademark — NOT an authoritative clearance search.** Live US registrations
+for **DRAKE'S** exist in food and drink classes: pastry (McKee Foods, reg.
+2139074), Drake's Brewing Company (reg. 3993746), Drake's cocktails (reg.
+6558333), Drake's Organic Boxtails (reg. 6494935). **Nothing was found in
+software, digital goods or entertainment classes.**
+
+This came from a web search over Justia and Trademarkia. **USPTO TESS, EUIPO
+eSearch and the WIPO Global Brand Database were not queried directly**, so a
+live mark in class 9, 35, 41 or 42 could exist and not appear here. Before any
+real money is spent on the brand, that search gets run properly.
 
 ### Irys upload cost — live quotes, 2026-09-01
 

@@ -1,18 +1,18 @@
 # Talking to the user
 
-Every message you send to the user starts with the line `[cinders]` on its own,
+Every message you send to the user starts with the line `[drakes]` on its own,
 before anything else, so the user can tell which project is talking when several
 Claude Code sessions run in parallel.
 
-`cinders` is the **working directory name, and a session tag. It is not the
-product's name.** The project's real name is the name of the species the
-collection depicts — the way `Quantums` names a species and not a mechanism —
-and it is **in review** (`docs/decisions.md` D1). `Cinders` is the current
-candidate and nothing more. Until the owner settles it, nothing in this
-repository may read as if the name were final: no wordmark baked into an image,
-no name inside a database value, no name in a migration, no ticker in a
-constant, no domain bought. When it lands it touches exactly three places:
-`package.json`, copy, and `SITE_URL`.
+**The species is `Drakes`** — dragons — ticker `$DRAKE`, domain `drakes.fun`,
+settled by the owner on 2026-09-01 (`docs/decisions.md` D1). The name marks the
+species, the way `Quantums` names a species and not a mechanism.
+
+It still lands in exactly three places: **`package.json`, copy, and
+`SITE_URL`**. Everything else reads `PROJECT_SLUG`. No wordmark baked into an
+image, no name inside a database value, no name in a migration, no ticker in a
+constant — not because the name might change, but because a name scattered
+through a codebase is a name nobody can ever change.
 
 **Everything written in this repository is in English.** Code, comments, docs,
 commit messages, copy. The user is spoken to in Spanish; the repository is not.

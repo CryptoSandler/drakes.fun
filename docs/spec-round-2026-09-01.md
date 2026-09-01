@@ -1,5 +1,12 @@
 # Spec round — 2026-09-01
 
+> **Historical record. Do not edit to match later decisions.**
+> §5 proposed three species — Cinders, Sprigs, Grubs — and the owner chose
+> **none of them**: the species is **Drakes**, dragons, `$DRAKE`, `drakes.fun`
+> (`decisions.md` D1, D18). Wherever this document says `$CINDER`, read
+> `$DRAKE`. The reasoning is kept exactly as it was argued, because a round
+> rewritten to agree with its own outcome is a round that proves nothing.
+
 No code. Decisions, disagreements, and the questions only the owner can answer.
 Every external number here is in `docs/references.md` with the date it was read.
 

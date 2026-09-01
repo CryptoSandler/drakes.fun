@@ -39,4 +39,18 @@ export const BANNED_TERMS = [
   // the job is the issuance cranker.
   'draw',
   'draws',
+  // The abandoned lore. The species was briefly charred creatures with a lit
+  // core; it is now dragons asleep on a hoard, and these words describe a
+  // product that does not exist. They are banned rather than merely unused,
+  // because a leftover identifier is how a dead metaphor comes back: one
+  // `emberCurve` in a component and the site is telling two stories.
+  'cinder',
+  'cinders',
+  'ember',
+  'embers',
+  'ash',
+  'ashes',
+  'ashen',
+  'soot',
+  'charred',
 ] as const

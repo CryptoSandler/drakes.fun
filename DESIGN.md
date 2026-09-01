@@ -1,4 +1,4 @@
-# Cinders — design
+# Drakes — design
 
 Normative. A verdict cites this file with it open, or it is not yet a verdict.
 Policy the owner decided lives in `docs/decisions.md`; external facts and the
@@ -9,8 +9,8 @@ date they were read live in `docs/references.md`.
 ## 1. The thesis
 
 **4,000 pieces that cannot be bought at issuance. One per hour, issued by the
-protocol to a `$CINDER` holder chosen in proportion to their holding. Every
-trade of `$CINDER` pays 2%, taken in `$PUMP`, into a reserve. Any piece can be
+protocol to a `$DRAKE` holder chosen in proportion to their holding. Every
+trade of `$DRAKE` pays 2%, taken in `$PUMP`, into a reserve. Any piece can be
 burned to redeem its share of that reserve, and the slot it leaves never
 refills.**
 
@@ -26,9 +26,14 @@ different product:
    slot, the snapshot root, the randomness account and the arithmetic. A page
    that cannot be re-derived from the chain is a page nobody has to believe.
 
-Cinders are the embers of dead memecoins: what is left of a coin that went out,
-and kept a core lit anyway. The species names itself. It does not describe the
-mechanism.
+A Drake is a dragon asleep on its hoard. The reserve **is** the hoard, and every
+Drake guards its share of it; burning one is that Drake taking its share and
+leaving. The species names itself and never describes the mechanism — nothing
+in the word says vault, redemption or backing, which is exactly what §6 needs.
+
+The register is deliberate and it is not high fantasy: **black dragon, street,
+a chain, and the posture of something that already made it.** It is a creature
+that has the hoard, not one questing for it.
 
 ---
 
@@ -146,7 +151,7 @@ sees a token account, so the exclusion is applied when the snapshot is built
 off-chain. Recording it makes the verify page able to state the set; pretending
 the program enforced it would be worse than saying this.
 
-Immutable after this call in the Phase 2 program: the `$CINDER` mint, the `$PUMP` mint (asserted
+Immutable after this call in the Phase 2 program: the `$DRAKE` mint, the `$PUMP` mint (asserted
 literally equal to `pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn`, per CLAUDE.md
 "a schema guard is never `==` against another variable"), the Core collection,
 the Meteora pool and position, the creator ATA, the genesis instant, the
@@ -280,7 +285,7 @@ permanently stranded reserve (T1).
 Solana has no equivalent of a token contract that updates a balance tree on
 every transfer, so the snapshot is built off-chain and committed on-chain.
 
-At the request slot we read every `$CINDER` token account, drop the excluded
+At the request slot we read every `$DRAKE` token account, drop the excluded
 set, sort, assign contiguous ranges, and Merkle-ize. The root goes on chain
 before the randomness exists.
 
@@ -436,9 +441,9 @@ Two build-time facts, both easy to get wrong once and impossible to fix after:
 
 - **`$PUMP` must sort as token B.** The pool PDA derives from the config plus
   the *sorted* mint pair, and `collect_fee_mode = 1` collects in token B. The
-  `$CINDER` mint keypair is therefore **ground until its pubkey sorts below**
+  `$DRAKE` mint keypair is therefore **ground until its pubkey sorts below**
   `pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn`. Get this backwards and every
-  fee arrives in `$CINDER` instead of `$PUMP`, and the whole design inverts.
+  fee arrives in `$DRAKE` instead of `$PUMP`, and the whole design inverts.
 - **The pool is created and seeded in one bundle**, before the mint is public,
   so nobody creates a competing pool on a different config and splits liquidity.
 
@@ -595,7 +600,7 @@ odds  luck  lucky  chance to
 | Not this | This |
 |---|---|
 | the winner | the holder it was issued to · the recipient |
-| you won a Cinder | a Cinder was issued to you |
+| you won a Drake | a Drake was issued to you |
 | your odds | your share of eligible supply |
 | the draw | the issuance |
 | tickets | there is no analogue; do not reach for one |
@@ -691,8 +696,8 @@ account for: every piece carries its own muted background field
 background. There are therefore **two** contrast questions, not one, and only
 the first is about the creature:
 
-- **body against its own field** — does the charred body separate from the ash
-  haze it sits on, at 48 px, after downscale;
+- **body against its own field** — does the black body separate from the muted
+  field it sits on, at 48 px, after downscale;
 - **field against the chrome** — does the tile separate from `#000` and from
   `#FFF`, or does the avatar dissolve into the timeline on one of the two
   themes.
@@ -729,8 +734,8 @@ we would be grading ourselves with.
 
 **That sign-off is an explicit gate on the illustrator's milestone 2**, before
 the largest of the three payments (`illustrator-brief.md`). It forces the
-dimmest ember state to be delivered with the seams rather than with the other
-eleven, because the sheet cannot be rendered without it.
+smallest hoard state to be delivered with the seams rather than with the rest,
+because the sheet cannot be rendered without it.
 
 ### 9.3 Every piece has a tier, and the tier is visible
 
@@ -767,24 +772,30 @@ who would be issued anything.
 This is the rule that makes 9.3 survive contact with D9, and it is the
 collision the requirement does not see on its own.
 
-Two of the five axes are already functions of the index: **Ember** (core glow,
-white-hot at 1 → dull at 4,000) and **Settle** (drifted ash, clean → half
-buried). **A tier signalled by brightness, glow, colour temperature or ash
-cover is a tier that reads as a date.** An epic at index 3,900 would look like a
-common, correctly, because its ember is nearly out — and the distribution guard
-in 9.3 would still pass, because the counts are right and the *legibility* is
-what broke.
+Two of the five axes are already functions of the index: **Hoard** (a mountain
+of gold at 1 → a single coin at 4,000) and **Slumber** (shallow at 1 → deep at
+4,000). **A tier signalled by how much gold is in frame is a tier that reads as
+a date.** An epic at index 3,900 would look like a common, correctly, because
+it has almost no hoard — and the distribution guard in 9.3 would still pass,
+because the counts are right and the *legibility* is what broke.
+
+**And the hoard curve is not decoration: it is the economics, drawn.** Backing
+per piece falls structurally as the collection fills — the reserve grows, but it
+is divided among more pieces (`spec-round-2026-09-01.md` §7). Piece 1 really is
+over-backed relative to piece 4,000 at the moment each is issued. The art states
+that instead of hiding it, which is the only reason a shrinking hoard is
+honest.
 
 So the tier is carried on axes the index does not touch, and both of them are
 the ones that survive a 48 px circle:
 
 | Carrier | Owned by | Tier signature |
 |---|---|---|
-| **Seam** — the crack's geometry | tier | shape, not brightness. Epic gets forms no other tier has. |
-| **Relic** — the object it kept | tier | each tier draws from its own pool; epic-only relics change the silhouette. |
-| Ember — the light through the seam | **index** | never a tier signal |
-| Settle — the ash on it | **index** | never a tier signal |
-| Ash — body material | rolled, free of both | |
+| **Seam** — the vein of gold through the scales | tier | shape, not brightness. Epic gets forms no other tier has. |
+| **Relic** — what it keeps from the hoard | tier | each tier draws from its own pool; epic-only relics change the silhouette. |
+| Hoard — how much it sleeps on | **index** | never a tier signal |
+| Slumber — how deeply it sleeps | **index** | never a tier signal |
+| Scale — body finish | rolled, free of both | |
 
 **Background is not a tier signal.** `illustrator-brief.md` fixes it as a
 single low-saturation field that "recedes and never competes… is not a trait
@@ -793,7 +804,7 @@ common way a generative collection looks cheap and a direct contradiction of a
 line somebody was paid to work to.
 
 **The test that catches the real failure** is therefore not the distribution
-test. It is: **render the epic seam forms at the dimmest ember state, mask to
+test. It is: **render the epic seam forms at the smallest hoard state, mask to
 48 px, and assert the tier is still distinguishable from the common forms.**
 Bias-free counts with an illegible epic is the failure mode that ships.
 
