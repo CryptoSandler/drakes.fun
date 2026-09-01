@@ -8,17 +8,34 @@ person who needs it is an operator six months from now, not a reviewer.
 
 ## Decided 2026-09-01
 
-### D1 — The species is **Cinders**, ticker `$CINDER`, domain `cinders.fun`
+### D1 — ~~The species is **Cinders**~~ — **REOPENED 2026-09-01, the name is in review**
 
-Cinders are the embers of dead memecoins. The name marks the species, not the
-mechanism.
+The concept stands: the species is the ember of a dead memecoin, and the name
+marks the species rather than the mechanism. **The word does not.** `Cinders`
+and `$CINDER` are a **working name** in these documents and carry no commitment.
 
-**Cost:** a defunct Solana project called `Cinder` (singular, WildWorks, shut
-down 2023-02-08) carries a faint negative memory. Trademark registers not
-searched. See `references.md`.
+Binding while it is in review:
 
-**Revisit if:** a register search turns up a live mark in software or
-entertainment.
+- **No domain is bought.** `cinders.fun` is not registered, and nothing is
+  registered until the name is final — a registration is a paid receipt and a
+  WHOIS record (CLAUDE.md, the no-doxx guard).
+- **Nothing in code carries the name.** No identifier, no constant, no ticker,
+  no database value, no migration. `package.json` holds a neutral placeholder
+  and the slug is an unset environment variable, `PROJECT_SLUG`.
+- **The trademark search is postponed** until there is a name to search. It runs
+  before a domain is paid for, not after.
+- **Documents keep using the working name** so they stay readable. Replacing it
+  is a search-and-replace across `docs/` and `DESIGN.md`, and it is cheap
+  precisely because it never entered the code.
+
+**Cost:** everything downstream that wants a name waits — domain, ticker, X
+handle, wordmark, and any art that bakes a wordmark in. **Why:** the name is
+one-way in public. A ticker cannot be changed after a pool exists, and a handle
+cannot be un-seen.
+
+**Prior cost, still on the record if the word survives:** a defunct Solana
+project called `Cinder` (singular, WildWorks, shut down 2023-02-08) carries a
+faint negative memory. See `references.md`.
 
 ### D2 — The issuance is weighted by the fungible token, not by pieces held
 
@@ -131,16 +148,143 @@ because the curve was public before the first piece existed.
 
 ---
 
+### D10 — `Exhausted` is adopted: at zero live supply, `claim_fees` refuses
+
+When the last piece has been burned, the state derived from `live_supply == 0`
+makes `claim_fees` refuse. The LP position keeps accruing fees and nobody ever
+collects them.
+
+**Cost, and it is a one-way door:** those fees are abandoned, permanently, with
+no path that re-opens. There is also a second-order effect worth naming — a
+holder who is *last* out finds the position still accruing after their burn, and
+nothing is ever done with it. **It goes in the copy before it is ever true.**
+
+**Why:** the alternative is depositing `$PUMP` forever into a vault with no
+possible claimant, which is worse in every way that can be described to a
+person. See `DESIGN.md` §2.
+
+**Revisit if:** never, once deployed — it is program behaviour, not policy.
+
+### D11 — The audit deadline is a formula, and a date is published with it
+
+Redemption opens when the audited program is deployed, and no later than the
+earlier of:
+
+- **US$25,000 accumulated** in the creator's 15% share, or
+- **150 days from issuance 1.**
+
+If the audit has not been paid for by that date, **the shortfall is published on
+that date** — the amount accumulated, the amount missing, and what happens next.
+
+**Placeholder absolute date: 2027-01-30**, computed from a placeholder genesis
+of 2026-09-02. It is recomputed and fixed at B8 when the genesis instant is set,
+and the site shows the real one.
+
+**Why 150 and not 180.** The collection completes at **166 days and 16 hours**
+(`DESIGN.md` §2), and at 4,000 issued the creator's share steps to **zero**
+(D4). A 180-day deadline lands ~13 days *after* the income has permanently
+stopped, so a shortfall published on that date has no remaining funding path —
+it is a deadline at the end of the runway. **150 days lands 16 days before
+completion**, with the fee still flowing, so a shortfall is still a shortfall
+somebody can act on.
+
+**Cost:** ~16 days less accumulation before the promise binds, on a curve that
+is front-loaded anyway — the base case earns most of its total in the first two
+months (`spec-round-2026-09-01.md` §7). **Why it is worth it:** a deadline that
+can only ever announce a failure is not a deadline.
+
+**Revisit if:** never after publication. The date ships on the site from day one
+and is a promise the moment it is written (D8).
+
+### D12 — PFP-first: the piece is an avatar before it is an image
+
+The binding surfaces are a 48 px circle in a timeline and a ~130 px circle on a
+profile, over both of X's chromes. Face and eyes centred in the surviving crop,
+nothing load-bearing in the corners, silhouette legible at 48 px, contrast
+measured against `#000` and `#FFF`, and no relic that the circle amputates.
+
+Enforced by a render guard in B1 that runs at **every illustrator milestone**,
+before it is accepted. Full rules and the measurable assertions: `DESIGN.md`
+§9.1–9.2.
+
+**Cost:** it narrows the art. Same crop, face centred, corners empty and
+legible at 48 px is a description of what makes generative collections
+interchangeable, and it pulls against the brief's own "painted volume, a hand,
+visible authorship". The resolution is that the **silhouette and the seam carry
+48 px while the paint carries 130 px and up** — and that no threshold in the
+guard may be one a painted piece can only pass by flattening.
+
+**Revisit if:** the guard starts rejecting art the owner likes. That is the
+signal that a threshold is wrong, not that the art is.
+
+### D13 — Rarity is visible, stratified by index block, and cosmetic
+
+Five levels: **common 2,400 · uncommon 1,000 · rare 480 · epic 110 ·
+one-of-one 10.** Allocated in **blocks of 400**, so every block of 400
+consecutive indices holds exactly 11 epics and exactly 1 one-of-one. Order
+inside a block comes from the published seed; counts are fixed. The whole
+index→tier table is published before issuance 1 in the manifest that gets
+hashed.
+
+**The tier is carried by Seam geometry and by tier-exclusive Relic pools —
+never by Ember or Settle**, which are the index. *The index owns light; the
+tier owns form.* Background is not a tier signal. `DESIGN.md` §9.3–9.4.
+
+**Cost, and it is the real one:** a visible ladder on a collection whose entire
+claim is that every piece redeems for the same amount invites the assumption
+that the ladder is economic. It also creates a holder who was issued a common
+by a process they did not choose and cannot re-roll — unlike a mint, there was
+no purchase decision to regret. Mitigation is copy, and it is not optional:
+**"a one-of-one redeems for exactly the same share as the plainest common"**
+ships on the same screen as the rarity table, every time.
+
+Second cost: the tier allocation is ours to generate, which is the same trust
+shape as the snapshot — recomputable, not trustless. Publishing the full table
+before issuance 1 is what converts "trust us about the one-of-ones" into a
+commitment anyone can check afterwards.
+
+**Cost to the brief:** two extra seam geometries reserved for epic, the relic
+list partitioned into per-tier pools instead of one flat list of 24, and a
+delivered face-registration mask. Expect the budget to move by roughly 10%.
+
+**Revisit if:** the epic signature cannot be made legible at 48 px at the
+dimmest ember state. Then the tier ladder is decoration in the only place
+people look at it, and it should be dropped rather than faked.
+### D14 — Process deviations accepted at B0
+
+Three, all from CLAUDE.md or `batches.md`, all accepted with their reasons on
+the record:
+
+1. **The batch branch lives in the main worktree**, not a separate one. The
+   failure the worktree rule prevents is two batches disagreeing about the
+   schema; with one batch in flight and no migrations, it cannot occur. **The
+   rule comes back the moment two batches overlap**, and the migration ordering
+   rule is untouched.
+2. **Next, Neon, the migration runner, the advisory lock and the
+   `disposable_database` stamp moved from B0 to B5.** A migration runner that
+   has never run against a Postgres instance is unverified code, and there is
+   no project database yet.
+3. **No README yet.**
+
+**Cost:** (1) is a rule with a real failure mode behind it and this is the kind
+of exception that quietly becomes the default. It is written down so the next
+overlap is a decision and not a habit.
+
 ## Still open
 
-- **Q5 — Mature endgame.** 100% to reserve is decided (D4). What happens if
-  `live_supply` reaches zero is not: `DESIGN.md` proposes an `Exhausted` state
-  where `claim_fees` refuses rather than depositing into a vault with no
-  possible claimant. Needs a yes.
+- **The name.** The species name is **in review** — `Cinders`/`$CINDER` is a
+  working name in these documents and nothing more. No domain is bought, no
+  identifier in code carries it, and the project slug is an unset environment
+  variable. When it lands it touches exactly three places: `package.json`, copy,
+  and `SITE_URL` (CLAUDE.md).
+- **Trademark register search.** Postponed until there is a name to search. It
+  runs before any money is spent on a domain.
 - **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*
   do anything on pump.fun's own surface for distribution is not.
 - **Q7 — The floor sentence.** The exact public wording of "the floor is worth
-  whatever PUMP is worth" is a promise the moment it ships. It gets written
+  whatever `$PUMP` is worth" is a promise the moment it ships. It gets written
   once, when asked for explicitly.
-- **The audit deadline date.** D8 requires a published date. Not chosen.
-- **Trademark register search** for "Cinder"/"Cinders". Not run.
+- **The `Exhausted` sentence.** D10 is a one-way door and needs its own line of
+  copy. Same rule as Q7: written once, when asked for.
+- **D11's deadline, before or after the step-down.** 180 days lands ~13 days
+  after the creator's income stops. The owner may want 150.

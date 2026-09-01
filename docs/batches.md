@@ -10,16 +10,25 @@ Batches marked **⛔** must not start before the owner approves `DESIGN.md`.
 
 ## B0 — Scaffolding, and the copy test first
 
-Next + Neon + Vercel skeleton, vitest with the advisory lock and the
-`disposable_database` stamp, migration runner, ESLint, CI.
+TypeScript, vitest, ESLint, CI — and the copy lexicon guard.
 
 **The copy lexicon test ships in B0, before there is any copy**, so the rule is
-never retrofitted against text somebody is attached to. `DESIGN.md` §6.
+never retrofitted against text somebody is attached to. `DESIGN.md` §6. It
+scans whole file text, not string literals, because the ban covers identifiers;
+its control is a fixture corpus plus an absolute assertion that the glob
+resolved to a file we know exists.
+
+**Split out of B0, deliberately:** Next + Neon + Vercel, the migration runner,
+the advisory lock and the `disposable_database` stamp. A migration runner that
+has never been run against a Postgres instance is unverified code, and there is
+no project database yet. It lands with the first migration that needs it — B5
+— against its own database, and B0 stays a batch with no migrations, which is
+the one that merges first.
 
 Caller: CI, on every push.
 **Depends on:** nothing. **Blocks:** everything.
 
-## B1 — Art pipeline and the published curve
+## B1 — Art pipeline, the published curve, the ladder, and the avatar guard
 
 Deterministic layered composition from `(index, trait_seed)`. Rolled traits from
 a seed published in advance; **Ember and Settle are pure functions of the
@@ -29,13 +38,35 @@ issuance 1 (`docs/decisions.md` D9).
 Runs against placeholder layers so the pipeline is finished and tested before
 the illustrator delivers. Rarity table generated, not hand-written.
 
-Caller: a one-shot script, run once, whose output is uploaded in B2.
+**The tier allocation** (D13): exact counts stratified in blocks of 400 — every
+block holds exactly 11 epics and exactly 1 one-of-one, by construction, so the
+"no bias toward early pieces" property is arithmetic and its test cannot flake.
+Order inside a block comes from the published seed. The full index→tier table
+is an output of this batch and goes into B2's manifest.
+
+**The avatar guard** (D12, `DESIGN.md` §9.2): masks every composite to a circle
+at 48 px and 130 px over `#000` and `#FFF` and asserts face-inside-safe-circle,
+body-versus-field contrast, field-versus-both-chromes, seam survival, and relic
+retention after the crop.
+
+**Two tests, because they catch different failures:**
+1. *Distribution* — per-block tier counts are exact. Catches a biased ladder.
+2. *Legibility* — the epic seam forms, rendered at the **dimmest** ember state,
+   masked to 48 px, still separate from the common forms. Catches the failure
+   the distribution test passes straight through: unbiased counts with an epic
+   nobody can see (`DESIGN.md` §9.4).
+
+Caller: a one-shot script, run once, whose output is uploaded in B2 — **and the
+milestone acceptance step for the illustrator, which runs the avatar guard on
+each delivery before it is paid** (`docs/illustrator-brief.md`).
 **Depends on:** B0. **Parallel with:** the illustrator brief.
 
 ## B2 — Arweave upload and manifest
 
 4,000 images plus metadata to Arweave via Irys. **~$8 at 2 GB** (verified,
-`references.md`). Manifest hash published before anything mints.
+`references.md`). Manifest hash published before anything mints. **The manifest
+carries the full index→tier table** (D13), so the allocation is fixed and
+public before anyone knows who will be issued anything.
 
 Verification is behavioural, not a spot check: fetch a random 5% back from
 Arweave gateways and diff against local bytes.
@@ -84,6 +115,12 @@ the public rebuild script.
 **The verify page ships here, not last.** It is the product's honesty and it is
 the reason to trust every other number on the site.
 
+**This batch brings the database with it** — Next + Neon + Vercel, the
+migration runner, the advisory lock and the `disposable_database` stamp, split
+out of B0 because they were unverifiable without a database. It is therefore
+the first batch with migrations, and it rebases on top of anything without
+them.
+
 Caller: `request_issuance` consumes the root; the cranker calls the builder; the
 page and the published script both call the rebuilder.
 **Depends on:** B4.
@@ -92,8 +129,9 @@ page and the published script both call the rebuilder.
 
 Countdown and the index of the piece it will issue; reserve in `$PUMP` with USD
 secondary and its slot; redeemable per piece; your share of eligible supply;
-gallery with published rarity; contracts, labelled verified truthfully; and the
-Phase 1 temporary-custody disclosure with its trigger and deadline (D8).
+gallery with published rarity, **and the sentence that rarity is cosmetic on the
+same screen as the ladder** (D13); contracts, labelled verified truthfully; and
+the Phase 1 temporary-custody disclosure with its trigger and deadline (D8).
 
 **Depends on:** B5.
 
