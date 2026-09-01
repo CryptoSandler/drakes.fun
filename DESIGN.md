@@ -66,9 +66,13 @@ stops being paid.
 
 **Exhausted exists so the protocol does not spend the rest of time depositing
 `$PUMP` into a vault with no possible claimant.** In this state `claim_fees`
-refuses; the LP position keeps accruing fees that are never claimed. This is
-open question Q5 in `docs/decisions.md` — it is the proposal, not yet a
-decision.
+refuses; the LP position keeps accruing fees that are never claimed, by
+anyone, forever. Decided: `docs/decisions.md` D10. The refusal is a state the
+program derives from `live_supply == 0`, not a flag, and no signer can set it.
+
+**It is a one-way door and the copy has to say so**: once the last piece is
+burned, the position's fees stop being collected and nothing re-opens the
+path. That sentence belongs on the site before it is ever true (§7).
 
 **The clock never stops.** Issuance fires every hour forever, in every state. It
 simply stops minting once 4,000 have been issued. The verify page therefore
@@ -452,3 +456,146 @@ Postgres is a **cache and an index, never a source of truth** for anything the
 chain knows. Its job is making the site fast and the gallery filterable. If it
 were dropped entirely, every number on the site would still be derivable from
 the chain, and that property is a test, not an aspiration.
+
+---
+
+## 9. Art: the avatar constraint and the visible ladder
+
+Two owner requirements, recorded 2026-09-01 (`docs/decisions.md` D12, D13).
+Both are art requirements with a code gate, and the gate is what makes them
+normative rather than taste.
+
+### 9.1 The piece is an avatar first
+
+A piece lives in two places a person actually looks at, and neither is the
+2048×2048 master: a **48 px circle** in a timeline and a **~130 px circle** on a
+profile, over a dark chrome and a light one. The square master is a delivery
+format, not the product surface.
+
+**Rules, in the order they bind:**
+
+1. **Face and eyes sit in the centre of the frame.** Not centred in the bust —
+   centred in the crop that survives.
+2. **Nothing load-bearing in the corners.** A circle inscribed in a square
+   discards **21.5%** of the area, all of it at the edges.
+3. **Silhouette and expression read at 48 px.** The signature is a dark
+   irregular shape with one bright seam through it; at 48 px that is all there
+   is, and it has to be enough.
+4. **Contrast is measured, not judged**, against both chromes.
+5. **A relic that the circle amputates is a relic that does not exist** for the
+   holder who uses the piece as an avatar.
+
+**The tile is opaque**, and this is the thing the requirement as stated does not
+account for: every piece carries its own muted background field
+(`illustrator-brief.md`, composition), so nothing composites directly onto X's
+background. There are therefore **two** contrast questions, not one, and only
+the first is about the creature:
+
+- **body against its own field** — does the charred body separate from the ash
+  haze it sits on, at 48 px, after downscale;
+- **field against the chrome** — does the tile separate from `#000` and from
+  `#FFF`, or does the avatar dissolve into the timeline on one of the two
+  themes.
+
+A single mid-luminance field can clear both chromes. A field chosen only
+against one of them cannot.
+
+### 9.2 The guard
+
+Part of B1, run against the illustrator's layers **at every milestone, before
+the milestone is accepted** — not once at the end, when the money is spent.
+
+For every one of the 4,000 composites, and for each of `#000` and `#FFF`:
+
+| # | Assertion | Why it is machine-checkable |
+|---|---|---|
+| 1 | The delivered face mask lies wholly inside the circle at 88% radius | pure geometry |
+| 2 | Body-versus-field contrast inside the circle clears its floor at 48 px | luminance after downscale |
+| 3 | Tile mean luminance clears both chromes | one number against two constants |
+| 4 | The seam still occupies a minimum count of pixels above a luminance delta at 48 px | the signature survived the downscale |
+| 5 | The relic keeps a minimum fraction of its unmasked area after the circular crop | geometry |
+
+**What this guard must never become is a filter that selects for flat art.**
+Every threshold is measured on the *masked and downscaled* image, and no
+threshold may be one that a painted piece can only pass by flattening
+(`illustrator-brief.md` explicitly rejects cel-shaded flats and uniform
+outlines). If a threshold and the brief ever disagree, the brief is the one
+that was paid for.
+
+**And one thing here is not machine-checkable and must not pretend to be:**
+whether an epic *reads as epic* at 48 px. That is verified by a rendered contact
+sheet per tier that the owner signs off. A metric for "recognisable" is a metric
+we would be grading ourselves with.
+
+### 9.3 Every piece has a tier, and the tier is visible
+
+Four tiers plus the ten one-of-ones. **Exact counts, not probabilities** — all
+4,000 are pre-generated before issuance 1 (D9), so there is nothing to sample:
+
+| Tier | Share | Count | Per block of 400 |
+|---|---|---|---|
+| Common | 60% | 2,400 | 240 |
+| Uncommon | 25% | 1,000 | 100 |
+| Rare | 12% | 480 | 48 |
+| Epic | 2.75% | 110 | 11 |
+| One-of-one | 0.25% | 10 | **1** |
+
+**The allocation is stratified in blocks of 400**, which is the whole answer to
+"the ladder must not be biased toward early pieces". Within a block the order is
+shuffled from the published seed; the *counts* are fixed. Every block of 400
+consecutive indices contains exactly eleven epics and exactly one one-of-one, by
+construction, at every point in the 166 days.
+
+This is deliberately not "sample uniformly and test that it came out even". A
+statistical test over one realised allocation is a test that can pass while the
+collection still has a visibly epic-poor stretch somebody screenshots — and it
+is a test that flakes. The property is asserted as arithmetic instead.
+
+**The tier table is published in full, index by index, before issuance 1**, in
+the same manifest whose hash goes public (B2). This is not decoration: we
+generate the allocation, so the only thing that stops "they steered the
+one-of-ones" is that the whole mapping was fixed and public before anyone knew
+who would be issued anything.
+
+### 9.4 The index owns light. The tier owns form.
+
+This is the rule that makes 9.3 survive contact with D9, and it is the
+collision the requirement does not see on its own.
+
+Two of the five axes are already functions of the index: **Ember** (core glow,
+white-hot at 1 → dull at 4,000) and **Settle** (drifted ash, clean → half
+buried). **A tier signalled by brightness, glow, colour temperature or ash
+cover is a tier that reads as a date.** An epic at index 3,900 would look like a
+common, correctly, because its ember is nearly out — and the distribution guard
+in 9.3 would still pass, because the counts are right and the *legibility* is
+what broke.
+
+So the tier is carried on axes the index does not touch, and both of them are
+the ones that survive a 48 px circle:
+
+| Carrier | Owned by | Tier signature |
+|---|---|---|
+| **Seam** — the crack's geometry | tier | shape, not brightness. Epic gets forms no other tier has. |
+| **Relic** — the object it kept | tier | each tier draws from its own pool; epic-only relics change the silhouette. |
+| Ember — the light through the seam | **index** | never a tier signal |
+| Settle — the ash on it | **index** | never a tier signal |
+| Ash — body material | rolled, free of both | |
+
+**Background is not a tier signal.** `illustrator-brief.md` fixes it as a
+single low-saturation field that "recedes and never competes… is not a trait
+axis and it is never a scene", and a tier-coloured background is both the most
+common way a generative collection looks cheap and a direct contradiction of a
+line somebody was paid to work to.
+
+**The test that catches the real failure** is therefore not the distribution
+test. It is: **render the epic seam forms at the dimmest ember state, mask to
+48 px, and assert the tier is still distinguishable from the common forms.**
+Bias-free counts with an illegible epic is the failure mode that ships.
+
+### 9.5 What rarity must never touch
+
+**Rarity is cosmetic. A one-of-one redeems for exactly the same share as the
+plainest common** (§1, property 2). That sentence ships on the same screen as
+the rarity table, every time it appears, because a visible ladder is an
+invitation to assume the ladder is economic — and here it is not, ever, by
+construction: `redeem` computes a share from `live_supply` and reads no trait.
