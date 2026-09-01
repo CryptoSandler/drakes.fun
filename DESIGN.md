@@ -527,6 +527,11 @@ whether an epic *reads as epic* at 48 px. That is verified by a rendered contact
 sheet per tier that the owner signs off. A metric for "recognisable" is a metric
 we would be grading ourselves with.
 
+**That sign-off is an explicit gate on the illustrator's milestone 2**, before
+the largest of the three payments (`illustrator-brief.md`). It forces the
+dimmest ember state to be delivered with the seams rather than with the other
+eleven, because the sheet cannot be rendered without it.
+
 ### 9.3 Every piece has a tier, and the tier is visible
 
 Four tiers plus the ten one-of-ones. **Exact counts, not probabilities** — all

@@ -229,10 +229,25 @@ states and one-of-ones (30%). **Add roughly 10% for the ladder and the avatar
 work** — two epic seams, the per-level relic pools, and the face masks.
 
 **Every milestone is accepted only after the render guard passes on what was
-delivered** — the circular crop at 48 px and 130 px over both chromes, and the
-48 px epic-legibility sheet at the last milestone. This is in the brief so it is
-not a surprise at payment time: the guard runs on the layers, and a milestone
-that fails it is reworked before it is paid.
+delivered** — the circular crop at 48 px and 130 px over both chromes. This is
+in the brief so it is not a surprise at payment time: the guard runs on the
+layers, and a milestone that fails it is reworked before it is paid.
+
+### Milestone 2 has one extra step, and it is a human one
+
+**Milestone 2 is not accepted until the buyer has signed off on a contact
+sheet: every seam form, epic included, rendered at the dimmest ember state,
+masked to a 48 px circle, over both chromes.** The machine measures contrast and
+geometry; whether an epic still *reads as* an epic there is a judgement, and it
+is made by a person looking at the sheet, before the largest payment of the
+three.
+
+**This changes one delivery order and the illustrator needs to know why.** The
+ember states are milestone 3 work, but the sheet cannot exist without the
+dimmest one — so **the dimmest ember state ships with milestone 2, alongside the
+seams.** One state early, out of twelve. It is the state the whole ladder has to
+survive: at the bright end everything is legible, and no decision is being made
+there.
 
 Market for a generative PFP layer set of this scope: **$2,000–6,000** for a
 competent illustrator, **$8,000–20,000** for someone whose portfolio sits

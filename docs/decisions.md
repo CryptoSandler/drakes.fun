@@ -171,26 +171,30 @@ Redemption opens when the audited program is deployed, and no later than the
 earlier of:
 
 - **US$25,000 accumulated** in the creator's 15% share, or
-- **180 days from issuance 1.**
+- **150 days from issuance 1.**
 
 If the audit has not been paid for by that date, **the shortfall is published on
 that date** — the amount accumulated, the amount missing, and what happens next.
 
-**Placeholder absolute date: 2027-03-01**, computed from a placeholder genesis
+**Placeholder absolute date: 2027-01-30**, computed from a placeholder genesis
 of 2026-09-02. It is recomputed and fixed at B8 when the genesis instant is set,
 and the site shows the real one.
 
-**The cost nobody has named yet, and the owner should hear it before ratifying:**
-the collection completes at **166 days and 16 hours** (`DESIGN.md` §2), and at
-4,000 issued the creator's share steps to **zero** (D4). The 180-day deadline
-therefore falls about **13 days after the creator's income has permanently
-stopped**. If US$25k has not accumulated by day 166, it never will from this
-source, and the day-180 publication is a shortfall with no remaining funding
-path. 180 days is not a deadline with a runway behind it; it is a deadline
-roughly at the end of the runway.
+**Why 150 and not 180.** The collection completes at **166 days and 16 hours**
+(`DESIGN.md` §2), and at 4,000 issued the creator's share steps to **zero**
+(D4). A 180-day deadline lands ~13 days *after* the income has permanently
+stopped, so a shortfall published on that date has no remaining funding path —
+it is a deadline at the end of the runway. **150 days lands 16 days before
+completion**, with the fee still flowing, so a shortfall is still a shortfall
+somebody can act on.
 
-**Revisit if:** the owner wants the deadline to sit *before* the step-down —
-150 days would leave a margin in which the fee is still flowing.
+**Cost:** ~16 days less accumulation before the promise binds, on a curve that
+is front-loaded anyway — the base case earns most of its total in the first two
+months (`spec-round-2026-09-01.md` §7). **Why it is worth it:** a deadline that
+can only ever announce a failure is not a deadline.
+
+**Revisit if:** never after publication. The date ships on the site from day one
+and is a promise the moment it is written (D8).
 
 ### D12 — PFP-first: the piece is an avatar before it is an image
 
@@ -246,6 +250,25 @@ delivered face-registration mask. Expect the budget to move by roughly 10%.
 **Revisit if:** the epic signature cannot be made legible at 48 px at the
 dimmest ember state. Then the tier ladder is decoration in the only place
 people look at it, and it should be dropped rather than faked.
+### D14 — Process deviations accepted at B0
+
+Three, all from CLAUDE.md or `batches.md`, all accepted with their reasons on
+the record:
+
+1. **The batch branch lives in the main worktree**, not a separate one. The
+   failure the worktree rule prevents is two batches disagreeing about the
+   schema; with one batch in flight and no migrations, it cannot occur. **The
+   rule comes back the moment two batches overlap**, and the migration ordering
+   rule is untouched.
+2. **Next, Neon, the migration runner, the advisory lock and the
+   `disposable_database` stamp moved from B0 to B5.** A migration runner that
+   has never run against a Postgres instance is unverified code, and there is
+   no project database yet.
+3. **No README yet.**
+
+**Cost:** (1) is a rule with a real failure mode behind it and this is the kind
+of exception that quietly becomes the default. It is written down so the next
+overlap is a decision and not a habit.
 
 ## Still open
 
