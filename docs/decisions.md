@@ -441,6 +441,73 @@ only a directory. That is the right trade — the offline form is still there as
 `pieces <dir>` and prints, in its own output, that it is replaying our record
 rather than the chain.
 
+### D22 — The cranker is a supervised process, not a cron target
+
+The schedule is anchored on chain — `issue_at(n) = genesis + n · period`, and
+the program derives the hour itself — so **nothing a host does to a trigger time
+can make the protocol drift.** What a late trigger costs is the *window*: an
+hour is requestable exactly once and there is no re-request.
+
+That inverts the hosting question. The property worth buying is not trigger
+precision, it is *wake at the boundary with enough of the window left to retry*,
+and a process that schedules itself against the on-chain genesis has it for
+free. The host's job is then one thing: keep the process running.
+
+**GitHub Actions was right to reject** for a sharper reason than "imprecise":
+its measured ~1h32 exceeds the period, so a trigger does not merely arrive late,
+it arrives in an hour that has already closed.
+
+**Vercel cron is disqualified on the plan we have**, and not marginally. The
+`sandler` team is Hobby, where the minimum interval is **once per day**,
+precision is **±59 minutes**, and an hourly expression **fails deployment**
+(Vercel's limits page, read 2026-09-01). Even on Pro the unit of work — request,
+wait for the oracle, then a reveal that must land in the same transaction as the
+settle — belongs in a process rather than a request handler.
+
+**Decided: a minimal VPS running `scripts/crank-loop.ts` under systemd with
+`Restart=always` and `StartLimitIntervalSec=0`.** The lazier alternative is
+named so the choice stays with the owner: Railway Hobby at US$5/month runs the
+identical process with no machine to patch, and an unpatched box we forget about
+is worse than five dollars.
+
+**Not applied, and the reason is a rule rather than an oversight.** Every
+candidate needs an account with a payment method, and CLAUDE.md is explicit that
+anything paid is paid by a route the owner decides and that this repository
+never records which. The devnet run of 2026-09-01 therefore ran from a developer
+machine, and `docs/crank-hosting-run.md` says so rather than implying otherwise.
+
+**Alerting is Telegram**, one HTTPS POST with no dependency. A 200 carrying
+`ok: false` — what a wrong chat id returns — is treated as a failure, because a
+sink that only reads the status code reports a delivered alert nobody received.
+
+### D23 — The site shows no reserve until one exists
+
+The front page reads the chain at request time for the last issuance and its
+recipient. For the reserve it reads a **named address' `$PUMP` balance at a
+slot** — and in Phase 1 that address is deliberately **unset**, because the
+Phase 1 program holds nothing (D8) and there is no `$DRAKES` mint or pool yet.
+
+The page therefore says *"there is no reserve yet"*, in the neutral wording, and
+carries the D8 custody sentence including *"anyone who calls that custodial is
+right"*. **A `0.000000 $PUMP` next to the word "reserve" is not a smaller
+version of the figure, it is a false one**, on the number this project is
+ultimately judged by.
+
+The mechanism fits both futures: `RESERVE_OWNER` switches it on and nothing else
+changes. **The policy is left open** — whether to show the Phase 1 multisig
+balance under its real name, *temporary custody*, is the owner's call
+(`docs/round-2026-09-01-b5.md` §4).
+
+**`$PUMP` is Token-2022** (`references.md`, 2026-09-01), so the balance is read
+by filtering `getTokenAccountsByOwner` on the mint, and no associated-token
+address is derived. An ATA derived with the SPL Token program id is a different,
+empty account — a confident zero on exactly the wrong number.
+
+**Postgres is a cache and the page reads none of it.** DESIGN.md §7: every
+figure on the site is a cache of an on-chain read, labelled with its slot. The
+event runner fills `issuance_events` so a future list page does not make 8,000
+RPC calls; nothing in it is authoritative, and losing the table costs one re-run.
+
 ## Still open
 
 - **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*

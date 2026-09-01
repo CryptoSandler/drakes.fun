@@ -10,11 +10,18 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "verify": "npm run typecheck && npm run lint && npm test",
-    "crank": "node scripts/crank-loop.ts"
+    "crank": "node scripts/crank-loop.ts",
+    "migrate": "node scripts/migrate.ts",
+    "migrate:test": "node scripts/migrate-test.ts",
+    "index-events": "node scripts/index-events.ts",
+    "dev": "next dev",
+    "build": "next build"
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.31.1",
     "@types/node": "^22.10.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.5",
     "eslint": "^9.17.0",
     "globals": "^15.14.0",
     "typescript": "^5.7.2",
@@ -22,7 +29,11 @@
     "vitest": "^2.1.8"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^1.1.0",
     "@solana/web3.js": "^1.98.0",
-    "@switchboard-xyz/on-demand": "^3.10.6"
+    "@switchboard-xyz/on-demand": "^3.10.6",
+    "next": "^16.3.4",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
   }
 }

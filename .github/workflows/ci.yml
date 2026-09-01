@@ -16,6 +16,9 @@ jobs:
       - run: npm ci
       # Typecheck, lint, and the copy lexicon guard (DESIGN.md §6).
       - run: npm run verify
+      # The page is dynamic and reads its config at request time, so this needs
+      # no environment. It is here to catch a build that only breaks on deploy.
+      - run: npm run build
 
   program:
     runs-on: ubuntu-latest

@@ -125,6 +125,24 @@ Caller: `request_issuance` consumes the root; the cranker calls the builder; the
 page and the published script both call the rebuilder.
 **Depends on:** B4.
 
+**Landed 2026-09-01, in three branches merged in this order** (the two without
+migrations first, then the one with them, per CLAUDE.md):
+
+1. `b5-verify-from-chain` — the permutation is rebuilt from `IssuanceSettled`
+   on chain and the published set became a cache that is reconciled (D21). The
+   public README is the verification page in text form; the rendered page is
+   still B6.
+2. `b5-crank-host` — the cranker became a supervised process with its own
+   genesis-anchored scheduler, an alert channel, and the hosting evaluation
+   (D22, `docs/crank-hosting.md`).
+3. `b5-site` — Next + Neon + Vercel, the migration runner, the advisory lock,
+   the `disposable_database` stamp, the event runner, and a minimal front page
+   that reads the chain and not the database (D23).
+
+**Still outstanding in B5:** the snapshot Merkle work already shipped in B4, but
+the rendered verify page, the per-issuance permalink and the proof widget are
+not built. The reconciliation and the replay exist as commands.
+
 ## B6 — Site
 
 Countdown and the index of the piece it will issue; reserve in `$PUMP` with USD
