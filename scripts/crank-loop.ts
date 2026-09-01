@@ -21,13 +21,7 @@ import { join } from 'node:path'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { runLoop, type HourReport } from '../src/lib/crank/loop.ts'
 import { IssuanceEngine, type Rig } from '../src/lib/crank/issue.ts'
-import {
-  consoleSink,
-  fallbackSink,
-  resolveChatId,
-  telegramSink,
-  type Sink,
-} from '../src/lib/crank/alert.ts'
+import { consoleSink, fallbackSink, ntfySink, type Sink } from '../src/lib/crank/alert.ts'
 import { serveHealth } from '../src/lib/crank/health.ts'
 import { clusterName } from '../src/lib/snapshot/rpc.ts'
 import type { Schedule } from '../src/lib/protocol/schedule.ts'
@@ -50,42 +44,27 @@ const emit = (row: Record<string, unknown>): void => {
 const CONFIG_GENESIS = 8 + 1 + 32 * 5
 const CONFIG_PERIOD = CONFIG_GENESIS + 8
 
-async function alertSink(): Promise<Sink> {
-  const token = process.env.TELEGRAM_BOT_TOKEN
-  if (token === undefined || token === '') {
-    emit({ level: 'warn', msg: 'no TELEGRAM_BOT_TOKEN; alerts go to stderr only' })
+function alertSink(): Sink {
+  const topic = process.env.NTFY_TOPIC
+  if (topic === undefined || topic === '') {
+    emit({ level: 'warn', msg: 'no NTFY_TOPIC; alerts go to stderr only' })
     return consoleSink()
   }
-
-  let chatId = process.env.TELEGRAM_CHAT_ID
-  if (chatId === undefined || chatId === '') {
-    // Discovered from getUpdates rather than configured: the operator messages
-    // the bot once and the id follows. It refuses on nothing and on more than
-    // one, because an alert delivered to the wrong chat is worse than one that
-    // fails loudly.
-    try {
-      const resolved = await resolveChatId({ token })
-      chatId = resolved.chatId
-      emit({
-        level: 'info',
-        msg: 'chat id resolved from getUpdates',
-        chatId,
-        from: resolved.from,
-        note: 'pin it as TELEGRAM_CHAT_ID; getUpdates conflicts with a webhook and ages out',
-      })
-    } catch (error) {
-      emit({ level: 'warn', msg: 'could not resolve a chat id', why: String(error) })
-      return consoleSink()
-    }
+  try {
+    // The console sink is last and never removed. An alerting path whose only
+    // channel can fail silently is worse than none, because it is trusted.
+    //
+    // Nothing here logs the topic, and nothing may: it is the only secret
+    // protecting the channel, and a crank's stdout is a log a host retains.
+    return fallbackSink([ntfySink({ topic }), consoleSink()])
+  } catch (error) {
+    emit({ level: 'warn', msg: 'NTFY_TOPIC rejected', why: String(error) })
+    return consoleSink()
   }
-
-  // The console sink is last and never removed. An alerting path whose only
-  // channel can fail silently is worse than none, because it is trusted.
-  return fallbackSink([telegramSink({ token, chatId }), consoleSink()])
 }
 
 async function alertTest(): Promise<void> {
-  const sink = await alertSink()
+  const sink = alertSink()
   await sink({
     title: 'DRAKES: alert channel test',
     lines: [
@@ -173,7 +152,7 @@ async function main(): Promise<void> {
 
   const out = flag('out')
   if (out !== undefined) mkdirSync(out, { recursive: true })
-  const sink = await alertSink()
+  const sink = alertSink()
   const balance = await conn.getBalance(payer.publicKey)
 
   emit({

@@ -118,8 +118,9 @@ hardware that is not also building something.
    1 attempts, window closed
    ```
 
-   With no Telegram token configured it fell through to the console sink, which
-   is the fallback behaving as designed rather than a silence.
+   No channel was configured at the time, so it fell through to the console
+   sink — the fallback behaving as designed rather than a silence. The channel
+   exists now (ntfy.sh) and `--alert-test` has delivered on it.
 
 Had `/healthz` been serving, both gaps would have exceeded the two-period
 tolerance — 120 s at this rig's period — and answered 503 while the process was
@@ -192,10 +193,11 @@ Listed plainly, because a run of this kind is easy to over-read.
 - **Nothing about 24 hours of uptime.** The longest continuous stretch measured
   is under half an hour. The failure this is meant to catch — a process that
   dies quietly at 03:00 — needs a day and a supervisor.
-- **The alert path is now half-established.** `onMissed` fired for real, twice,
-  and named the right hours — but into the console sink, because no Telegram
-  token exists yet. That a message was *composed and delivered somewhere* is
-  established; that it reaches a phone is not.
+- **The alert path is established in two halves that have not met.** `onMissed`
+  fired for real twice and named the right hours, but into the console sink,
+  because no channel was configured yet. Separately, `--alert-test` has published
+  to the real ntfy topic and the message was read back off it. What has not
+  happened is a *missed hour* reaching *the phone* in one motion.
 - **Nothing about mainnet scan size.** The rehearsal mint has seven holders.
   This remains the largest untested thing in the whole issuance path, as the B4
   runbook already says.
@@ -206,7 +208,9 @@ Listed plainly, because a run of this kind is easy to over-read.
 
 1. The owner creates the Railway service and puts `RAILWAY_TOKEN` in
    `.env.local` (`crank-hosting.md` §3 is the three-line deploy).
-2. `--alert-test` against a real Telegram bot, and confirm it lands on a phone.
+2. Subscribe to the ntfy topic on a phone and confirm `--alert-test` lands there.
+   It has been verified by reading the message back off the topic, which is not
+   the same as a notification arriving.
 3. Deploy, then **leave it for a week** — not a day. The claim is "it fires every
    hour, forever", and the only evidence for that is duration.
 4. Force a missed hour on purpose — point `RPC_URL` at a dead endpoint for one

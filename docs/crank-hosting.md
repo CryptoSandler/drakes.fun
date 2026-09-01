@@ -175,8 +175,7 @@ Set on the Railway service. None of them is optional except where noted.
 | `RPC_URL` | the provider endpoint | the only endpoint the crank talks to; the cluster is classified from its genesis hash and a disagreement with the rig refuses to sign |
 | `CRANK_KEYPAIR` | `/data/crank.json` | path to the key. Its total authority is spending its own SOL on permissionless instructions (`DESIGN.md` T4) |
 | `CRANK_RIG` | `rigs/devnet-rehearsal.json` | the rig file. The mainnet rig does not exist until B3 and B8 |
-| `TELEGRAM_BOT_TOKEN` | from `@BotFather` | one message per hour that closed unsettled |
-| `TELEGRAM_CHAT_ID` | *optional* | resolved from `getUpdates` at start-up when absent, and the resolved value is logged so it can be pinned |
+| `NTFY_TOPIC` | 32 hex characters | one message per hour that closed unsettled. **This value is a password** — see §5. Set it as a Railway variable, never in a file the repo tracks |
 | `PORT` | set by Railway | the health endpoint binds it |
 | `NIXPACKS_NODE_VERSION` | `22` or higher | `engines.node` is `>=22.18`; type stripping is enabled by default from **22.18.0** and 23.6.0, so a 22.0 fails on the first import (`nodejs.org/api/typescript.html`, read 2026-09-01) |
 
@@ -261,8 +260,7 @@ WantedBy=multi-user.target
 ```ini
 # /etc/drakes/crank.env  — mode 0600, owned by drakes
 RPC_URL=https://mainnet.helius-rpc.com/?api-key=...
-TELEGRAM_BOT_TOKEN=...
-TELEGRAM_CHAT_ID=...
+NTFY_TOPIC=...
 ```
 
 `systemctl enable --now drakes-crank`, then
@@ -271,34 +269,55 @@ TELEGRAM_CHAT_ID=...
 ## 5. The alert channel
 
 `onMissed` fires once for any hour whose window closed with no settlement, and
-sends one message. Telegram, because it is a single HTTPS POST with no
-dependency, no SMTP credentials, no deliverability question, and it arrives on a
-phone.
+sends one message. **ntfy.sh**: a single HTTPS POST, no dependency, no SMTP, no
+deliverability question, and it arrives on a phone.
 
-Setting it up, and both steps are the owner's:
+**And no account of any kind.** That is the reason it beat the alternative here
+rather than a convenience: there is nothing to sign up for, nothing that links a
+person to the project, and nothing that shows an operator's identity to a third
+party. A messaging account the project would otherwise have to own is an account
+adjacent to the pseudonym, and this removes the question instead of managing it.
 
-1. Message `@BotFather`, `/newbot`, keep the token.
-2. Send the new bot any message, then read the chat id from
-   `https://api.telegram.org/bot<TOKEN>/getUpdates`.
-3. `node scripts/crank-loop.ts --alert-test` — it sends one message and says
-   whether it landed.
+### The topic is the password
 
-Three things about it are deliberate:
+ntfy's own documentation is blunt about it: *"Since there is no sign-up, the
+topic is essentially a password, so pick something that's not easily
+guessable"* (read 2026-09-01). Anyone who knows the topic can **read every alert
+and publish forgeries into the same channel** — so a forged "issuance 812 was not
+settled" is as available to a stranger as a real one is to us.
 
-- **A Telegram 200 with `ok: false`** — what a wrong chat id returns — is
-  treated as a failure. A sink that only checks the HTTP status reports a
-  delivered alert nobody received, and that is worse than no alerting because it
-  is trusted.
+It is therefore treated as a secret and not as configuration:
+
+- Generated with `openssl rand -hex 16`, and `ntfySink` **refuses anything under
+  32 characters**. A short topic is not a weak secret; it is a public channel.
+- It lives in `.env.local` and as a Railway variable. It is never committed.
+- **Nothing logs it, including the failure paths.** A refused topic produces
+  *"NTFY_TOPIC is 5 characters"*, never the value — an error message is the usual
+  way a URL leaks into a log a host retains.
+
+Set it up:
+
+```sh
+openssl rand -hex 16                     # put it in .env.local as NTFY_TOPIC
+node scripts/crank-loop.ts --alert-test  # sends one message, says whether it landed
+```
+
+Subscribe at `https://ntfy.sh/<topic>` in a browser, or in the ntfy app.
+
+### Three things about the sink are deliberate
+
+- **A 200 is not a delivery.** The publish endpoint answers with the message it
+  stored — `{"id","time","expires","event":"message","topic","title","message"}`
+  as `application/json`, verified against the real service 2026-09-01. A 200
+  carrying anything else is a request that went somewhere else and said so only
+  in its body: a captive portal, a proxy interstitial, or ntfy's own front page,
+  which returns 200 with `text/html`. The sink checks `event`, `id`, **and that
+  the echoed `topic` is ours** — the last one proves the message landed on our
+  channel and not on one a rewritten URL chose.
 - **The console sink is always last in the chain and is never removed**, so an
   alert that cannot be delivered is still written somewhere.
 - **An alert that fails does not take the cranker down.** The next hour matters
   more than the message.
-
-**Said out loud, because it touches the guard (CLAUDE.md):** the Telegram
-account that receives these is an account the operator reads. The bot's owner is
-not visible to third parties and the chat is private, but it is still an account
-adjacent to the pseudonym. Which account that is, is the owner's decision and is
-not recorded here.
 
 ## 6. The devnet run
 

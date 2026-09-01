@@ -4,7 +4,6 @@
 
 import { describe, expect, it } from 'vitest'
 import { STALL_PERIODS, healthState, serveHealth } from '../health.ts'
-import { resolveChatId } from '../alert.ts'
 
 const PERIOD = 3_600
 const base = { periodSeconds: PERIOD, hoursFired: 0, hoursSettled: 0, startedAtMs: 0 }
@@ -104,64 +103,5 @@ describe('the endpoint', () => {
     } finally {
       await s.close()
     }
-  })
-})
-
-describe('resolving the chat id from getUpdates', () => {
-  const reply = (body: unknown, ok = true) =>
-    (async () => ({ ok, status: ok ? 200 : 500, json: async () => body })) as unknown as typeof fetch
-
-  it('takes the one chat the bot has been spoken to from', async () => {
-    const resolved = await resolveChatId({
-      token: 't',
-      fetchImpl: reply({
-        ok: true,
-        result: [{ message: { chat: { id: 12345, type: 'private', username: 'someone' } } }],
-      }),
-    })
-    expect(resolved).toEqual({ chatId: '12345', from: 'someone' })
-  })
-
-  it('refuses when the bot has no updates, instead of guessing', async () => {
-    await expect(resolveChatId({ token: 't', fetchImpl: reply({ ok: true, result: [] }) })).rejects.toThrow(
-      /Send the bot any message/,
-    )
-  })
-
-  it('refuses when there is more than one chat, and names them', async () => {
-    // Nothing in the data picks between two conversations, and an alert
-    // delivered to the wrong one is worse than an alert that fails loudly.
-    await expect(
-      resolveChatId({
-        token: 't',
-        fetchImpl: reply({
-          ok: true,
-          result: [
-            { message: { chat: { id: 1, type: 'private', username: 'a' } } },
-            { message: { chat: { id: 2, type: 'group', title: 'b' } } },
-          ],
-        }),
-      }),
-    ).rejects.toThrow(/2 chats.*1 \(a\), 2 \(b\).*TELEGRAM_CHAT_ID/s)
-  })
-
-  it('collapses repeated messages from one chat', async () => {
-    const resolved = await resolveChatId({
-      token: 't',
-      fetchImpl: reply({
-        ok: true,
-        result: [
-          { message: { chat: { id: 7, type: 'private', username: 'x' } } },
-          { message: { chat: { id: 7, type: 'private', username: 'x' } } },
-        ],
-      }),
-    })
-    expect(resolved.chatId).toBe('7')
-  })
-
-  it('treats a 200 with ok:false as a failure, the same as the send path', async () => {
-    await expect(
-      resolveChatId({ token: 'bad', fetchImpl: reply({ ok: false, description: 'Unauthorized' }) }),
-    ).rejects.toThrow(/Unauthorized/)
   })
 })

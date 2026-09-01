@@ -485,9 +485,21 @@ healthy from inside a loop that has stopped looping — which is the one state t
 whole hosting batch exists to notice. Two periods rather than one, since an hour
 may legitimately spend its entire window failing and retrying.
 
-**Alerting is Telegram**, one HTTPS POST with no dependency. A 200 carrying
-`ok: false` — what a wrong chat id returns — is treated as a failure, because a
-sink that only reads the status code reports a delivered alert nobody received.
+**Alerting is ntfy.sh**, one HTTPS POST with no dependency — and, decisively,
+**no account**. Telegram was built first and discarded: it needs an account the
+project would have to own, and an account adjacent to the pseudonym is a question
+better removed than managed.
+
+**The topic is the password**, in ntfy's own words, so it is generated with
+`openssl rand -hex 16`, refused under 32 characters, kept out of the repository,
+and never written to a log — including the failure paths, which is where a URL
+usually leaks. Anyone holding it can read every alert and publish forgeries into
+the same channel.
+
+**A 200 is not a delivery.** The publish endpoint echoes the message it stored;
+a 200 carrying anything else is a request that went elsewhere, which is what
+ntfy's own front page returns. The sink checks the event, the id, and that the
+echoed topic is ours.
 
 ### D23 — The site shows no reserve until one exists
 

@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from 'vitest'
 import { DEFAULT_RETRY_DELAYS_MS, hourAt, runLoop, type HourReport } from '../loop.ts'
-import { consoleSink, fallbackSink, render, telegramSink } from '../alert.ts'
+import { consoleSink, fallbackSink, ntfySink, render } from '../alert.ts'
 import type { Schedule } from '../../protocol/schedule.ts'
 
 const schedule: Schedule = { genesisUnix: 1_700_000_000, periodSeconds: 3_600 }
@@ -199,25 +199,102 @@ describe('retry inside the window', () => {
   })
 })
 
+const TOPIC = 'a'.repeat(32)
+
 describe('alerts', () => {
   it('renders a message meant for a lock screen', () => {
     expect(render({ title: 'DRAKES: hour 502 not settled', lines: ['devnet', 'every gateway silent'] }))
       .toBe('DRAKES: hour 502 not settled\ndevnet\nevery gateway silent')
   })
 
-  it('treats a Telegram 200 with ok:false as a failure', async () => {
-    // The likeliest misconfiguration is a wrong chat id, and Telegram answers
-    // that with HTTP 200. A sink that only checks the status reports a
-    // delivered alert that nobody received.
-    const sink = telegramSink({
-      token: 't',
-      chatId: 'wrong',
+  /** What the real service answers, verified against ntfy.sh on 2026-09-01. */
+  const published = (over: Record<string, unknown> = {}) => ({
+    id: 'zEDQPzoosptR',
+    time: 1788299916,
+    expires: 1788343116,
+    event: 'message',
+    topic: TOPIC,
+    title: 'DRAKES: issuance 7 not settled',
+    message: 'devnet',
+    ...over,
+  })
+
+  it('publishes the title as a header and the lines as the body', async () => {
+    const calls: { url: string; init: RequestInit }[] = []
+    const sink = ntfySink({
+      topic: TOPIC,
+      fetchImpl: (async (url: string, init: RequestInit) => {
+        calls.push({ url, init })
+        return { ok: true, json: async () => published() }
+      }) as unknown as typeof fetch,
+    })
+    await sink({ title: 'DRAKES: issuance 7 not settled', lines: ['devnet', 'window closed'] })
+    expect(calls).toHaveLength(1)
+    expect(calls[0]!.url).toBe(`https://ntfy.sh/${TOPIC}`)
+    expect(calls[0]!.init.method).toBe('POST')
+    expect((calls[0]!.init.headers as Record<string, string>).Title).toBe(
+      'DRAKES: issuance 7 not settled',
+    )
+    expect(calls[0]!.init.body).toBe('devnet\nwindow closed')
+  })
+
+  it('refuses a 200 that published to a different topic', async () => {
+    // The strongest of the three checks: it proves the message landed on OUR
+    // topic and not on one a rewritten URL chose.
+    const sink = ntfySink({
+      topic: TOPIC,
       fetchImpl: (async () => ({
         ok: true,
-        json: async () => ({ ok: false, description: 'chat not found' }),
+        json: async () => published({ topic: 'somebody-elses-topic' }),
       })) as unknown as typeof fetch,
     })
-    await expect(sink({ title: 'x', lines: [] })).rejects.toThrow(/chat not found/)
+    await expect(sink({ title: 'x', lines: [] })).rejects.toThrow(/different topic/)
+  })
+
+  it('refuses a 200 whose JSON is not a published message', async () => {
+    const sink = ntfySink({
+      topic: TOPIC,
+      fetchImpl: (async () => ({
+        ok: true,
+        json: async () => ({ error: 'rate limited' }),
+      })) as unknown as typeof fetch,
+    })
+    await expect(sink({ title: 'x', lines: [] })).rejects.toThrow(/without publishing a message/)
+  })
+
+  it('strips characters an HTTP header cannot carry', async () => {
+    // A stray non-Latin-1 byte throws inside fetch, which would lose the alert
+    // to an encoding bug rather than to the outage it is reporting.
+    const calls: RequestInit[] = []
+    const sink = ntfySink({
+      topic: TOPIC,
+      fetchImpl: (async (_url: string, init: RequestInit) => {
+        calls.push(init)
+        return { ok: true, json: async () => published() }
+      }) as unknown as typeof fetch,
+    })
+    await sink({ title: 'DRAKES: emisión 7 — sin liquidar ✅', lines: [] })
+    const title = (calls[0]!.headers as Record<string, string>).Title!
+    // eslint-disable-next-line no-control-regex
+    expect(/^[\x20-\x7E]*$/.test(title)).toBe(true)
+    expect(title).toContain('DRAKES')
+  })
+
+  it('treats a 200 that did not publish as a failure', async () => {
+    // The publish endpoint answers with the message it stored. A 200 carrying
+    // anything else -- a captive portal's page, a proxy interstitial, ntfy's own
+    // front page -- is a request that went somewhere else. A sink that only
+    // checks the status reports a delivered alert nobody received.
+    const sink = ntfySink({
+      topic: TOPIC,
+      fetchImpl: (async () => ({
+        ok: true,
+        json: async () => {
+          throw new SyntaxError('Unexpected token <')
+        },
+      })) as unknown as typeof fetch,
+    })
+    await expect(sink({ title: 'x', lines: [] })).rejects.toThrow(/not the published message/)
   })
 
   it('falls back to the console when the channel is down', async () => {
@@ -241,8 +318,28 @@ describe('alerts', () => {
     )
   })
 
-  it('refuses to build a sink with half its configuration', () => {
-    expect(() => telegramSink({ token: 'abc', chatId: '' })).toThrow(/token and a chat id/)
+  it('refuses a topic short enough to be guessed', () => {
+    // ntfy has no accounts, so the topic IS the password. A short one is not a
+    // weak secret, it is a public channel -- readable by anyone who guesses it,
+    // and writable, so a forged alert would be believed.
+    expect(() => ntfySink({ topic: 'drakes-alerts' })).toThrow(/at least 32/)
+    expect(() => ntfySink({ topic: '' })).toThrow(/not a valid ntfy topic/)
+    expect(() => ntfySink({ topic: `${'a'.repeat(31)}/../etc` })).toThrow(/not a valid ntfy topic/)
+  })
+
+  it('never puts the topic in an error, because the topic is the secret', () => {
+    const secret = 'b'.repeat(32)
+    for (const build of [
+      () => ntfySink({ topic: `${secret}!!` }),
+      () => ntfySink({ topic: secret.slice(0, 20) }),
+    ]) {
+      try {
+        build()
+        throw new Error('should have refused')
+      } catch (error) {
+        expect((error as Error).message).not.toContain(secret.slice(0, 20))
+      }
+    }
   })
 })
 
