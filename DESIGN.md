@@ -141,7 +141,15 @@ already exists, so it cannot run twice.
 
 **Phase 1 writes only what Phase 1 needs**: the weight mint, the collection,
 the Switchboard program, queue and randomness account, the genesis instant, the
-period (D15), the collection size and the excluded set. The reserve, the creator
+period (D15), the collection size, the excluded set, and **the manifest hash**.
+
+**The manifest hash is what makes rarity verifiable in advance.** It commits the
+full piece-by-piece table — id, tier, traits, Arweave URI — for all 4,000, fixed
+and public before issuance 1. One 32-byte field replaces any notion of an
+on-chain tier table: the program never reads a tier, because rarity never
+touches money (§1, property 2; §9.5). What the hash buys is that nobody can
+claim we steered the Sovereigns, because the whole mapping was frozen before
+anyone knew who would be issued anything. The reserve, the creator
 ATA and the fee split are Phase 2's `initialize`, because the Phase 1 binary has
 no instruction that could use them and a config field with no reader is a field
 nobody checks.
@@ -222,14 +230,37 @@ fetch the oracle's signed reveal and build the same pair — but it does mean a
 settle sent on its own can never succeed, and the error has to say so plainly
 or every integrator will lose a day to it.
 
-Resolves a point in `[0, eligible_supply)` from the revealed randomness, takes
-a Merkle proof for the leaf whose range contains it, CPIs `mpl-core` to mint the
-asset to that address, and pays the crank a bounty capped at 1/10,000 of the
-reserve. Emits the slot, the root, the randomness account and value, the
-eligible supply, the recipient and their balance — every input needed to
-recompute the result.
+**One value, two derivations, domain-separated.** The revealed randomness
+answers two independent questions — *which piece* and *to whom* — and they are
+derived separately or one number would be doing two jobs:
 
-**Modulo bias** is present at roughly 2^-224 and is documented rather than
+    piece_point  = sha256(0x03 || value) mod survivors_remaining
+    holder_point = sha256(0x04 || value) mod eligible_supply
+
+**Which piece: Fisher-Yates, swap-with-last.** The program holds an array of
+4,000 `u16` (8 KB, rented once at about 0.06 SOL) plus a `remaining` counter.
+Each issuance takes `arr[piece_point]`, writes `arr[remaining - 1]` over it, and
+decrements. O(1), no scan, no bitmap, and the survivor set is exactly the
+unissued pieces at every moment. The array's state after any hour is derivable
+by replaying the emitted events, which is what lets the verify page show it.
+
+**To whom:** a Merkle proof for the leaf whose range contains `holder_point`,
+then a CPI to `mpl-core` to mint that piece to that address.
+
+**The bounty is a Phase 2 feature and it is a flat number.** The Phase 1
+program holds nothing (D8), so it cannot pay anybody; the crank is us and the
+cost is ours, roughly 5,000 lamports an hour. In Phase 2 the settler is paid
+**0.001 SOL, flat, in lamports** — never a fraction of the reserve. An earlier
+draft of this section said "capped at 1/10,000 of the reserve", which compounded
+over 4,000 issuances is `(1 - 1e-4)^4000 ≈ 0.67`: **about a third of the reserve
+paid to crankers.** That was a drain with a bounty-shaped label on it.
+
+Emits the slot, the root, the randomness account and value, both points, the
+piece id, the eligible supply, the recipient and their balance — every input
+needed to recompute the result.
+
+**Modulo bias** is present at roughly 2^-224 on the holder point and 2^-244 on
+the piece point (the modulus is at most 4,000), and is documented rather than
 rejection-sampled away, for the same reason nftraffle documents it: the verify
 page's instructions have to be followable by a person with a hash tool, and
 "compute this, and if it exceeds a threshold, do it again" is a procedure
@@ -636,19 +667,60 @@ part of the test's own documentation.
 - *The floor is worth whatever `$PUMP` is worth, and `$PUMP` can go to zero.*
   (Exact wording is open question Q7 — it gets written once, when asked for.)
 - During Phase 1: **temporary custody**, the multisig address, the trigger and
-  the deadline for redemption opening.
+  the deadline for redemption opening (D8, D11).
 - The upgrade authority, in D7's words: one person, 72 hours' notice.
+- **Balances freeze when the hour is requested, not when it settles.** The
+  snapshot root is committed at `request_issuance` and `settle_issuance` only
+  reads it, so **buying between the request and the settle does not make you
+  eligible for that hour.** Said plainly, or the first person it happens to
+  will reasonably think they were cheated.
+- **How many Sovereigns and Ancients remain**, read off the survivor set. It is
+  the reason random issuance order was worth its cost, and it stays truthful
+  when the answer is zero.
 
 **Must never say:** backed · guaranteed · floor price · yield · investment ·
 returns · safe · risk-free. And never the buyback as a property of the reserve
 (T2).
 
+### What we may claim, and what we may not
+
+The difference matters more here than anywhere else on the site, because every
+sentence in the left column is checkable by a stranger and every sentence we
+are tempted to add to it is not.
+
+**May claim — each one verifiable without trusting us:**
+
+- **The Phase 1 program holds nothing and has no instruction that moves value.**
+  Readable from the IDL and the bytecode, which is published and matched to the
+  deployed hash.
+- **Zero team allocation, no presale, no allowlist, no mint page.** The whole
+  supply is in the pool (D6), on chain.
+- **The recipient is derived, never chosen** — a published snapshot root plus
+  oracle randomness, recomputable by anybody from the leaf set we publish.
+- **An hour cannot be requested twice.** Structural: the issuance account is
+  seeded with the hour, so a second request fails because the account exists.
+- **The tier of every piece was fixed before issuance 1**, committed by the
+  manifest hash in `initialize`.
+
+**May not claim, and the reasons are ours to state before somebody else does:**
+
+- ~~"The team cannot touch the reserve."~~ **False during Phase 1.** It is
+  temporary custody by a 2-of-3 Squads multisig whose three keys are held by one
+  person (D7, D8). Anyone who calls that custodial is right.
+- ~~"Immutable", "ownerless", "trustless".~~ **False.** The upgrade authority is
+  a multisig with a 72-hour timelock, and it exists because `$PUMP`'s live
+  transfer-hook authority can strand the reserve (T1). One person, after 72
+  hours' public notice, can change the program that holds the reserve.
+- ~~"Provably fair."~~ The snapshot is **recomputable, not trustless** (§4). We
+  build the tree. The input is public chain state, so a lie would be permanent
+  public evidence — that is a strong claim and it is not the same claim.
+- ~~"The collection completes on <date>."~~ 166 days and 16 hours is a **floor**
+  (§2, T12). Every skipped hour pushes it out.
+
 **Every number on the site is a cache of an on-chain read and is labelled with
 its slot.** A payout shows as settled because a burn and a transfer are on
 chain, not because a job marked a row. The page is read by the person who did
 not send the transaction.
-
----
 
 ## 8. Stack
 
@@ -739,74 +811,77 @@ because the sheet cannot be rendered without it.
 
 ### 9.3 Every piece has a tier, and the tier is visible
 
-Four tiers plus the ten one-of-ones. **Exact counts, not probabilities** — all
-4,000 are pre-generated before issuance 1 (D9), so there is nothing to sample:
+Five tiers, named for stature rather than for money — a ladder of gold would
+imply an economic difference that does not exist (§9.5):
 
-| Tier | Share | Count | Per block of 400 |
-|---|---|---|---|
-| Common | 60% | 2,400 | 240 |
-| Uncommon | 25% | 1,000 | 100 |
-| Rare | 12% | 480 | 48 |
-| Epic | 2.75% | 110 | 11 |
-| One-of-one | 0.25% | 10 | **1** |
+| Tier | Share | Count |
+|---|---|---|
+| **Whelp** | 60% | 2,400 |
+| **Wyrm** | 25% | 1,000 |
+| **Elder** | 12% | 480 |
+| **Ancient** | 2.75% | 110 |
+| **Sovereign** | 0.25% | 10 |
 
-**The allocation is stratified in blocks of 400**, which is the whole answer to
-"the ladder must not be biased toward early pieces". Within a block the order is
-shuffled from the published seed; the *counts* are fixed. Every block of 400
-consecutive indices contains exactly eleven epics and exactly one one-of-one, by
-construction, at every point in the 166 days.
+**Exact counts, not probabilities.** All 4,000 exist before issuance 1, their
+tiers fixed in the manifest whose hash `initialize` commits (§3.1). Rarity is
+therefore verifiable *in advance* by anybody, which is a stronger claim than any
+distribution guarantee.
 
-This is deliberately not "sample uniformly and test that it came out even". A
-statistical test over one realised allocation is a test that can pass while the
-collection still has a visibly epic-poor stretch somebody screenshots — and it
-is a test that flakes. The property is asserted as arithmetic instead.
+**Block stratification is gone**, and it went with the thing that made it
+possible. Issuance order is now random (§3.3), so there is no "block of 400" to
+put a Sovereign in. This is a real loss and the number is published rather than
+discovered later:
 
-**The tier table is published in full, index by index, before issuance 1**, in
-the same manifest whose hash goes public (B2). This is not decoration: we
-generate the allocation, so the only thing that stops "they steered the
-one-of-ones" is that the whole mapping was fixed and public before anyone knew
-who would be issued anything.
+| No Sovereign issued in the last… | Probability |
+|---|---|
+| 400 hours | **34.8%** |
+| 500 hours | 26.3% |
+| 1,000 hours | 5.6% |
 
-### 9.4 The index owns light. The tier owns form.
+Under the old stratification each of those was zero by construction. Ancients
+are unaffected (a 400-hour drought is 8 × 10⁻⁶). **"N Sovereigns remain" is the
+gain and it is honest in both directions** — it can also read "the Sovereigns
+ran out five weeks ago", and the site shows the count either way.
 
-This is the rule that makes 9.3 survive contact with D9, and it is the
-collision the requirement does not see on its own.
+### 9.4 The tier owns form. Nothing owns the index any more.
 
-Two of the five axes are already functions of the index: **Hoard** (a mountain
-of gold at 1 → a single coin at 4,000) and **Slumber** (shallow at 1 → deep at
-4,000). **A tier signalled by how much gold is in frame is a tier that reads as
-a date.** An epic at index 3,900 would look like a common, correctly, because
-it has almost no hoard — and the distribution guard in 9.3 would still pass,
-because the counts are right and the *legibility* is what broke.
+**Random issuance order killed the clock, and the honest thing is to say so.**
+When pieces went out in order, two axes were functions of the index and the
+artwork was a clock that drew the falling backing curve — the best property the
+old lore had (D18). A random survivor order means the index is no longer a date,
+so **Hoard and Slumber become rolled traits with exact published counts**, and
+no trait is derived from anything.
 
-**And the hoard curve is not decoration: it is the economics, drawn.** Backing
-per piece falls structurally as the collection fills — the reserve grows, but it
-is divided among more pieces (`spec-round-2026-09-01.md` §7). Piece 1 really is
-over-backed relative to piece 4,000 at the moment each is issued. The art states
-that instead of hiding it, which is the only reason a shrinking hoard is
-honest.
+What is bought for it: suspense on both axes, rarity checkable before issuance 1
+rather than argued about after, and "N Sovereigns remain".
 
-So the tier is carried on axes the index does not touch, and both of them are
-the ones that survive a 48 px circle:
+**Hoard is never the tier signal, and this is the hard rule.** The obvious move
+after freeing it is to let a Sovereign sleep on a mountain and a Whelp on a
+coin — it is the most legible possible signal at 48 px. **It is also the art
+contradicting the copy on the one sentence the product cannot afford to muddy:**
+every piece redeems for exactly the same share (§9.5). A tier signalled by a
+visibly bigger pile of money says the opposite, to everyone, at a glance.
+
+So the tier is carried by the two things that survive a 48 px circle and imply
+nothing about value:
 
 | Carrier | Owned by | Tier signature |
 |---|---|---|
-| **Seam** — the vein of gold through the scales | tier | shape, not brightness. Epic gets forms no other tier has. |
-| **Relic** — what it keeps from the hoard | tier | each tier draws from its own pool; epic-only relics change the silhouette. |
-| Hoard — how much it sleeps on | **index** | never a tier signal |
-| Slumber — how deeply it sleeps | **index** | never a tier signal |
-| Scale — body finish | rolled, free of both | |
+| **Seam** — the vein through the scales | tier | shape, not brightness. Ancient and Sovereign get forms no other tier has. |
+| **Relic** — what it keeps from the hoard | tier | each tier draws from its own pool; high-tier relics change the silhouette. |
+| Hoard — how much it sleeps on | **rolled**, published counts | never a tier signal |
+| Slumber — how deeply it sleeps | **rolled**, published counts | never a tier signal |
+| Scale — body finish | rolled | |
 
-**Background is not a tier signal.** `illustrator-brief.md` fixes it as a
-single low-saturation field that "recedes and never competes… is not a trait
-axis and it is never a scene", and a tier-coloured background is both the most
-common way a generative collection looks cheap and a direct contradiction of a
-line somebody was paid to work to.
+**Background is not a tier signal** either, for the reason it never was: the
+brief fixes it as one low-saturation field that recedes and never competes, and
+a tier-coloured background is the most common way a generative collection looks
+cheap.
 
-**The test that catches the real failure** is therefore not the distribution
-test. It is: **render the epic seam forms at the smallest hoard state, mask to
-48 px, and assert the tier is still distinguishable from the common forms.**
-Bias-free counts with an illegible epic is the failure mode that ships.
+**The test that catches the real failure** is: render the Ancient and Sovereign
+seam forms at the *smallest* hoard state, mask to 48 px, and assert the tier is
+still distinguishable from a Whelp. A ladder with correct counts and an
+invisible Sovereign is the failure that ships.
 
 ### 9.5 What rarity must never touch
 

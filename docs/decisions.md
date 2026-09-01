@@ -56,22 +56,22 @@ spends real money on the brand, that search gets run properly.
 The reserve is the **hoard**. Each Drake guards its share; burning one is that
 Drake giving up its share and leaving.
 
-**The index owns the hoard. The tier owns the form.** This is D13's rule with
-its axes renamed, and the rename made it more honest rather than less:
+**The tier owns the form.** Since D19 nothing owns the index:
 
-- **Hoard** — derived from the issuance index. Piece 1 sleeps on a mountain of
-  gold; piece 4,000 sleeps on a single coin. The curve is published, rendered
-  across all 4,000, **before issuance 1** (D9).
-- **Slumber** — derived from the index. Shallow and alert at 1, deep at 4,000.
-- **Seam** and **Relic** stay the tier carriers, unchanged in role: geometry and
-  silhouette, never brightness (D13).
+- **Hoard** — how much gold it sleeps on. **Rolled**, exact counts published
+  before issuance 1. It was index-derived; D19 ended that.
+- **Slumber** — how deeply it sleeps. **Rolled**, same treatment.
+- **Seam** and **Relic** are the tier carriers: geometry and silhouette, never
+  quantity of gold (D13).
 
-**The shrinking hoard is not a mood, it is the arithmetic.** Backing per piece
-**falls structurally as the collection fills** — the reserve grows, but it is
-divided among more pieces, and early holders are always over-backed
-(`spec-round-2026-09-01.md` §7). The art depicts exactly that. This is the
-first time the derived curve tells the truth about the economics instead of
-merely being a clock, and it is the strongest argument for the lore.
+**The shrinking-hoard curve was the strongest argument for this lore, and D19
+took it away.** Backing per piece does fall structurally as the collection fills
+(`spec-round-2026-09-01.md` §7), and while issuance ran in order the art drew
+exactly that. With a random survivor order the index is no longer a date, so the
+curve depicts nothing. **The lore now stands on the metaphor alone** — the hoard
+is the reserve, burning is a Drake taking its share and leaving — which is a
+weaker claim than the one this decision was written with. Recorded rather than
+quietly dropped.
 
 **Cost:** the previous lore is dead and the words that carried it — cinder,
 ember, ash, soot, charred — are now **banned in copy and identifiers alike**,
@@ -80,8 +80,8 @@ dead metaphor comes back and the site starts telling two stories.
 
 ### D2 — The issuance is weighted by the fungible token, not by pieces held
 
-Eligibility is a holder's share of eligible `$CINDER` supply at the snapshot
-slot. Holding a Cinder does not change your share.
+Eligibility is a holder's share of eligible `$DRAKES` supply at the snapshot
+slot. Holding a Drake does not change your share.
 
 **Cost:** it is not the design the brief first described. **Why:** weighting by
 pieces has an empty eligible set at issuance 1, earns nothing until pieces
@@ -89,7 +89,7 @@ trade, and concentrates — whoever is issued early is issued more often.
 
 ### D3 — Reserve in `$PUMP`, pure, no USDC leg
 
-Pool: `$CINDER`/`$PUMP` on Meteora DAMM v2, static config
+Pool: `$DRAKES`/`$PUMP` on Meteora DAMM v2, static config
 `HQ6vW45Kug23h2A4LkyUqB4UFfGx4LqY1uZLLfQemEjU` — 2% flat fee,
 `collectFeeMode: 1` (fees in token B), no dynamic fee. Fees arrive as PUMP.
 **No swap, no CPI to any aggregator, no keeper holding funds.**
@@ -124,7 +124,7 @@ a dependency and an attack surface, for rounding-error money.
 
 ### D6 — No creator token allocation. No paid genesis.
 
-Zero `$CINDER` to the team, no presale, no vesting, no reserved wallet. The
+Zero `$DRAKES` to the team, no presale, no vesting, no reserved wallet. The
 entire supply goes into the pool. Nothing is sold at issuance and there is no
 way to buy in other than the open market.
 
@@ -177,15 +177,19 @@ unaudited program that holds redeemable value, or not shipping. Of the three
 this is the least bad, and the unaudited program holding *nothing* is what makes
 it defensible.
 
-### D9 — The ember is derived from the issuance index, curve published first
+### D9 — ~~The hoard is derived from the index~~ — **superseded 2026-09-01 by D19**
 
-Two of five traits are functions of the index rather than rolls. The exact
-functions are published, with a rendered strip of all 4,000 states, **before
-issuance 1**.
+Two of five traits were functions of the issuance index, so the artwork was a
+clock. **Random issuance order removed the index as a date** (D19), so Hoard and
+Slumber became rolled traits with exact published counts.
 
-**Cost:** removes two axes of randomness from the rarity table. **Why:** the
-artwork becomes a clock, and no later batch can be accused of being worse art
-because the curve was public before the first piece existed.
+What survives, and it is the part that mattered: **every trait of every piece is
+fixed and published before issuance 1**, now committed by a manifest hash inside
+`initialize` rather than merely posted. That is a stronger version of the same
+promise.
+
+**What was lost, stated once rather than buried:** the artwork no longer draws
+the falling backing curve. That was the best property the lore had.
 
 ---
 
@@ -258,39 +262,80 @@ guard may be one a painted piece can only pass by flattening.
 **Revisit if:** the guard starts rejecting art the owner likes. That is the
 signal that a threshold is wrong, not that the art is.
 
-### D13 — Rarity is visible, stratified by index block, and cosmetic
+### D13 — Rarity is visible, named for stature, and cosmetic
 
-Five levels: **common 2,400 · uncommon 1,000 · rare 480 · epic 110 ·
-one-of-one 10.** Allocated in **blocks of 400**, so every block of 400
-consecutive indices holds exactly 11 epics and exactly 1 one-of-one. Order
-inside a block comes from the published seed; counts are fixed. The whole
-index→tier table is published before issuance 1 in the manifest that gets
-hashed.
+Five tiers: **Whelp 2,400 · Wyrm 1,000 · Elder 480 · Ancient 110 ·
+Sovereign 10.** Named for stature, never for metal or money — a Copper/Gold
+ladder would imply an economic difference that does not exist.
 
-**The tier is carried by Seam geometry and by tier-exclusive Relic pools —
-never by Ember or Settle**, which are the index. *The index owns light; the
-tier owns form.* Background is not a tier signal. `DESIGN.md` §9.3–9.4.
+**Block stratification is gone** (D19 made it impossible) and the cost is
+published: a **34.8%** chance no Sovereign is issued in the last 400 hours,
+**26.3%** in the last 500, **5.6%** in the last 1,000. Ancients are unaffected.
 
-**Cost, and it is the real one:** a visible ladder on a collection whose entire
-claim is that every piece redeems for the same amount invites the assumption
-that the ladder is economic. It also creates a holder who was issued a common
-by a process they did not choose and cannot re-roll — unlike a mint, there was
-no purchase decision to regret. Mitigation is copy, and it is not optional:
-**"a one-of-one redeems for exactly the same share as the plainest common"**
-ships on the same screen as the rarity table, every time.
+**The tier is carried by Seam geometry and tier-exclusive Relic pools. Never by
+the hoard.** Letting a Sovereign sleep on a mountain would be the most legible
+signal available at 48 px and also the art contradicting the copy on the one
+sentence the product cannot afford to muddy: **every piece redeems for exactly
+the same share.** `DESIGN.md` §9.3–9.5.
 
-Second cost: the tier allocation is ours to generate, which is the same trust
-shape as the snapshot — recomputable, not trustless. Publishing the full table
-before issuance 1 is what converts "trust us about the one-of-ones" into a
-commitment anyone can check afterwards.
+**Cost:** a visible ladder on a collection whose claim is equal redemption
+invites the assumption that the ladder is economic. Mitigation is copy and it is
+not optional: *"a Sovereign redeems for exactly the same share as the plainest
+Whelp"* ships on the same screen as the rarity table, every time.
 
-**Cost to the brief:** two extra seam geometries reserved for epic, the relic
-list partitioned into per-tier pools instead of one flat list of 24, and a
-delivered face-registration mask. Expect the budget to move by roughly 10%.
+### D19 — Survivors: the piece is chosen at random, not in order
 
-**Revisit if:** the epic signature cannot be made legible at 48 px at the
-dimmest ember state. Then the tier ladder is decoration in the only place
-people look at it, and it should be dropped rather than faked.
+All 4,000 exist before issuance 1 with their tiers fixed, and each issuance
+picks a **random survivor** from the unissued set. The same revealed randomness
+answers both questions, **domain-separated** so one number is not doing two
+jobs: `sha256(0x03 ‖ value)` picks the piece, `sha256(0x04 ‖ value)` picks the
+holder.
+
+**Mechanism:** Fisher-Yates swap-with-last over a 4,000 × `u16` array (8 KB,
+~0.06 SOL of rent, once). O(1) per issuance, no scan, no bitmap. **No on-chain
+tier table** — the program never reads a tier because rarity never touches
+money; the manifest hash in `initialize` is what fixes the mapping in advance.
+
+**What it costs, and the second one is the serious one:**
+
+1. **Stratification dies.** D13 has the numbers.
+2. **The refusal surface doubles.** T11 already lets whoever settles fetch the
+   reveal off-chain and decline to submit it. Today they decline if they dislike
+   the recipient; now also if they dislike **which piece** is going out. **Every
+   hour that would issue a Sovereign to somebody else is an hour somebody has a
+   reason to kill** — landing on the weakest part of the design.
+3. The verify page must replay the survivor array. It is derivable from the
+   events, so this is work, not a trust hole.
+
+**What it buys:** suspense on both axes, rarity checkable before issuance 1
+instead of argued about afterwards, and "N Sovereigns remain".
+
+**Not new, and worth saying because it was assumed to be:** pre-generating all
+4,000 and publishing them to Arweave before issuance 1 was **already** the
+design (old D9, batches B1/B2). Irys stays at the verified **~US$8** and the
+illustrator brief is unchanged — it delivers layers, and composition is
+programmatic.
+
+### D20 — The settle bounty is Phase 2, flat, and 0.001 SOL
+
+**Not in Phase 1**, which holds nothing — that is what makes it deployable
+before an audit (D8). Until Phase 2 the crank is us and the cost is ours,
+roughly 5,000 lamports an hour.
+
+In Phase 2: **0.001 SOL, flat, in lamports.** Total under 4 SOL across the whole
+collection.
+
+**Never a fraction.** `DESIGN.md` said "capped at 1/10,000 of the reserve", which
+compounded over 4,000 issuances is `(1 - 1e-4)^4000 ≈ 0.67` — **about a third of
+the reserve paid to crankers.** Corrected on 2026-09-01.
+
+**It does not defend against T12.** The oracle griefer attacks at *request*
+time by naming a stale oracle; paying the settler does not touch that. A bounty
+on `request_issuance` would, marginally, and only by making honest requesters
+likelier to win a race the attacker needs to win only sometimes. **In `$DRAKES`
+it is impossible**: D6 gives the team zero allocation, so paying in the token
+means buying it, which is the swap D3 exists to avoid.
+
 ### D14 — Process deviations accepted at B0
 
 Three, all from CLAUDE.md or `batches.md`, all accepted with their reasons on
@@ -364,13 +409,6 @@ be down at the top of the hour.
 
 ## Still open
 
-- **The name.** The species name is **in review** — `Cinders`/`$CINDER` is a
-  working name in these documents and nothing more. No domain is bought, no
-  identifier in code carries it, and the project slug is an unset environment
-  variable. When it lands it touches exactly three places: `package.json`, copy,
-  and `SITE_URL` (CLAUDE.md).
-- **Trademark register search.** Postponed until there is a name to search. It
-  runs before any money is spent on a domain.
 - **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*
   do anything on pump.fun's own surface for distribution is not.
 - **Q7 — The floor sentence.** The exact public wording of "the floor is worth
@@ -378,5 +416,12 @@ be down at the top of the hour.
   once, when asked for explicitly.
 - **The `Exhausted` sentence.** D10 is a one-way door and needs its own line of
   copy. Same rule as Q7: written once, when asked for.
-- **D11's deadline, before or after the step-down.** 180 days lands ~13 days
-  after the creator's income stops. The owner may want 150.
+- **A proper trademark clearance search** in classes 9, 35, 41 and 42. D1 used a
+  web search over Justia and Trademarkia, which is not clearance. It runs before
+  real money goes into the brand.
+- **EVM collection collision** for "Drakes". Never checked; OpenSea's API needs a
+  key this project does not have.
+- **The owner's Quantums text.** The source document for the D19/D20 round is
+  **not in this repository**: it was never pasted. The round was argued from the
+  owner's summary in chat instead, and that is a gap in the ledger — every other
+  external claim here carries a source and a date.

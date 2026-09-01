@@ -148,27 +148,28 @@ same weight as the body — a relic that looks pasted on is a rejected relic.
 `none` is the rare state, not the default: roughly 3% carry nothing, and those
 are the bare Drakes.
 
-### Derived from the index — the hoard runs down as the collection fills
+### Also rolled — the two axes that carry the hoard
 
 **4 · Hoard** — how much it sleeps on. **12 delivered states**, from a mountain
-of gold (piece 1) to **a single coin** (piece 4,000). Monotonic. Affects how
-much gold is in frame, how far the warm bounce light reaches, and how high the
-creature sits.
+of gold down to **a single coin**. Affects how much gold is in frame, how far
+the warm bounce light reaches, and how high the creature sits.
 
 **5 · Slumber** — how deeply it is asleep. **8 delivered states**, from an eye
-half open and alert (piece 1) to fully under (piece 4,000). Monotonic. Reads in
-the eyelid, the jaw and how much the body has settled into the pile.
+half open and alert to fully under. Reads in the eyelid, the jaw and how much
+the body has settled into the pile.
 
-Together these read as one continuous descent across 166 days. Piece 1 sleeps
-shallow on a mountain. Piece 4,000 sleeps deep on one coin. **Nobody can claim
-a later batch is worse art, because the curve is public before the first piece
-is issued.**
+**These are rolled, with exact counts published before the first piece is
+issued** — not a curve over the collection. An earlier version of this brief
+tied them to the issuance order so the collection visibly ran down over 166
+days; the protocol now issues pieces in a random order, so that order no longer
+exists to draw. **Nobody can claim a later batch is worse art, because every
+piece and every count is published and hash-committed before issuance 1.**
 
-**And the curve is telling the truth.** Backing per piece genuinely falls as the
-collection fills — the hoard grows, but it is split among more Drakes, so each
-piece is issued against a smaller share than the one before it
-(`spec-round-2026-09-01.md` §7). The art is not decorating the mechanism, it is
-drawing it.
+**The hoard is never a rarity signal.** A Sovereign may sleep on one coin and a
+Whelp on a mountain, and that is correct: every piece redeems for exactly the
+same share, so the amount of gold in frame must not imply otherwise. Rarity is
+carried by the seam and the relic. This is the single easiest thing to get
+wrong in this brief.
 
 ## The ladder — rarity has to be *seen*
 
@@ -177,40 +178,42 @@ without opening the piece**:
 
 | Level | Count of 4,000 |
 |---|---|
-| Common | 2,400 |
-| Uncommon | 1,000 |
-| Rare | 480 |
-| Epic | 110 |
-| One-of-one | 10 |
+| **Whelp** | 2,400 |
+| **Wyrm** | 1,000 |
+| **Elder** | 480 |
+| **Ancient** | 110 |
+| **Sovereign** | 10 |
+
+The names are stature, never metal or money. A Copper/Gold ladder would imply an
+economic difference between pieces that does not exist.
 
 ### The rule that decides how the level is signalled
 
-> **The index owns the hoard. The level owns the form.**
+> **The level owns the form. Never the gold.**
 
-**Hoard and Slumber already belong to the index.** A level signalled by *how
-much gold is in frame* would be a level that reads as a *date* — an epic at
-piece 3,900 would look like a common, correctly, because it has almost no
-hoard. So quantity of gold is not available, and neither is the background: it
-stays the single low-saturation field that recedes and never competes.
+A level signalled by *how much gold is in frame* is a level that says a
+Sovereign is worth more than a Whelp — and it is not, by construction. Quantity
+of gold is therefore unavailable as a signal, and so is the background: it stays
+the single low-saturation field that recedes and never competes.
 
 That leaves the two things that survive a 48 px circle anyway:
 
 - **Seam geometry.** Each level's vein has a form of its own, distinguishable
-  as a *shape* in silhouette. **Epic gets two forms nobody else has.**
-- **Relic pool.** Each level has its own pool. **Epic relics change the
+  as a *shape* in silhouette. **Ancient and Sovereign get forms nobody else has.**
+- **Relic pool.** Each level has its own pool. **Ancient and Sovereign relics change the
   silhouette** — something that alters the outline, not a detail inside it.
   One-of-ones are designed individually and owe nothing to the pools.
 
 ### What we need delivered per level
 
-Not a flat list. For each of Common, Uncommon, Rare and Epic: **the seam form,
+Not a flat list. For each of Whelp, Wyrm, Elder and Ancient: **the seam form,
 the relic pool, and the surface state** that identifies it — where "state" means
 a treatment of the scales or the seam's edge that holds up in silhouette, never
 more gold and never a brighter light.
 
-**The acceptance test for the whole ladder** is one sheet: **the epic seam forms
-rendered at the smallest hoard state, masked to a 48 px circle.** If an epic
-still reads as an epic there, the ladder works. If it does not, the ladder is
+**The acceptance test for the whole ladder** is one sheet: **the Ancient and Sovereign seam
+forms rendered at the smallest hoard state, masked to a 48 px circle.** If they
+still read as themselves there, the ladder works. If it does not, the ladder is
 decoration in the only place people look at it.
 
 **Rarity is cosmetic and stays cosmetic.** Every piece redeems for exactly the
@@ -254,9 +257,9 @@ runs on the layers, and a milestone that fails it is reworked before it is paid.
 ### Milestone 2 has one extra step, and it is a human one
 
 **Milestone 2 is not accepted until the buyer has signed off on a contact
-sheet: every seam form, epic included, rendered at the smallest hoard state,
+sheet: every seam form, Sovereign included, rendered at the smallest hoard state,
 masked to a 48 px circle, over both chromes.** The machine measures contrast and
-geometry; whether an epic still *reads as* an epic there is a judgement, made by
+geometry; whether an Ancient still *reads as* an Ancient there is a judgement, made by
 a person looking at the sheet, before the largest payment of the three.
 
 **This changes one delivery order.** The hoard states are milestone 3 work, but
