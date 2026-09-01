@@ -269,6 +269,57 @@ the record:
 **Cost:** (1) is a rule with a real failure mode behind it and this is the kind
 of exception that quietly becomes the default. It is written down so the next
 overlap is a decision and not a habit.
+### D15 — `period_seconds` is written once by `initialize`, not compiled in
+
+Devnet writes 60, mainnet writes 3,600. The rehearsal then runs **the same
+bytecode** that goes to mainnet; a compile-time constant behind a feature flag
+would rehearse a program that is never deployed.
+
+**Cost:** one more value that can be wrong at `initialize`, and it is the value
+the entire schedule derives from. **Paid at the deploy checklist** with an
+absolute assertion against the literal — `period_seconds == 3600` — never an
+equality against another variable that could itself be empty (CLAUDE.md, "a
+schema guard is never `==`").
+
+### D16 — T12: four on-chain assertions, and no permissioned window
+
+`request_issuance` stays permissionless to everybody, us included. It asserts
+the queue is the one written at `initialize`, that the named oracle is in the
+queue's published live set, that the oracle agrees it is on that queue, and
+that it heartbeated inside the queue's own `node_timeout`. Full evaluation:
+`DESIGN.md` T12.
+
+**The window was designed and rejected**, and the reason is the one that
+matters here: it does not fix the attack (the fallback is permissionless by
+construction, so an adversary waits it out), and it writes an operator
+privilege — first refusal on every issuance — into a program whose claim is
+that nobody has one.
+
+**Cost:** the residual attack is real and stays. An oracle that heartbeats and
+then declines to serve a reveal costs the collection an hour, and an adversary
+who finds one can repeat it. **This is why the site says "no sooner than" and
+never publishes a completion date.**
+
+**Revisit if:** oracle-choice stalling is ever observed in practice. The next
+move is not a window; it is pinning the oracle set at `initialize` and deriving
+which one serves an hour from the index, so the caller has no choice at all.
+
+### D17 — The mainnet snapshot is read through Helius, paginated, on a project key
+
+Never an unpaginated `getProgramAccounts`: the public endpoints refuse a large
+holder scan outright with `-32012` (`references.md`, verified 2026-09-01), and
+refusing is the good case — a truncated scan would produce a root that verifies
+perfectly with holders missing from the eligible set.
+
+The read is paginated (DAS / `getTokenAccounts`), and **an incomplete page set
+is a skipped hour, never a partial tree.**
+
+**The key is created by the owner, under the project identity.** Never a
+personal account (CLAUDE.md, the no-doxx guard). Nothing in this repository
+records which route paid for it.
+
+**Cost:** a paid dependency in the issuance path, and a second thing that can
+be down at the top of the hour.
 
 ## Still open
 

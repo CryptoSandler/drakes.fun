@@ -1,0 +1,21 @@
+[toolchain]
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.devnet]
+issuance = "Bpmysmj4VMMo38Pa9NdbgRhmoBjQNWLbseARiPfoUaWm"
+
+[programs.localnet]
+issuance = "Bpmysmj4VMMo38Pa9NdbgRhmoBjQNWLbseARiPfoUaWm"
+
+[provider]
+cluster = "devnet"
+# NEVER the machine's default keypair: it may be linked to something else and a
+# chain link is permanent (CLAUDE.md, the no-doxx guard). This one is generated
+# for the rehearsal, lives outside the repository, and never touches mainnet.
+wallet = "~/.local/share/solana-devnet-rehearsal/crank.json"
+
+[scripts]
+test = "cargo test"

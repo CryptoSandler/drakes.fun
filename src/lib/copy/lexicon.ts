@@ -11,6 +11,9 @@ export const CORPUS_PATTERNS = [
   'app/**/*.ts',
   'app/**/*.tsx',
   'scripts/**/*.ts',
+  // The ban covers identifiers, and an on-chain instruction name is the most
+  // permanent identifier this project has: it is in the IDL forever.
+  'programs/**/*.rs',
   'content/**/*.md',
   'content/**/*.json',
 ]

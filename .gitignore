@@ -6,3 +6,6 @@ coverage
 .env.local
 .DS_Store
 *.tsbuildinfo
+target
+.anchor
+test-ledger

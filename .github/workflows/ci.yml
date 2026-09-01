@@ -16,3 +16,13 @@ jobs:
       - run: npm ci
       # Typecheck, lint, and the copy lexicon guard (DESIGN.md §6).
       - run: npm run verify
+
+  program:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      # Host tests only -- no SBF toolchain needed. These carry the vectors that
+      # keep the program's merkle and modulo byte-identical to the TypeScript
+      # the cranker and the public verify command run.
+      - run: cargo test -p issuance

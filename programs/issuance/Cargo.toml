@@ -1,0 +1,39 @@
+[package]
+name = "issuance"
+version = "0.1.0"
+description = "Phase 1: hourly issuance. Holds no value."
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "issuance"
+
+[features]
+default = []
+cpi = ["no-entrypoint"]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+idl-build = ["anchor-lang/idl-build"]
+anchor-debug = []
+custom-heap = []
+custom-panic = []
+
+[dependencies]
+anchor-lang = "1.0.2"
+solana-program = "3.0.0"
+# default-features = false and solana-v3 on purpose: the crate defaults to
+# solana-v2, which puts a second, incompatible Pubkey type in the graph and
+# every comparison against an anchor Pubkey fails to compile. mpl-core 0.12.1
+# is already on solana-program 3, so v3 is the one everything agrees on.
+switchboard-on-demand = { version = "0.13.0", default-features = false, features = ["cpi", "solana-v3"] }
+mpl-core = "0.12.1"
+# solana-program pulls getrandom 0.2 through k256/curve25519, and getrandom 0.2
+# has no backend for the SBF target -- the build fails on `imp::getrandom_inner`.
+# The `custom` feature is the standard escape: nothing in this program asks for
+# OS randomness (the randomness comes from Switchboard, on chain, by design), so
+# there is no handler to register and nothing to call it.
+getrandom = { version = "0.2", features = ["custom"] }
+
+[lints.rust]
+unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

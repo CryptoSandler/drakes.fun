@@ -134,7 +134,19 @@ Every parameter is a `const` or is written once by `initialize`.
 Writes the config PDA and closes the door behind it. Fails if the config account
 already exists, so it cannot run twice.
 
-Immutable after this call: the `$CINDER` mint, the `$PUMP` mint (asserted
+**Phase 1 writes only what Phase 1 needs**: the weight mint, the collection,
+the Switchboard program, queue and randomness account, the genesis instant, the
+period (D15), the collection size and the excluded set. The reserve, the creator
+ATA and the fee split are Phase 2's `initialize`, because the Phase 1 binary has
+no instruction that could use them and a config field with no reader is a field
+nobody checks.
+
+**The excluded set is recorded but not enforced on chain.** This program never
+sees a token account, so the exclusion is applied when the snapshot is built
+off-chain. Recording it makes the verify page able to state the set; pretending
+the program enforced it would be worse than saying this.
+
+Immutable after this call in the Phase 2 program: the `$CINDER` mint, the `$PUMP` mint (asserted
 literally equal to `pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn`, per CLAUDE.md
 "a schema guard is never `==` against another variable"), the Core collection,
 the Meteora pool and position, the creator ATA, the genesis instant, the
@@ -147,7 +159,23 @@ issued a piece and cannot dilute anyone's share.
 
 ### 2. `request_issuance`
 
-Permissionless. Refuses unless `now >= issue_at(next_index)`.
+Permissionless. Refuses unless `now >= issue_at(hour)`.
+
+**The issuance account is keyed by the schedule hour, not by the piece index,
+and that distinction is the whole skip mechanism.** A PDA seeded with the hour
+can be created exactly once, so **one request per hour is enforced by the
+account existing, not by a check** — there is no re-request and therefore no
+way to re-roll an hour whose outcome a caller has already fetched from the
+gateway and disliked (T11). A piece index, by contrast, must remain requestable
+in a later hour, or a single unrevealed hour would strand the collection below
+4,000 forever.
+
+So: the **hour** advances with the clock; the **piece index** advances only on a
+settled issuance. A skipped hour costs an hour of calendar, never a piece.
+
+The hour is passed as an argument because it seeds the account, and the handler
+asserts it equals the hour derived from the clock. The caller names which
+account it is opening; the machine decides what hour it is.
 
 Records the current slot, writes the snapshot Merkle root for that slot, and
 requests Switchboard randomness. The outcome does not exist yet: the randomness
@@ -165,9 +193,15 @@ Permissionless. Refuses on three independent conditions, each with its own
 error, because an instruction that fails three ways and says one thing is not
 debuggable in public:
 
-- `AnchorTooEarly` — the settling slot is before `issue_at(index)`.
-- `SnapshotNotFrozen` — no root committed for this index.
+- `AnchorTooEarly` — the settling slot is before `issue_at(hour)`.
+- `SnapshotNotFrozen` — no root committed for this hour.
 - `RandomnessNotReadable` — `get_value` refused at this slot.
+- `IssuanceExpired` — **a fourth, added when the program was written.** The
+  hour being settled must be the current hour. Switchboard's reveal window is
+  only a few minutes wide in practice, so a stale hour would almost never
+  settle late — but "almost never" is not a guard, and an hour that settled out
+  of order would mint a piece against a snapshot from an arbitrary point in the
+  past.
 
 **The third one is not "the value has not arrived yet", and this was verified
 against the crate rather than assumed** (`references.md`, Switchboard On-Demand
@@ -423,38 +457,80 @@ A caller who stalls an issuance cannot re-roll it. They can only destroy it.
 
 ### T12 — The oracle is chosen by whoever calls `request_issuance`
 
-**New, and it is the cost of T11's design.** Switchboard's `randomness_commit`
-takes the `oracle` account as an argument (`references.md`, read 2026-09-01).
-The queue does not assign it; the caller names it. `request_issuance` is
-permissionless, so **the caller who lands first each hour picks the oracle that
-will serve that hour.**
+Switchboard's `randomness_commit` takes the `oracle` account as an argument
+(`references.md`, read 2026-09-01). The queue does not assign it; the caller
+names it. `request_issuance` is permissionless, so the caller who lands first
+each hour picks the oracle that will serve that hour.
 
-An adversary who names a dead or uncooperative oracle burns one transaction fee
-and costs the collection one hour. Repeated every hour, it does not destroy
-pieces — `issued_count` does not advance, so the piece is issued later — but it
-**stretches the collection indefinitely**, which is why §2's 166d16h is a floor
-and not a date.
+An adversary who names a dead oracle burns one transaction fee and costs the
+collection one hour. It destroys no piece — `issued_count` does not advance —
+but repeated, it **stretches the collection indefinitely**, which is why §2's
+166d16h is a floor.
 
-T11's old framing said this "costs them the same piece it costs everyone else".
-That is true of a holder and false of the attacker who matters: somebody who
-holds nothing pays ~5,000 lamports an hour to stall a project indefinitely.
-The asymmetry is real and it should not be described away.
+#### What the chain publishes, and what it lets the program assert
 
-What the program can enforce, and does:
+Read from `switchboard-on-demand` 0.13.0 on 2026-09-01, the same way the rest
+of §5 was:
 
-- `queue` must equal the queue written at `initialize`. An oracle outside it is
-  refused by Switchboard itself.
-- The Switchboard program ID is the one written at `initialize`, asserted
-  literally against the cluster's published value, never taken from the caller.
+- **`QueueAccountData.oracle_keys: [Pubkey; 78]`** with `oracle_keys_len` — the
+  crate's own words: *"the addresses of the quote oracles who have a valid
+  verification status and have heartbeated on-chain recently."* The helper
+  `idx_of_oracle(&Pubkey) -> Option<usize>` is on the account.
+- **`QueueAccountData.node_timeout: i64`** — the queue's own staleness
+  threshold, published rather than chosen by us.
+- **`OracleAccountData.last_heartbeat: i64`** and **`is_on_queue: u8`** and
+  **`queue: Pubkey`**.
 
-What it cannot enforce is that a valid oracle is a *live* one. The mitigations
-that remain are operational, and they are honest rather than clever: our crank
-requests at the top of the hour with a healthy oracle and a priority fee, so an
-attacker has to win a race every hour, forever, in public, with each attempt
-visible on chain and attributable to a funder.
+So `request_issuance` asserts, with **no new authority and no privilege for the
+operator**:
 
-**No re-request is added to fix this.** The cure is grinding and the disease is
-delay.
+1. `queue == config.queue`, written once at `initialize`.
+2. `queue.idx_of_oracle(oracle).is_some()` — in the live set.
+3. `oracle.queue == queue` and `oracle.is_on_queue == 1`.
+4. `clock.unix_timestamp - oracle.last_heartbeat <= queue.node_timeout` —
+   inside the queue's own freshness window.
+
+**That reduces the attack from "name any account" to "name an oracle
+Switchboard itself currently considers live and heartbeating."** The residual
+is an oracle that heartbeats and then declines to serve a reveal, which is a
+Switchboard-level failure that hits every consumer of the queue and is not
+something we can out-engineer.
+
+#### The permissioned window, evaluated and rejected
+
+The proposal was: for the first N minutes of each hour only a known crank key
+may call `request_issuance`, with a permissionless fallback afterwards.
+
+**The strongest case for it:** it removes the fee race, so the honest crank does
+not have to outbid anybody to protect the hour.
+
+**Why it is rejected anyway, and the reason is not a small one:**
+
+1. **It does not fix T12.** The fallback is permissionless by construction, so
+   an adversary waits N minutes and names a bad oracle. To close that, the
+   fallback would need the oracle assertions above — and once those exist, they
+   are doing all the work and the window protects nothing.
+2. **It writes an operator privilege into a program whose entire claim is that
+   nobody has one.** Inside the window we would pick the oracle, fetch the
+   reveal off-chain, see the outcome, and be able to decline to send it, with
+   nobody else able to start that hour. Today that is a race we usually win; the
+   window makes it a right the program grants us. The honest copy for it reads
+   *"the operator has an exclusive window each hour in which only they may start
+   the issuance, and may decline to complete it"* — and that sentence costs more
+   than the fee race does.
+3. It adds an immutable key to config. Losing it degrades gracefully (the
+   fallback still runs), so this is the least of the three, but it is one more
+   thing that can be wrong at `initialize` for a benefit that is already zero
+   by (1).
+
+**Verdict: the four assertions, no window, `request_issuance` stays
+permissionless to everybody including us.** The fee race stays, and it is
+harmless: whoever wins it can only name an oracle the queue says is live.
+
+**Not verified:** whether Switchboard's own `randomness_commit` handler already
+enforces queue membership or its `curr_idx` round-robin. If it does, assertions
+2 and 3 are belt and braces. They are cheap, so they stay either way, and
+nothing in this design depends on the answer.
 
 ---
 
