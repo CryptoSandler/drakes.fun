@@ -58,6 +58,17 @@ leaked from a repository like this one before:
 - **Commit identity** — covered above.
 - **Timezone**. Commit timestamps, a `TZ` in a config, a cron expression written
   in local time, a screenshot with a clock. Schedules are written in UTC.
+
+  **Commits are made with `TZ=UTC`.** Git stamps the machine's offset into every
+  commit, and twelve commits reading `-0300` narrow the author to a handful of
+  countries. There is no git config for this — it is the environment, so it is
+  the habit:
+
+      TZ=UTC git commit -m "..."
+
+  Caught here on 2026-09-01 with the whole history still unpushed, and rewritten
+  to `+0000` for free. After a push it is published history and the fix costs a
+  force-push over commits other people may already have.
 - **Language**. Spanish in a comment, a variable, a copy string, a test name.
   The rule above is a privacy rule as much as a style one.
 - **Personal accounts**. Never sign in to anything with the personal address.
