@@ -30,7 +30,7 @@ use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
 use anchor_lang::solana_program::program::invoke_signed;
 use switchboard_on_demand::OracleAccountData;
 
-declare_id!("Bpmysmj4VMMo38Pa9NdbgRhmoBjQNWLbseARiPfoUaWm");
+declare_id!("A6vnmLcrppzSqCubRdJoXzs1oDJc23swLSGDCTKu7jGt");
 
 /// Domain separation on the Merkle hashing. Without distinct prefixes an inner
 /// node can be presented as a leaf. These bytes match `src/lib/snapshot`
@@ -201,22 +201,30 @@ pub mod issuance {
         // reduce that from "any account" to "one the queue itself currently
         // says is live", and they cost no authority and no privilege to anyone.
         require_keys_eq!(ctx.accounts.queue.key(), config.queue, IssuanceError::QueueMismatch);
-        let queue_info = ctx.accounts.queue.to_account_info();
-        let oracle_info = ctx.accounts.oracle.to_account_info();
-        let queue = QueueAccountData::new(&queue_info)
-            .map_err(|_| error!(IssuanceError::QueueUnreadable))?;
-        let oracle = OracleAccountData::new(&oracle_info)
-            .map_err(|_| error!(IssuanceError::OracleUnreadable))?;
-        require!(
-            queue.idx_of_oracle(&ctx.accounts.oracle.key()).is_some(),
-            IssuanceError::OracleNotOnQueue
-        );
-        require_keys_eq!(oracle.queue, config.queue, IssuanceError::OracleNotOnQueue);
-        require!(oracle.is_on_queue == 1, IssuanceError::OracleNotOnQueue);
-        require!(
-            clock.unix_timestamp.saturating_sub(oracle.last_heartbeat) <= queue.node_timeout,
-            IssuanceError::OracleStale
-        );
+        // **Scoped deliberately.** `QueueAccountData::new` and its oracle
+        // counterpart each hand back a `Ref` into the account's data, and a CPI
+        // refuses to run while any account it is passed is still borrowed. Both
+        // borrows have to be dropped before `randomness_commit` below, or every
+        // request fails with `AccountBorrowFailed` — which is what happened on
+        // the first devnet run, and is not reachable by any unit test.
+        {
+            let queue_info = ctx.accounts.queue.to_account_info();
+            let oracle_info = ctx.accounts.oracle.to_account_info();
+            let queue = QueueAccountData::new(&queue_info)
+                .map_err(|_| error!(IssuanceError::QueueUnreadable))?;
+            let oracle = OracleAccountData::new(&oracle_info)
+                .map_err(|_| error!(IssuanceError::OracleUnreadable))?;
+            require!(
+                queue.idx_of_oracle(&ctx.accounts.oracle.key()).is_some(),
+                IssuanceError::OracleNotOnQueue
+            );
+            require_keys_eq!(oracle.queue, config.queue, IssuanceError::OracleNotOnQueue);
+            require!(oracle.is_on_queue == 1, IssuanceError::OracleNotOnQueue);
+            require!(
+                clock.unix_timestamp.saturating_sub(oracle.last_heartbeat) <= queue.node_timeout,
+                IssuanceError::OracleStale
+            );
+        }
 
         let issuance = &mut ctx.accounts.issuance;
         issuance.bump = ctx.bumps.issuance;

@@ -164,40 +164,80 @@ that is not made on both sides turns those tests red, which is the point.
 - Everything the rehearsal asserts is read back from the chain. The cranker's
   own log is evidence of what the cranker thought, and nothing more.
 
-## 4b. State of the rehearsal — 2026-09-01
+## 4b. The rehearsal, run 2026-09-01 — 48 hours, 39 settled
 
-**Cleared and verified on chain:**
+Program `A6vnmLcrppzSqCubRdJoXzs1oDJc23swLSGDCTKu7jGt`, period 60 s, a rehearsal
+mint with 8 token accounts (2 holding zero), all through Helius.
 
 | | |
 |---|---|
-| Program | `Bpmysmj4VMMo38Pa9NdbgRhmoBjQNWLbseARiPfoUaWm` |
-| Config PDA | `445WA1VxGD9sJcoAMfRHJ92eZBo4aPsMi4Wk1MsTuKUL` |
-| Collection (mpl-core) | `3shhtPkp4FST9DxFNuWEtroecReauz3gJcpcmVzKmZrZ`, update authority = config PDA |
-| Randomness | `GyVunMibLgBmJ65WU18JV3ezF6AiZ8rWAYxyqwtLc39P`, **authority = config PDA** |
-| Queue | `EYiAmGSdsQTuCw413V5BzaruWuCCSDgTPtBGvLkXHbe7` |
-| Period | 60s (rehearsal), `collection_size` 4,000, `issued` 0, `live` 0 |
+| Hours run | 48 |
+| **Settled** | **39** |
+| Skipped | 9 |
+| Schedule drift | **zero** — every `issue_at` was exactly `genesis + h·60`, 2,820 s across 47 hours |
+| Public verify (`node scripts/snapshot.ts verify`) | **39 / 39 pass**, no network, no install |
+| Program vs TypeScript | **39 / 39 agree** on recipient, point, root and eligible supply |
 
-**T13 is closed.** `initialize` now creates the randomness account by CPI to
-`randomness_init` with the config PDA signing as authority — the only way to get
-a PDA authority, since that instruction requires the authority's signature and a
-PDA cannot sign at the top level. The account was then **read back from the
-chain** rather than assumed: its owner is the Switchboard devnet program and its
-`authority` is the config PDA.
+### Why the nine hours skipped
 
-**Deploying: use the provider endpoint, not the public one.** The public devnet
-RPC failed four of six attempts on a ~313 KB upload ("13 to 15 write
-transactions failed"), each stranding ~1.99 SOL in a buffer. The same deploy
-through Helius succeeded **first try**, and `solana program dump` matched the
-local `.so` by sha256 exactly:
+| Count | Cause |
+|---|---|
+| **7** | the oracle's gateway answered **503** |
+| 1 | forced: the reveal was deliberately withheld |
+| 1 | RPC returned "blockhash not found" |
 
-    cbc6719c019845b9bef2ff41bec9241f939213b59383c9b441903646aca96cbd
+**The seven are one oracle, not seven.** They fell on hours 8, 14, 20, 26, 32,
+38, 44 — every `h ≡ 2 (mod 6)`, which is the crank's round-robin landing on the
+same member of a six-oracle live set. **That oracle passed every on-chain check
+— it was in `oracle_keys`, `is_on_queue == 1`, and heartbeating inside
+`node_timeout` — and its gateway was dead.**
 
-**And Helius carries the snapshot scan.** The query the public endpoint refuses
-with `-32012` returned **1,471,466 accounts** through Helius (devnet USDC, 2026-09-01),
-which is what D17 requires and what the cranker depends on.
+This is T12's residual risk, measured: **on-chain liveness is not gateway
+liveness**, and one bad member of six cost 15% of the hours. The fix is in the
+crank, not the program: **health-check the gateway before committing to an
+oracle**, and prefer oracles that recently served. The program cannot help,
+because the oracle is chosen at request time and there is no re-request.
 
-**Still to do before the 48-issuance run:** a rehearsal `$DRAKES` mint with a
-handful of holders, and the cranker loop itself.
+### The three forced failures
+
+| Hour | Probe | Result |
+|---|---|---|
+| 10 | request the same hour twice | **refused — the issuance account already exists.** Structural, not a check. |
+| 15 | settle an hour that has passed | **rejected, `IssuanceExpired`** |
+| 20 | request naming an oracle outside the live set | **rejected, `OracleStale`** |
+
+### The freeze, demonstrated rather than asserted
+
+A holder bought 3,000,000 tokens **two seconds after hour 7's boundary**, i.e.
+between that hour's request and its settle. Hour 7 settled against 6 leaves and
+11,500,001 eligible — **without them**. Hour 8 carried 7 leaves and 14,500,001.
+This is the sentence §7 requires the site to print.
+
+Both zero-balance accounts stayed out of every tree: 8 token accounts, 6 leaves.
+
+### Winners against weights
+
+39 settlements, chi-square **5.286** on 6 degrees of freedom against a critical
+value of **12.592** at p = 0.05 — consistent with the balances. The largest
+holder (42.2% of supply) took 18 of 39; the 1-unit holder took none.
+
+### Cost
+
+| | SOL |
+|---|---|
+| The 48-hour rehearsal | **0.2166** |
+| — per settled issuance | ~0.0056 |
+| Program rent (recoverable by closing) | 2.0902 |
+| **Net burned across every deploy, the mint, the holders and the run** | **~0.278** |
+
+### The bug the rehearsal found, which no unit test could
+
+`request_issuance` failed every time with `AccountBorrowFailed`.
+`QueueAccountData::new` and its oracle counterpart each return a `Ref` into
+account data, and **a CPI refuses to run while any account it is passed is still
+borrowed** — the T12 assertions held both borrows open across
+`randomness_commit`. Scoping them in a block fixed it. It is unreachable off
+chain, and it is exactly what a rehearsal is for.
 
 ## 5. What the rehearsal does not cover
 
@@ -207,8 +247,12 @@ handful of holders, and the cranker loop itself.
   cannot rehearse an adversary doing it every hour for months.
 - **Anything in Phase 2.** No reserve, no `claim_fees`, no `redeem`. The Phase 1
   program holds nothing, which is what makes it deployable before an audit (D8).
-- **The 48 issuances.** None have run yet. The blocker that stopped them is
-  gone (4b); what remains is the rehearsal mint, its holders, and the cranker.
+- **Survivor selection (D19).** The program still mints sequentially by
+  `issued_count`. The rehearsal exercised the schedule, the snapshot, the
+  randomness and the mint — not the random piece pick, which is unwritten.
+- **A production cranker.** The rehearsal driver is a scratchpad script. The
+  cranker that ships needs the gateway health check above, and it needs a home
+  in this repository with a test that drives it.
 - **The Switchboard randomness account.** It is created off-chain by the
   deployer with its authority set to the config PDA, and passed to
   `initialize`, which asserts both the authority and the queue. One account is
