@@ -1,0 +1,3 @@
+# Nothing here is ready to be indexed. This stays until launch.
+User-agent: *
+Disallow: /

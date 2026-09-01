@@ -14,6 +14,9 @@ export const CORPUS_PATTERNS = [
   // The ban covers identifiers, and an on-chain instruction name is the most
   // permanent identifier this project has: it is in the IDL forever.
   'programs/**/*.rs',
+  // The placeholder is the most public copy this project has. It is scanned.
+  'public/**/*.html',
+  'public/**/*.txt',
   'content/**/*.md',
   'content/**/*.json',
 ]

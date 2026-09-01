@@ -9,3 +9,5 @@ coverage
 target
 .anchor
 test-ledger
+.vercel
+.env*
