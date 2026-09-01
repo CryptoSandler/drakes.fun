@@ -270,6 +270,48 @@ Not from documentation and not from memory.
   a request is therefore a choice made by whoever calls, not a property of the
   queue. See `DESIGN.md` T12.
 
+### Switchboard On-Demand, read from the DEVNET on-chain IDL 2026-09-01
+
+Loaded from the deployed program `Aio4gaXjXzJNVLtzwtNVmSqGKpANtXhybbkhtAC94ji2`
+with the SDK's own loader — the program's published IDL, not documentation.
+
+**Signer requirements, which are the load-bearing part:**
+
+| Instruction | `authority` | `payer` | other signers |
+|---|---|---|---|
+| `randomnessInit` | **signer** | signer | `randomness` |
+| `randomnessCommit` | **signer** | — | — |
+| `randomnessReveal` | **signer** | signer | — |
+
+**All three require the randomness account's `authority` to sign.** That single
+fact reshapes the Phase 1 program; see `DESIGN.md` §3 and T13.
+
+`randomnessReveal` discriminator `[197, 181, 187, 10, 30, 58, 20, 73]`, which is
+`sha256("global:randomness_reveal")[..8]` — derivation and IDL agree. Params are
+fixed-size arrays: `signature: [u8; 64]`, `recovery_id: u8`, `value: [u8; 32]`.
+
+Account order for `randomnessReveal`: randomness (w), oracle, queue, stats (w),
+authority (signer), payer (signer, w), recentSlothashes, systemProgram,
+rewardEscrow (w), tokenProgram, wrappedSolMint, programState.
+
+### The devnet queue's "live" oracle set contains dead oracles — 2026-09-01
+
+Queue `EYiAmGSdsQTuCw413V5BzaruWuCCSDgTPtBGvLkXHbe7`, read and decoded from the
+chain. `oracle_keys_len` 9, `node_timeout` **300 seconds**.
+
+Heartbeat age at the moment of reading, per oracle:
+
+    8s · 55s · 41s · 131s · 159s · 384s · 511,902s · 1,148,925s · 1,255,625s
+
+**Three of the nine had not heartbeated in six to fifteen days**, and all nine
+were still listed in `oracle_keys` with `is_on_queue == 1`.
+
+This is direct evidence for T12: **membership in the queue's published set is
+not liveness.** A caller naming one of those three today would stall the hour,
+and only the `last_heartbeat <= node_timeout` assertion refuses it. The crate's
+own comment — "have heartbeated on-chain recently" — describes an intention the
+account data does not keep.
+
 ### Cluster genesis hashes, verified live 2026-09-01
 
 `getGenesisHash` against the public endpoints, so the classifier is checked

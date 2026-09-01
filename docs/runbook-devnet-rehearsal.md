@@ -164,6 +164,44 @@ that is not made on both sides turns those tests red, which is the point.
 - Everything the rehearsal asserts is read back from the chain. The cranker's
   own log is evidence of what the cranker thought, and nothing more.
 
+## 4b. State of the rehearsal — 2026-09-01
+
+**Done and verified:**
+
+- Program deployed to devnet: `Bpmysmj4VMMo38Pa9NdbgRhmoBjQNWLbseARiPfoUaWm`,
+  upgrade authority `Gp9vs7d815DG4zqkNTKqb4FtHr3GXp7s957sZTH69Zse`.
+- **The deployed bytecode was checked, not assumed**: `solana program dump`
+  against the local `issuance.so`, sha256 identical. The CLI reported a
+  successful deploy twice while the on-chain bytes were still the old build, so
+  the dump-and-compare is not optional — it is the only thing that caught it.
+- The Switchboard devnet queue and all nine of its oracles read and decoded.
+
+**Blocked, and this is what stops the 48-issuance run:** the randomness account
+does not exist and **cannot be created from outside the program.**
+`randomnessInit` requires its `authority` to sign, and the authority has to be
+the config PDA (T13). `initialize` therefore has to create it by CPI, and it
+does not yet.
+
+**Next change, and it is small in shape and fiddly in detail:** `initialize`
+CPIs `randomnessInit` with the config PDA signing as authority, the deployer as
+payer, and the new randomness keypair signing. The awkward part is the address
+lookup table the instruction creates — `lutSigner` is a PDA and `lut` is
+derived from a `recentSlot` the caller passes, so both are computed off-chain
+and forwarded.
+
+### Deploying on the public devnet RPC
+
+`api.devnet.solana.com` **will not reliably carry a 313 KB program upload.**
+Four of six attempts died with "13 to 15 write transactions failed", each one
+stranding ~1.99 SOL in a buffer that must be reclaimed with
+`solana program close --buffers` before retrying. `--use-rpc` was worse: it hung
+past ten minutes. What eventually worked was plain TPU with
+`--with-compute-unit-price 20000 --max-sign-attempts 100`, on the third try.
+
+**Budget the rehearsal for a provider endpoint, not the public one** — the same
+Helius key D17 already assigns to the owner. And after every deploy, dump and
+compare.
+
 ## 5. What the rehearsal does not cover
 
 - **Mainnet scan size.** The rehearsal mint has a handful of holders. §0.
@@ -172,11 +210,7 @@ that is not made on both sides turns those tests red, which is the point.
   cannot rehearse an adversary doing it every hour for months.
 - **Anything in Phase 2.** No reserve, no `claim_fees`, no `redeem`. The Phase 1
   program holds nothing, which is what makes it deployable before an audit (D8).
-- **The deploy itself.** Nothing has been deployed to devnet: the faucet was
-  rate-limited on 2026-09-01, so the rehearsal key holds 0 SOL. It is
-  `Gp9vs7d815DG4zqkNTKqb4FtHr3GXp7s957sZTH69Zse`, at
-  `~/.local/share/solana-devnet-rehearsal/crank.json`, and it needs funding from
-  `faucet.solana.com` before step 3 can run.
+- **The 48 issuances.** None have run. See 4b.
 - **The Switchboard randomness account.** It is created off-chain by the
   deployer with its authority set to the config PDA, and passed to
   `initialize`, which asserts both the authority and the queue. One account is

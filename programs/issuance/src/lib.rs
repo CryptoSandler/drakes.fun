@@ -26,6 +26,8 @@ use mpl_core::instructions::CreateV2CpiBuilder;
 use switchboard_on_demand::on_demand::accounts::queue::QueueAccountData;
 use switchboard_on_demand::on_demand::accounts::randomness::RandomnessAccountData;
 use switchboard_on_demand::on_demand::instructions::randomness_commit::RandomnessCommit;
+use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
+use anchor_lang::solana_program::program::invoke_signed;
 use switchboard_on_demand::OracleAccountData;
 
 declare_id!("Bpmysmj4VMMo38Pa9NdbgRhmoBjQNWLbseARiPfoUaWm");
@@ -45,6 +47,16 @@ const MAX_SNAPSHOT_AGE_SLOTS: u64 = 150;
 const MAX_EXCLUDED: usize = 8;
 /// A tree of 2^24 leaves is more holders than the chain will ever carry here.
 const MAX_PROOF_LEN: usize = 24;
+
+/// `sha256("global:randomness_reveal")[..8]`, checked against the IDL the
+/// Switchboard program publishes on devnet on 2026-09-01. Both agree.
+const RANDOMNESS_REVEAL_DISCRIMINATOR: [u8; 8] = [197, 181, 187, 10, 30, 58, 20, 73];
+
+/// Checked by address on the settle accounts. Written as literals so the guard
+/// is an absolute assertion against a known value (CLAUDE.md).
+const SPL_TOKEN_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
+const WRAPPED_SOL_MINT: Pubkey =
+    solana_program::pubkey!("So11111111111111111111111111111111111111112");
 
 #[program]
 pub mod issuance {
@@ -207,6 +219,70 @@ pub mod issuance {
         );
         require!(params.proof.len() <= MAX_PROOF_LEN, IssuanceError::ProofTooLong);
 
+        // **This program performs the reveal; it does not sit behind one.**
+        //
+        // Switchboard's `randomness_reveal` requires its `authority` to SIGN
+        // (verified against the on-chain IDL, 2026-09-01, `references.md`).
+        // Our randomness account's authority is this config PDA, because that
+        // is what lets `request_issuance` commit without a privileged signer.
+        // A PDA cannot sign a top-level instruction, so a reveal sent beside
+        // this one could never be authorised — the reveal has to be a CPI from
+        // here, and the caller supplies the oracle's signed response as
+        // arguments, exactly as they would have put it in that instruction.
+        //
+        // Nothing about this makes settling permissioned: anybody can fetch the
+        // gateway response and call this.
+        let reveal = Instruction {
+            program_id: ctx.accounts.switchboard_program.key(),
+            accounts: vec![
+                AccountMeta::new(ctx.accounts.randomness.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.oracle.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.queue.key(), false),
+                AccountMeta::new(ctx.accounts.oracle_stats.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.config.key(), true),
+                AccountMeta::new(ctx.accounts.payer.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.recent_slothashes.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+                AccountMeta::new(ctx.accounts.reward_escrow.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.wrapped_sol_mint.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.switchboard_state.key(), false),
+            ],
+            data: {
+                let mut data = Vec::with_capacity(8 + 64 + 1 + 32);
+                data.extend_from_slice(&RANDOMNESS_REVEAL_DISCRIMINATOR);
+                data.extend_from_slice(&params.signature);
+                data.push(params.recovery_id);
+                data.extend_from_slice(&params.value);
+                data
+            },
+        };
+        let config_seeds: &[&[u8]] = &[CONFIG_SEED, &[ctx.accounts.config.bump]];
+        invoke_signed(
+            &reveal,
+            &[
+                ctx.accounts.randomness.to_account_info(),
+                ctx.accounts.oracle.to_account_info(),
+                ctx.accounts.queue.to_account_info(),
+                ctx.accounts.oracle_stats.to_account_info(),
+                ctx.accounts.config.to_account_info(),
+                ctx.accounts.payer.to_account_info(),
+                ctx.accounts.recent_slothashes.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+                ctx.accounts.reward_escrow.to_account_info(),
+                ctx.accounts.token_program.to_account_info(),
+                ctx.accounts.wrapped_sol_mint.to_account_info(),
+                ctx.accounts.switchboard_state.to_account_info(),
+                ctx.accounts.switchboard_program.to_account_info(),
+            ],
+            &[config_seeds],
+        )
+        .map_err(|_| error!(IssuanceError::RevealFailed))?;
+
+        // Read it back from the account rather than trusting the argument. The
+        // caller handed us a value and a signature; only Switchboard's own
+        // verification decides what the randomness actually is, and this is the
+        // line that makes the difference.
         let value = {
             let data = ctx.accounts.randomness.data.borrow();
             let account = RandomnessAccountData::parse(data)
@@ -415,6 +491,11 @@ pub struct RequestParams {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct SettleParams {
+    /// The oracle's signed reveal, fetched from its gateway off chain by
+    /// whoever is settling. Verified by Switchboard, never by us.
+    pub signature: [u8; 64],
+    pub recovery_id: u8,
+    pub value: [u8; 32],
     pub owner: Pubkey,
     pub balance: u64,
     pub range_start: u64,
@@ -491,7 +572,35 @@ pub struct SettleIssuance<'info> {
     #[account(mut, seeds = [ISSUANCE_SEED, &issuance.hour.to_le_bytes()], bump = issuance.bump)]
     pub issuance: Account<'info, Issuance>,
     /// CHECK: parsed as Switchboard randomness; asserted equal to the issuance.
+    #[account(mut)]
     pub randomness: UncheckedAccount<'info>,
+    /// CHECK: asserted equal to the queue recorded at initialize.
+    #[account(address = config.queue)]
+    pub queue: UncheckedAccount<'info>,
+    /// CHECK: the oracle that served this hour; Switchboard checks it against
+    /// the randomness account it committed to.
+    pub oracle: UncheckedAccount<'info>,
+    /// CHECK: Switchboard's own per-oracle stats PDA. Switchboard derives and
+    /// checks it; we only forward it.
+    #[account(mut)]
+    pub oracle_stats: UncheckedAccount<'info>,
+    /// CHECK: Switchboard's reward escrow for this randomness account.
+    #[account(mut)]
+    pub reward_escrow: UncheckedAccount<'info>,
+    /// CHECK: Switchboard's program state.
+    pub switchboard_state: UncheckedAccount<'info>,
+    /// CHECK: asserted equal to the id recorded at initialize.
+    #[account(address = config.switchboard_program)]
+    pub switchboard_program: UncheckedAccount<'info>,
+    /// CHECK: the SlotHashes sysvar, checked by address.
+    #[account(address = solana_program::sysvar::slot_hashes::ID)]
+    pub recent_slothashes: UncheckedAccount<'info>,
+    /// CHECK: SPL Token, checked by address.
+    #[account(address = SPL_TOKEN_ID)]
+    pub token_program: UncheckedAccount<'info>,
+    /// CHECK: wrapped SOL, checked by address.
+    #[account(address = WRAPPED_SOL_MINT)]
+    pub wrapped_sol_mint: UncheckedAccount<'info>,
     /// CHECK: the new asset, a fresh signer keypair supplied by the caller.
     #[account(mut)]
     pub asset: Signer<'info>,
@@ -591,6 +700,8 @@ pub enum IssuanceError {
     RecipientMismatch,
     #[msg("counter overflow")]
     CounterOverflow,
+    #[msg("the switchboard reveal CPI failed")]
+    RevealFailed,
 }
 
 // --------------------------------------------------------------------- tests
@@ -628,6 +739,9 @@ mod tests {
 
     fn params() -> SettleParams {
         SettleParams {
+            signature: [0u8; 64],
+            recovery_id: 0,
+            value: [0u8; 32],
             owner: Pubkey::new_from_array(hex32(OWNER)),
             balance: 6_000,
             range_start: 4_000,

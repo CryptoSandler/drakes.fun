@@ -455,6 +455,32 @@ shots as they could pay for, which is grinding with extra steps.
 
 A caller who stalls an issuance cannot re-roll it. They can only destroy it.
 
+### T13 — Everything Switchboard needs signed, the authority signs
+
+**Found by trying to run the rehearsal, not by reading the spec.** All three
+randomness instructions — `init`, `commit`, `reveal` — require the randomness
+account's `authority` to **sign** (`references.md`, on-chain IDL, 2026-09-01).
+
+That one fact cascades:
+
+1. **The authority must be the config PDA.** If it were a keypair, only its
+   holder could commit or reveal, and `request_issuance` and `settle_issuance`
+   would both become permissioned — which is precisely what D16 refused.
+2. **So `settle_issuance` cannot sit behind a reveal.** A PDA cannot sign a
+   top-level instruction, so a `randomnessReveal` placed beside our instruction
+   in the same transaction can never be authorised. **`settle_issuance`
+   performs the reveal itself, by CPI**, taking the oracle's signed gateway
+   response as arguments. It then reads the value back out of the account
+   rather than trusting the argument: the caller supplies bytes, and only
+   Switchboard's verification decides what the randomness is.
+3. **And `initialize` must create the randomness account**, for the same
+   reason — `randomnessInit` needs the authority's signature, so the account
+   cannot be created with a PDA authority from outside the program. This is
+   **not yet implemented**; it is what blocks the devnet rehearsal.
+
+None of this weakens the permissionless property, which is the point of paying
+the extra complexity: anybody can fetch the gateway response and settle.
+
 ### T12 — The oracle is chosen by whoever calls `request_issuance`
 
 Switchboard's `randomness_commit` takes the `oracle` account as an argument
@@ -491,7 +517,14 @@ operator**:
    inside the queue's own freshness window.
 
 **That reduces the attack from "name any account" to "name an oracle
-Switchboard itself currently considers live and heartbeating."** The residual
+Switchboard itself currently considers live and heartbeating."**
+
+**And the freshness assertion is the one carrying the weight — measured, not
+assumed.** On 2026-09-01 the devnet queue listed nine oracles as its live set,
+all with `is_on_queue == 1`, and **three of them had not heartbeated in six to
+fifteen days** against a `node_timeout` of 300 seconds (`references.md`).
+Membership alone would have let a caller stall an hour that same day. A third
+of the published "live" set was dead. The residual
 is an oracle that heartbeats and then declines to serve a reveal, which is a
 Switchboard-level failure that hits every consumer of the queue and is not
 something we can out-engineer.
