@@ -8,6 +8,7 @@
 
 import { decodeSettled, ownEventPayloads, type SettledEvent } from './events.ts'
 import { decodeBase58, encodeBase58 } from '../solana/base58.ts'
+import { rpc } from './rpc.ts'
 
 export interface LatestOptions {
   rpcUrl: string
@@ -52,6 +53,50 @@ export async function fetchLatestSettled(options: LatestOptions): Promise<Settle
     before = signatures[signatures.length - 1]!.signature
   }
   return null
+}
+
+/**
+ * The most recent `limit` settlements, walking signatures backwards and
+ * **stopping as soon as it has them**.
+ *
+ * The verify page's live window used `fetchIssuanceSettled` and sliced the tail,
+ * which reads the program's entire history first: 50+ seconds on devnet at 250
+ * issuances, and minutes at 4,000. A window that costs a full scan is not a
+ * window. This is one signature page and at most `limit` transaction reads.
+ */
+export async function fetchRecentSettled(
+  options: LatestOptions & { limit: number },
+): Promise<SettledEvent[]> {
+  if (decodeBase58(options.programId).length !== 32) throw new RangeError('programId is not an address')
+  const found: SettledEvent[] = []
+  let before: string | undefined
+
+  for (let page = 0; page < (options.maxPages ?? 8) && found.length < options.limit; page += 1) {
+    const signatures = (await rpc(options.rpcUrl, 'getSignaturesForAddress', [
+      options.programId,
+      { limit: 100, ...(before === undefined ? {} : { before }) },
+    ])) as { signature: string; err: unknown }[]
+    if (signatures.length === 0) break
+
+    for (const row of signatures) {
+      if (found.length >= options.limit) break
+      if (row.err !== null) continue
+      const tx = (await rpc(options.rpcUrl, 'getTransaction', [
+        row.signature,
+        { maxSupportedTransactionVersion: 0, encoding: 'json' },
+      ])) as { slot?: number; meta?: { err: unknown; logMessages?: string[] } } | null
+      if (tx?.meta == null || tx.meta.err !== null) continue
+      for (const payload of ownEventPayloads(tx.meta.logMessages ?? [], options.programId)) {
+        const decoded = decodeSettled(payload)
+        if (decoded === null) continue
+        if (options.config !== undefined && encodeBase58(decoded.config) !== options.config) continue
+        found.push({ ...decoded, signature: row.signature, txSlot: BigInt(tx.slot ?? 0) })
+      }
+    }
+    before = signatures[signatures.length - 1]!.signature
+  }
+  // Walked newest-first; the check reads oldest-first.
+  return found.reverse()
 }
 
 export interface Balance {
@@ -111,18 +156,4 @@ export function formatAmount(amount: bigint, decimals: number): string {
   const whole = (amount / unit).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
   if (decimals === 0) return whole
   return `${whole}.${(amount % unit).toString().padStart(decimals, '0')}`
-}
-
-async function rpc(url: string, method: string, params: unknown[]): Promise<unknown> {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-    cache: 'no-store',
-  })
-  if (!res.ok) throw new Error(`${method}: HTTP ${res.status}`)
-  const body = (await res.json()) as { result?: unknown; error?: { message: string } }
-  if (body.error) throw new Error(`${method}: ${body.error.message}`)
-  if (!('result' in body)) throw new Error(`${method}: no result field`)
-  return body.result
 }

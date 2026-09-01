@@ -34,27 +34,44 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px
 }
 .masthead__top > span {
   text-align: center;
-  /* At 390 px the middle slot is the one that has to give. */
+  /* At 390 px the middle slot is the one that has to give. It is a chip and not
+     a sentence precisely so it never wraps and never pushes `Verify` down. */
   overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.chip {
+  justify-self: center;
+  border: var(--rule) solid var(--color-rule); border-radius: 999px;
+  padding: 2px var(--space-8); letter-spacing: 0.16em;
 }
 @media (max-width: 30rem) { .masthead__top { letter-spacing: 0.12em; } }
 .masthead__top b { font-weight: 600; letter-spacing: 0.24em; color: var(--color-ink); }
-.dateline { padding: var(--space-24) 0 var(--space-16); }
+.dateline {
+  padding: var(--space-16) 0 var(--space-16);
+  display: grid; gap: var(--space-12);
+}
+/* Clock and counts share a baseline row from 44rem up, so the header stays
+   short enough that the plate is still inside the fold at 1440 x 900. */
+@media (min-width: 44rem) {
+  .dateline { grid-template-columns: auto minmax(0, 1fr); align-items: end; gap: var(--space-32); }
+}
 .dateline__label {
   font-size: var(--text-xs); letter-spacing: 0.18em; text-transform: uppercase;
   color: var(--color-ink-2); margin: 0 0 var(--space-4);
 }
+.dateline__clockwrap { min-width: 0; }
 .dateline__clock {
   display: block;
   font-family: var(--font-display); font-weight: 400; font-style: normal;
-  font-size: var(--text-clock); line-height: 0.9; letter-spacing: -0.02em;
+  font-size: var(--text-clock); line-height: 0.86; letter-spacing: -0.02em;
   margin: 0; color: var(--color-ink);
   overflow-wrap: anywhere; min-width: 0;
+  font-variant-numeric: tabular-nums;
 }
 .dateline__meta {
   display: flex; flex-wrap: wrap; gap: var(--space-4) var(--space-24);
-  margin-top: var(--space-12); font-size: var(--text-sm); color: var(--color-ink-2);
+  font-size: var(--text-sm); color: var(--color-ink-2); align-items: baseline;
 }
+@media (min-width: 44rem) { .dateline__meta { padding-bottom: 0.35rem; } }
 .dateline__meta b { font-weight: 600; color: var(--color-ink); }
 
 /* --- the plate ---------------------------------------------------------- */
@@ -159,3 +176,57 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px
   opacity: 0.85;
 }
 .specimens--dense .specimen[data-issued="1"] { border-width: 1px; background: var(--tier, var(--color-ink-3)); }
+
+/* --- the art slot: a marked hole, never a picture ----------------------- */
+.artslot { margin: 0 0 var(--space-24); display: grid; gap: var(--space-12); }
+@media (min-width: 40rem) {
+  .entry__body { display: grid; grid-template-columns: minmax(0, 16rem) minmax(0, 1fr); gap: var(--space-32); align-items: start; }
+  .artslot { margin-bottom: 0; }
+}
+.artslot__square {
+  aspect-ratio: 1; width: 100%; max-width: 16rem;
+  border: var(--rule) dashed var(--color-rule);
+  display: grid; place-content: center; gap: var(--space-4); text-align: center;
+  color: var(--color-ink-3);
+  /* A faint cross, so the empty square reads as a reserved slot rather than as
+     a box that failed to load. */
+  background-image:
+    linear-gradient(to bottom right, transparent calc(50% - 0.5px), var(--color-rule) 50%, transparent calc(50% + 0.5px)),
+    linear-gradient(to bottom left,  transparent calc(50% - 0.5px), var(--color-rule) 50%, transparent calc(50% + 0.5px));
+}
+.artslot__size { font-size: var(--text-xs); letter-spacing: 0.16em; }
+.artslot__word { font-size: var(--text-xs); letter-spacing: 0.24em; text-transform: uppercase; }
+.artslot__guard { display: flex; align-items: center; gap: var(--space-12); }
+.artslot__circle {
+  width: 48px; height: 48px; flex: 0 0 48px; border-radius: 50%;
+  border: var(--rule) dashed var(--color-rule);
+}
+.artslot__caption { font-size: var(--text-xs); letter-spacing: 0.1em; text-transform: uppercase; color: var(--color-ink-3); line-height: 1.4; }
+.artslot__note { font-size: var(--text-xs); color: var(--color-ink-3); max-width: 34ch; margin: 0; }
+
+.foot { padding: var(--space-24) 0 var(--space-48); }
+
+/* --- verify -------------------------------------------------------------- */
+.verdict {
+  font-family: var(--font-display); font-size: var(--text-xl); margin: 0 0 var(--space-16);
+}
+.verdict[data-ok="1"] { color: var(--color-ink); }
+.verdict[data-ok="0"] { color: var(--color-accent); }
+.tablewrap { overflow-x: auto; margin-bottom: var(--space-12); }
+.rows { border-collapse: collapse; font-size: var(--text-sm); min-width: 34rem; }
+.rows th, .rows td { text-align: left; padding: var(--space-4) var(--space-16) var(--space-4) 0; white-space: nowrap; }
+.rows th { color: var(--color-ink-3); font-weight: 500; font-size: var(--text-xs);
+           letter-spacing: 0.1em; text-transform: uppercase; border-bottom: var(--rule) solid var(--color-rule); }
+.rows td.num { font-variant-numeric: tabular-nums; }
+.rows tbody tr:nth-child(even) { background: var(--color-paper-2); }
+.cmd {
+  overflow-x: auto; background: var(--color-paper-2);
+  border: var(--rule) solid var(--color-rule); padding: var(--space-16);
+  font-size: var(--text-sm); line-height: 1.5; margin: var(--space-16) 0;
+}
+
+/* A grid item's default `min-width: auto` lets wide content -- the verify
+   table, a long signature, a <pre> -- push its track wider than the viewport and
+   scroll the whole page sideways. The table already scrolls inside `.tablewrap`;
+   this is what keeps that scroll local. */
+.entry__grid > *, .colophon > *, .dateline > * { min-width: 0; }

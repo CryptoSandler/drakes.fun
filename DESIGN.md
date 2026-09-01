@@ -890,3 +890,106 @@ plainest common** (§1, property 2). That sentence ships on the same screen as
 the rarity table, every time it appears, because a visible ladder is an
 invitation to assume the ladder is economic — and here it is not, ever, by
 construction: `redeem` computes a share from `live_supply` and reads no trait.
+
+---
+
+## 10. The site: type, colour, and what the page refuses
+
+Chosen 2026-09-01 from three built directions. The two that were not chosen are
+in `docs/discarded-2026-09-01-instrument.md` and
+`docs/discarded-2026-09-01-hoard.md`, with what each was for and what it cost.
+The round that preceded them is `docs/references-web.md`.
+
+**The claim: the collection is the page.** All 4,000 exist already, their tiers
+fixed before the first went out, and the fact worth looking at is *which ones are
+still in there*. So the plate — every piece, at once — is the hero, and the hour
+sits above it in the masthead.
+
+### 10.1 What it does not cede
+
+1. **The clock is the first thing on the screen, at 390 and at 1440.** It is in
+   the masthead, above the rule, and it may not be pushed below the fold by
+   anything. This was taken from the direction that made the page nothing else.
+2. **The plate is above the fold on desktop and one scroll away on mobile.**
+3. **Every number is server-rendered and carries its slot.** Never a spinner,
+   never an em-dash on first paint. The reference round's sharpest finding was a
+   comparable site whose fold arrives as `Loading live chain state…`.
+4. **Rarity is findable, never ranked.** Tiers are colour on the plate and a
+   count in the caption — *"10 of 10 Sovereign remain"* — and nothing says a
+   rarer piece is worth more, because it is not (§9.5).
+5. **Empty slots are drawn.** The unissued are the subject as much as the issued.
+6. **No image is invented.** Where art will go there is a marked hole at its real
+   size with the 48 px avatar guard beside it (§9.1, §9.2). No stock, no
+   generated stand-in, no borrowed mood reference.
+7. **One accent, spent on the rarest two tiers**, and on nothing else.
+
+### 10.2 Type
+
+**Instrument Serif** (display, upright — never italic) + **Inter** (body,
+tabular figures).
+
+| Role | Face | Size |
+|---|---|---|
+| Masthead clock | Instrument Serif | `clamp(3.5rem, 17vw, 5.5rem)` |
+| Plate title, entry title | Instrument Serif | 1.75 rem / `clamp(2rem, 6vw, 3.25rem)` |
+| Lede, verdict | Instrument Serif | 1.25 rem / 1.75 rem |
+| Body, data | Inter 400/500/600 | 1 rem |
+| Labels | Inter, `0.18em`, uppercase | 0.75 rem |
+
+The clock is capped at 5.5 rem rather than pushed higher so the header stays
+short enough that the plate is still inside the fold at 1440 × 900.
+
+### 10.3 Colour
+
+OKLCH, light band, warm. Tokens live in `tokens.css`; nothing in the CSS
+declares a colour that is not one of them.
+
+| Token | Value | Where |
+|---|---|---|
+| `--color-paper` | `oklch(96% 0.008 85)` | ground — parchment, not white |
+| `--color-paper-2` | `oklch(93% 0.011 85)` | issued fill, table stripe, `<pre>` |
+| `--color-ink` | `oklch(21% 0.012 60)` | display, values |
+| `--color-ink-2` | `oklch(42% 0.012 60)` | prose |
+| `--color-ink-3` | `oklch(60% 0.010 60)` | notes |
+| `--color-rule` | `oklch(84% 0.012 70)` | empty slots, hairlines |
+| `--color-accent` | `oklch(46% 0.18 27)` | Sovereign, a failed verdict |
+| `--color-accent-2` | `oklch(70% 0.11 27)` | Ancient |
+
+The three lower tiers are warm greys of increasing darkness, so the plate reads
+as a field with rare things in it rather than as five categories.
+
+### 10.4 Motion
+
+**The seconds, and a 120 ms colour change on hover.** Nothing reveals, nothing
+parallaxes, nothing animates on scroll. `prefers-reduced-motion` collapses even
+the hover.
+
+### 10.5 The two checks on `/verify`, and why they are two
+
+- **Live, last 24.** `point` is a pure function of the revealed value and the
+  eligible supply, both carried by the event, so the last twenty-four hours are
+  checked in the reader's own request against the chain — about five seconds.
+  It is complete for what it claims and it can genuinely fail.
+- **Full replay.** Which piece an hour issued depends on every take before it,
+  so it cannot be checked from a window. A job walks the whole history and
+  writes a dated row; the page renders it and says, in those words, that **it is
+  a record of a job we ran, not evidence about the chain.**
+- **The command is printed next to both.** A reader who only ever presses our
+  button has verified nothing about us.
+
+Postgres holds the indexed events and the replay rows. **It is a cache and the
+page treats it as one**: nothing rendered as a fact about the chain is read from
+it, and when the chain does not answer the page says so rather than serving the
+cache in its place.
+
+### 10.6 The absence
+
+The hoard gets **one line at the foot** — *"the hoard is empty and there is no
+pool sending anything to it yet"* — and no frame of its own. One of the
+discarded directions gave it a gold-edged section at poster scale, which put the
+emptiest fact on the site in its largest object.
+
+The mechanism is stated as a mechanism: *"Every trade of $DRAKES sends 2% in
+$PUMP to the hoard."* **Never `backed`**, which §7 lists among the words this
+project may not use, and which is exactly the sentence that would be easiest to
+write.

@@ -17,6 +17,7 @@
 // written out by hand rather than pulled from Anchor.
 
 import { decodeBase58, encodeBase58 } from '../solana/base58.ts'
+import { rpc as rpcWithRetry } from './rpc.ts'
 
 /**
  * `sha256("event:IssuanceSettled")[0..8]`, the Anchor event discriminator.
@@ -240,38 +241,3 @@ async function allSignatures(options: FetchOptions, note: (s: string) => void): 
   }
   throw new Error('signature pagination did not terminate; refusing a partial history')
 }
-
-async function rpcWithRetry(url: string, method: string, params: unknown[]): Promise<unknown> {
-  let last: Error | undefined
-  for (let attempt = 0; attempt < 5; attempt += 1) {
-    try {
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-      })
-      if (res.status === 429 || res.status >= 500) throw new Error(`${method}: HTTP ${res.status}`)
-      if (!res.ok) throw new FatalRpcError(`${method}: HTTP ${res.status}`)
-      const body = (await res.json()) as { result?: unknown; error?: { code?: number; message: string } }
-      if (body.error) {
-        // Helius answers a rate limit as JSON-RPC -32429 with HTTP 200, so the
-        // status check above never sees it. Read from the chain 2026-09-01
-        // while recording the rehearsal fixture: a retry loop that only watches
-        // the HTTP status gives up on the one error it exists to survive.
-        if (body.error.code === -32429) throw new Error(`${method}: ${body.error.message}`)
-        throw new FatalRpcError(`${method}: ${body.error.message}`)
-      }
-      // `getTransaction` answers `null` for a signature the node has pruned,
-      // and that is a real answer rather than an error.
-      if (!('result' in body)) throw new FatalRpcError(`${method}: no result field`)
-      return body.result
-    } catch (error) {
-      if (error instanceof FatalRpcError) throw error
-      last = error as Error
-      await new Promise((r) => setTimeout(r, 500 * 2 ** attempt))
-    }
-  }
-  throw new Error(`${method}: gave up after 5 attempts (${last?.message})`)
-}
-
-class FatalRpcError extends Error {}

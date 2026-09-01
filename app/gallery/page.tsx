@@ -22,11 +22,27 @@ export default async function Gallery({ searchParams }: { searchParams: Promise<
       </main>
     )
   }
-  const state = await readCollectionState({
-    rpcUrl: config.rpcUrl,
-    config: config.config!,
-    survivors: config.survivors,
-  })
+  let state
+  try {
+    state = await readCollectionState({
+      rpcUrl: config.rpcUrl,
+      config: config.config!,
+      survivors: config.survivors,
+    })
+  } catch {
+    // Stated, not 500'd. See the note in `app/page.tsx`.
+    return (
+      <main className="sheet">
+        <div className="colophon">
+          <p className="lede">The chain did not answer in time.</p>
+          <p className="note">
+            Nothing is served from a cache in its place. Reload, or read it yourself from{' '}
+            <a href="/verify">/verify</a>.
+          </p>
+        </div>
+      </main>
+    )
+  }
   const pages = Math.ceil(state.collectionSize / PER_PAGE)
   const asked = Number((await searchParams).page ?? '1')
   const page = Number.isFinite(asked) ? Math.min(Math.max(1, Math.trunc(asked)), pages) : 1

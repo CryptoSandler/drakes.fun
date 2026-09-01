@@ -13,6 +13,7 @@
 // state has no such duty and one RPC call is the right cost.
 
 import { decodeBase58 } from '../solana/base58.ts'
+import { rpc } from '../chain/rpc.ts'
 
 // `Config`, read from `programs/issuance/src/lib.rs`: 8 discriminator,
 // `bump: u8`, five Pubkeys, then the fields below. Confirmed against the devnet
@@ -177,18 +178,4 @@ function buildTable(size: number): TierName[] {
 export function placeholderTier(id: number, size = 4000): TierName {
   table ??= buildTable(size)
   return table[id] ?? 'Whelp'
-}
-
-async function rpc(url: string, method: string, params: unknown[]): Promise<unknown> {
-  const res = await fetch(url, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ jsonrpc: '2.0', id: 1, method, params }),
-    cache: 'no-store',
-  })
-  if (!res.ok) throw new Error(`${method}: HTTP ${res.status}`)
-  const body = (await res.json()) as { result?: unknown; error?: { message: string } }
-  if (body.error) throw new Error(`${method}: ${body.error.message}`)
-  if (!('result' in body)) throw new Error(`${method}: no result field`)
-  return body.result
 }

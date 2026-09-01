@@ -1,143 +1,178 @@
-'use client'
-
-// /verify — the public replay behind one button.
+// /verify — two checks, and the page is explicit about which is which.
 //
-// Caller: Next's router. The button calls `/api/verify`, which runs the same
-// `fetchIssuanceSettled` + `replayFromChain` the published command runs.
+// Caller: Next's router.
 //
-// The page prints the command next to the button on purpose: the button is a
-// convenience for a reader who has not cloned the repository, and a reader who
-// only ever presses our button has verified nothing about us.
+// **The live one is complete for what it claims.** `point` is a pure function of
+// the revealed value and the eligible supply, both carried by the event, so the
+// last 24 hours are checkable in a second with no history — and the check can
+// genuinely fail.
+//
+// **The permutation cannot be checked from a window**, because which piece an
+// hour issued depends on every take before it. That is the full replay: a job
+// that runs against the chain and publishes a dated result, and the same command
+// in a clone. The row below is a RECORD OF A JOB WE RAN and is labelled as one;
+// the chain stays the evidence.
 
-import { useState } from 'react'
+import { readConfig } from '../../src/lib/site/config.ts'
+import { connect } from '../../src/lib/db/client.ts'
+import { LiveWindow } from '../../src/components/LiveWindow.tsx'
 
-interface Result {
+export const dynamic = 'force-dynamic'
+
+interface Run {
   ok: boolean
-  why?: string
-  cluster?: string
-  settled?: number
-  minted?: number
-  distinct?: number
-  agreed?: number
-  remaining?: number
-  size?: number
-  tookMs?: number
-  disagreements?: { hour: number; program: number; replay: number }[]
+  settled: number
+  minted: number
+  distinct_pieces: number
+  agreed: number
+  remaining: number
+  collection_size: number
+  cluster: string
+  took_ms: number
+  ran_at: string
+  last_signature: string | null
 }
 
-export default function Verify() {
-  const [state, setState] = useState<'idle' | 'running' | 'done'>('idle')
-  const [result, setResult] = useState<Result | null>(null)
-
-  const run = async () => {
-    setState('running')
-    setResult(null)
+async function lastRun(): Promise<Run | null> {
+  const url = process.env.DATABASE_URL
+  if (url === undefined || url === '') return null
+  try {
+    const db = await connect(url)
     try {
-      const res = await fetch('/api/verify', { cache: 'no-store' })
-      setResult((await res.json()) as Result)
-    } catch (error) {
-      setResult({ ok: false, why: error instanceof Error ? error.message : String(error) })
+      const { rows } = await db.query(
+        'select * from verification_runs order by ran_at desc limit 1',
+        [],
+      )
+      return (rows[0] as unknown as Run) ?? null
+    } finally {
+      await db.end()
     }
-    setState('done')
+  } catch {
+    // A page that cannot reach the cache still renders the live check, which is
+    // the half that matters. The cache being down must not take the chain read
+    // down with it.
+    return null
   }
+}
+
+export default async function Verify() {
+  const config = readConfig()
+  const run = await lastRun()
 
   return (
     <>
       <header className="sheet masthead">
-        <nav className="masthead__top">
+        <div className="masthead__top">
           <b>
             <a href="/">Drakes</a>
           </b>
-          <span>verify</span>
-          <span />
-        </nav>
+          <span className="chip">verify</span>
+          <a href="/">Plate</a>
+        </div>
+        <div className="dateline">
+          <div className="dateline__clockwrap">
+            <p className="dateline__label">Recomputable, not trustless</p>
+            <p className="dateline__clock" style={{ fontSize: 'var(--text-2xl)' }}>
+              Check it yourself
+            </p>
+          </div>
+        </div>
       </header>
 
       <main className="sheet">
         <section className="entry">
-          <h1 className="dateline__label">Replay the permutation from the chain</h1>
-          <p style={{ maxWidth: '58ch', margin: '0 0 var(--space-24)' }}>
-            This walks every signature the program has, decodes the{' '}
-            <code>IssuanceSettled</code> events, and rebuilds which piece went out each hour from the
-            revealed values alone. It reads no account of ours and no file of ours.
-          </p>
-
-          <p style={{ display: 'flex', gap: 'var(--space-16)', flexWrap: 'wrap', alignItems: 'center' }}>
-            <button className="btn" onClick={run} disabled={state === 'running'}>
-              {state === 'running' ? 'Replaying…' : 'Run the replay'}
-            </button>
-            {state === 'running' && <span className="note">reading the chain — this takes a while</span>}
-          </p>
+          <div className="entry__grid">
+            <p className="dateline__label" style={{ margin: 0 }}>
+              Live · last 24
+            </p>
+            <div>
+              <p style={{ marginTop: 0, color: 'var(--color-ink-2)', maxWidth: '62ch' }}>
+                For each of the last twenty-four hours, the point the program recorded is recomputed
+                from the value the oracle revealed and the eligible supply at that hour. Both come
+                from the event. <strong>No history is needed and none is used</strong>, so this runs
+                in your request, against the chain, right now.
+              </p>
+              <LiveWindow />
+            </div>
+          </div>
         </section>
 
-        {result && (
-          <section className="colophon" aria-live="polite">
-            {result.ok ? (
-              <>
-                <p className="dateline__label" style={{ color: 'var(--color-accent)' }}>
-                  ◆ {result.agreed} of {result.minted} agree
-                </p>
-                <dl className="facts">
-                  <dt>settlements</dt>
-                  <dd>{result.settled}</dd>
-                  <dt>distinct pieces</dt>
-                  <dd>
-                    {result.distinct} <span className="note">— none issued twice</span>
-                  </dd>
-                  <dt>still unissued</dt>
-                  <dd>
-                    {result.remaining} of {result.size}
-                  </dd>
-                  <dt>network</dt>
-                  <dd>{result.cluster}</dd>
-                  <dt>took</dt>
-                  <dd className="note">{result.tookMs} ms</dd>
-                </dl>
-              </>
-            ) : (
-              <>
-                <p className="dateline__label" style={{ color: 'var(--color-ink)' }}>
-                  the replay did not agree
-                </p>
-                <p>{result.why ?? 'see the rows below'}</p>
-                {result.disagreements?.map((d) => (
-                  <p key={d.hour} className="note">
-                    issuance {d.hour}: the program emitted {d.program}, the replay says {d.replay}
+        <section className="entry">
+          <div className="entry__grid">
+            <p className="dateline__label" style={{ margin: 0 }}>
+              Full replay
+            </p>
+            <div>
+              <p style={{ marginTop: 0, color: 'var(--color-ink-2)', maxWidth: '62ch' }}>
+                Which piece each hour issued depends on every take before it, so it cannot be checked
+                from a window. A job walks the program&rsquo;s whole history, rebuilds the
+                permutation from the revealed values alone and compares it against the piece ids the
+                program emitted.
+              </p>
+              {run === null ? (
+                <p className="note">No full replay has been recorded yet.</p>
+              ) : (
+                <>
+                  <p className="verdict" data-ok={run.ok ? '1' : '0'}>
+                    {run.agreed} of {run.minted} agree · {run.distinct_pieces} distinct
                   </p>
-                ))}
-              </>
-            )}
-          </section>
-        )}
+                  <dl className="facts">
+                    <dt>ran at</dt>
+                    <dd>
+                      <time dateTime={new Date(run.ran_at).toISOString()}>
+                        {new Date(run.ran_at).toISOString().replace('T', ' ').slice(0, 19)} UTC
+                      </time>
+                    </dd>
+                    <dt>settlements</dt>
+                    <dd>{run.settled}</dd>
+                    <dt>still unissued</dt>
+                    <dd>
+                      {run.remaining} of {run.collection_size}
+                    </dd>
+                    <dt>took</dt>
+                    <dd className="note">{(run.took_ms / 1000).toFixed(0)} s</dd>
+                  </dl>
+                </>
+              )}
+              <p className="note" style={{ maxWidth: '62ch' }}>
+                <strong style={{ color: 'var(--color-ink-2)' }}>
+                  That row is a record of a job we ran, not evidence about the chain.
+                </strong>{' '}
+                The chain is the evidence. The command below runs the identical replay from a clone,
+                on your machine, against any endpoint you choose — which is the only version of this
+                that does not require believing us.
+              </p>
+            </div>
+          </div>
+        </section>
 
         <section className="colophon">
-          <p className="dateline__label">Do it without us</p>
-          <p className="note" style={{ maxWidth: '58ch' }}>
-            The button runs on our server. Running it on yours is the point — Node 22.18 or newer,
-            no install step, any RPC endpoint with history:
+          <p className="lede">Run it yourself</p>
+          <p>
+            Node 22.18 or newer. <strong>No install step</strong> — the verification path has no
+            dependencies on purpose, so running it does not mean installing several hundred packages
+            from us.
           </p>
-          <pre
-            style={{
-              overflowX: 'auto',
-              background: 'var(--color-paper-2)',
-              border: 'var(--rule) solid var(--color-rule)',
-              padding: 'var(--space-16)',
-              fontSize: 'var(--text-sm)',
-              marginTop: 'var(--space-16)',
-            }}
-          >
-            <code>{`node scripts/snapshot.ts pieces \\
+          <pre className="cmd">
+            <code>{`git clone <this repository> && cd drakes
+
+export RPC="https://<your-provider>/?api-key=<your key>"
+
+node scripts/snapshot.ts pieces \\
   --rpc "$RPC" \\
-  --program <PROGRAM_ID> \\
-  --config  <CONFIG_ADDRESS>`}</code>
+  --program ${config.programId}${config.config ? ` \\\n  --config  ${config.config}` : ''}`}</code>
           </pre>
+          <p className="note">
+            The same walk the job above runs. It reads no account of ours and no file of ours.
+          </p>
         </section>
       </main>
+
       <footer className="sheet">
-        <div className="rail" style={{ paddingBottom: 'var(--space-48)' }}>
-          <a href="/">← the plate</a>
-          <span className="note">recomputable, not trustless</span>
-        </div>
+        <p className="note foot">
+          <a href="/">← the plate</a> · the hoard is empty and there is no pool sending anything to
+          it yet
+        </p>
       </footer>
     </>
   )

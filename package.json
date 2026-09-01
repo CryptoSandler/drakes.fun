@@ -15,7 +15,8 @@
     "migrate:test": "node scripts/migrate-test.ts",
     "index-events": "node scripts/index-events.ts",
     "dev": "next dev",
-    "build": "next build"
+    "build": "next build",
+    "verify:full": "node scripts/verify-full.ts"
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.31.1",

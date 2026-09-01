@@ -1,14 +1,19 @@
-// Direction B — "Bestiary". The collection is the page.
+// The front page. Bestiary — the collection is the page.
+//
+// Chosen 2026-09-01 out of three directions; the other two are recorded as
+// discarded in `docs/`. The design system is `DESIGN.md` §10.
 //
 // The argument: 4,000 dragons exist already, their tiers fixed before the first
-// one went out, and the interesting fact is *which ones are still in there*. So
-// the plate — every piece, at once — is the hero, and the hour is the date-line
-// above it. This is the one direction that takes Quantums' grid-as-hero, and it
-// pushes it somewhere they do not: theirs is a status display, this is a
-// catalogue with an entry.
+// one went out, and the fact worth looking at is *which ones are still in
+// there*. So the plate — every piece, at once — is the hero.
 //
-// Caller: Next's router, at `/`. `docs/DESIGN-candidate-bestiary.md` is the
-// argument.
+// **The clock sits in the masthead**, above the plate and above the rule, so
+// that the first thing on the screen is the thing that recurs. That is taken
+// from the direction that made the page nothing but the clock; what is not
+// taken from the third direction is the poster, and the absent hoard gets one
+// line at the foot rather than a frame of its own.
+//
+// Caller: Next's router, at `/`.
 
 import { clusterName } from '../src/lib/snapshot/rpc.ts'
 import { fetchLatestSettled } from '../src/lib/chain/latest.ts'
@@ -16,6 +21,7 @@ import { nextIssuanceAt, placeholderTier, readCollectionState, TIERS } from '../
 import { readConfig } from '../src/lib/site/config.ts'
 import { encodeBase58 } from '../src/lib/solana/base58.ts'
 import { Countdown } from '../src/components/Countdown.tsx'
+import { ArtSlot } from '../src/components/ArtSlot.tsx'
 
 export const dynamic = 'force-dynamic'
 
@@ -32,6 +38,23 @@ function ago(fromUnix: number, nowUnix: number): string {
   if (s < 90) return `${s} seconds ago`
   const m = Math.round(s / 60)
   return m < 90 ? `${m} minutes ago` : `${Math.round(m / 60)} hours ago`
+}
+
+/**
+ * A chain read that fails must not take the page down.
+ *
+ * The gallery answered HTTP 500 on roughly one request in three while the
+ * cranker, the capture harness and the replay job shared one provider key. The
+ * retry in `src/lib/chain/rpc.ts` is the fix; this is the second line of it,
+ * because "the page is broken" and "the endpoint is busy" are different facts
+ * and the reader is entitled to be told which.
+ */
+async function orNull<T>(work: Promise<T>): Promise<T | null> {
+  try {
+    return await work
+  } catch {
+    return null
+  }
 }
 
 export default async function Page() {
@@ -55,8 +78,8 @@ export default async function Page() {
   const [state, latest] = await Promise.all([
     config.survivors === undefined
       ? Promise.resolve(null)
-      : readCollectionState({ rpcUrl: config.rpcUrl, config: config.config!, survivors: config.survivors }),
-    fetchLatestSettled({ rpcUrl: config.rpcUrl, programId: config.programId, config: config.config }),
+      : orNull(readCollectionState({ rpcUrl: config.rpcUrl, config: config.config!, survivors: config.survivors })),
+    orNull(fetchLatestSettled({ rpcUrl: config.rpcUrl, programId: config.programId, config: config.config })),
   ])
 
   const now = Math.floor(Date.now() / 1000)
@@ -74,42 +97,54 @@ export default async function Page() {
   return (
     <>
       <header className="sheet masthead">
+        {/* Three fixed slots. The middle one is a chip, not a sentence, so it
+            cannot wrap and shove `Verify` onto a second line at 390 px. */}
         <div className="masthead__top">
           <b>Drakes</b>
-          <span>A bestiary of 4,000 · {cluster}</span>
+          <span className="chip">{cluster}</span>
           <a href="/verify">Verify</a>
         </div>
+
+        {/* The clock. First thing on the screen at every width. */}
         <div className="dateline">
-          <p className="dateline__label">The next one is issued in</p>
-          {state && nextAt ? (
-            <Countdown
-              className="dateline__clock"
-              nextAtUnix={nextAt}
-              periodSeconds={state.periodSeconds}
-              initial={nextAt - now}
-            />
-          ) : (
-            <span className="dateline__clock">--:--</span>
-          )}
-          <div className="dateline__meta">
-            {state && (
+          <div className="dateline__clockwrap">
+            <p className="dateline__label">The next one is issued in</p>
+            {state && nextAt ? (
+              <Countdown
+                className="dateline__clock"
+                nextAtUnix={nextAt}
+                periodSeconds={state.periodSeconds}
+                initial={nextAt - now}
+              />
+            ) : (
+              <span className="dateline__clock">--:--</span>
+            )}
+          </div>
+          {state && (
+            <div className="dateline__meta">
               <span>
                 <b>{state.issuedCount.toLocaleString('en')}</b> of{' '}
                 {state.collectionSize.toLocaleString('en')} issued
               </span>
-            )}
-            {state && (
               <span>
                 <b>{state.remaining.toLocaleString('en')}</b> still in the plate
               </span>
-            )}
-            {state && <span className="note">read at slot {state.slot.toLocaleString('en')}</span>}
-          </div>
+              <span className="note">read at slot {state.slot.toLocaleString('en')}</span>
+            </div>
+          )}
         </div>
       </header>
 
       <main className="sheet">
-        {/* The plate. Every piece, at once, and the point of the direction. */}
+        {state === null && (
+          <section className="entry">
+            <p className="note" style={{ maxWidth: '62ch' }}>
+              The chain did not answer in time for this render, so the plate is not shown. Nothing
+              is cached in its place — reload, or read it yourself from{' '}
+              <a href="/verify">/verify</a>.
+            </p>
+          </section>
+        )}
         {state && (
           <section className="plate" aria-labelledby="plate">
             <div className="plate__head">
@@ -150,7 +185,8 @@ export default async function Page() {
           </section>
         )}
 
-        {/* The catalogue entry for the most recent specimen. */}
+        {/* The catalogue entry for the most recent specimen, with the slot the
+            artwork will occupy drawn empty at its real size. */}
         <section className="entry" aria-labelledby="last">
           <div className="entry__grid">
             <p className="dateline__label" id="last" style={{ margin: 0 }}>
@@ -162,31 +198,38 @@ export default async function Page() {
                 placeholder.
               </p>
             ) : (
-              <div>
-                <h2>
-                  <small>Issuance {String(latest.hour)}</small>
-                  {latest.minted ? `Drake #${latest.pieceId}` : 'No piece minted'}
-                </h2>
-                <p style={{ margin: 0, color: 'var(--color-ink-2)' }}>
-                  Issued to{' '}
-                  <strong style={{ color: 'var(--color-ink)' }}>
-                    {short(encodeBase58(latest.recipient))}
-                  </strong>
-                  , {state ? ago(state.genesisUnix + Number(latest.hour) * state.periodSeconds, now) : 'recently'}.
-                </p>
-                <dl className="facts">
-                  <dt>tier</dt>
-                  <dd>
-                    {latest.minted ? placeholderTier(latest.pieceId) : '—'}{' '}
-                    <span className="note">(placeholder)</span>
-                  </dd>
-                  <dt>their share</dt>
-                  <dd>{share(latest.balance, latest.eligibleSupply)} of eligible supply</dd>
-                  <dt>snapshot slot</dt>
-                  <dd>{latest.snapshotSlot.toString()}</dd>
-                  <dt>signature</dt>
-                  <dd className="note">{short(latest.signature)}</dd>
-                </dl>
+              <div className="entry__body">
+                <ArtSlot pieceId={latest.minted ? latest.pieceId : null} />
+                <div>
+                  <h2>
+                    <small>Issuance {String(latest.hour)}</small>
+                    {latest.minted ? `Drake #${latest.pieceId}` : 'No piece minted'}
+                  </h2>
+                  <p style={{ margin: 0, color: 'var(--color-ink-2)' }}>
+                    Issued to{' '}
+                    <strong style={{ color: 'var(--color-ink)' }}>
+                      {short(encodeBase58(latest.recipient))}
+                    </strong>
+                    ,{' '}
+                    {state
+                      ? ago(state.genesisUnix + Number(latest.hour) * state.periodSeconds, now)
+                      : 'recently'}
+                    .
+                  </p>
+                  <dl className="facts">
+                    <dt>tier</dt>
+                    <dd>
+                      {latest.minted ? placeholderTier(latest.pieceId) : '—'}{' '}
+                      <span className="note">(placeholder)</span>
+                    </dd>
+                    <dt>their share</dt>
+                    <dd>{share(latest.balance, latest.eligibleSupply)} of eligible supply</dd>
+                    <dt>snapshot slot</dt>
+                    <dd>{latest.snapshotSlot.toString()}</dd>
+                    <dt>signature</dt>
+                    <dd className="note">{short(latest.signature)}</dd>
+                  </dl>
+                </div>
               </div>
             )}
           </div>
@@ -204,8 +247,11 @@ export default async function Page() {
             can recompute it.
           </p>
           <p>
-            Every trade of $DRAKES sends <strong>2% in $PUMP</strong> to the hoard. What that
-            becomes, and when it opens, is in the protocol paper.
+            {/* The mechanism, never a promise. `DESIGN.md` §7 lists `backed`
+                among the words this project may never use, and the sentence that
+                would be easiest to write is exactly that one. */}
+            <strong>Every trade of $DRAKES sends 2% in $PUMP to the hoard.</strong> That is the
+            mechanism, stated as a mechanism.
           </p>
           <p style={{ marginTop: 'var(--space-24)' }}>
             <a className="btn" href="/verify">
@@ -216,8 +262,14 @@ export default async function Page() {
       </main>
 
       <footer className="sheet">
-        <p className="note" style={{ padding: 'var(--space-24) 0 var(--space-48)' }}>
-          {config.programId} · recomputable, not trustless · no hoard exists yet
+        {/* The absence, in one line, at the foot. It was a full gold frame in one
+            of the discarded directions and that put the emptiest fact on the
+            site in its largest object. */}
+        <p className="note foot">
+          {config.programId} · recomputable, not trustless ·{' '}
+          <strong style={{ color: 'var(--color-ink-2)' }}>
+            the hoard is empty and there is no pool sending anything to it yet
+          </strong>
         </p>
       </footer>
     </>
