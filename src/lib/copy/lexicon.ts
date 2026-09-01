@@ -1,6 +1,6 @@
 import { globSync, readFileSync } from 'node:fs'
 import { join, relative, sep } from 'node:path'
-import { BANNED_TERMS } from './banned-terms.js'
+import { BANNED_TERMS } from './banned-terms.ts'
 
 const ROOT = join(import.meta.dirname, '..', '..', '..')
 

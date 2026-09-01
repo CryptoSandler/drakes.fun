@@ -82,8 +82,14 @@ stays alive and checkable after the collection completes, which is the point.
 
 `issue_at(n) = genesis_instant + n hours`, UTC, computed from the index —
 **never from when the previous issuance settled**, so a late one cannot push the
-schedule. The collection completes 4,000 hours after genesis: **166 days and 16
-hours**, a date known before the first piece exists.
+schedule. The collection needs at least 4,000 hours after genesis: **166 days
+and 16 hours**.
+
+**That is a floor, not a completion date, and copy must never state it as one.**
+A skipped hour does not advance `issued_count` (below), so any hour that fails
+to settle pushes completion out by an hour. 166d16h is the earliest the
+collection can finish and the number to publish is "no sooner than"; T12 is the
+reason the difference is not academic.
 
 **Skipped hours.** If eligible supply is zero, or randomness is not fulfilled
 before the next hour's request, no piece is minted and `issued_count` does not
@@ -161,9 +167,23 @@ debuggable in public:
 
 - `AnchorTooEarly` — the settling slot is before `issue_at(index)`.
 - `SnapshotNotFrozen` — no root committed for this index.
-- `RandomnessNotFulfilled` — the Switchboard account has no value yet.
+- `RandomnessNotReadable` — `get_value` refused at this slot.
 
-Resolves a point in `[0, eligible_supply)` from the fulfilled randomness, takes
+**The third one is not "the value has not arrived yet", and this was verified
+against the crate rather than assumed** (`references.md`, Switchboard On-Demand
+read 2026-09-01). `RandomnessAccountData::get_value(clock_slot)` returns the
+value **only when `clock_slot == reveal_slot`** and errors in every other slot,
+including every slot after it. There is no fulfilled-and-then-read state to
+poll for.
+
+So **`settle_issuance` only works in the same transaction as the Switchboard
+reveal**, immediately after it. The crank builds `[reveal, settle]` and sends
+it as one transaction. This does not make settle permissioned — anybody can
+fetch the oracle's signed reveal and build the same pair — but it does mean a
+settle sent on its own can never succeed, and the error has to say so plainly
+or every integrator will lose a day to it.
+
+Resolves a point in `[0, eligible_supply)` from the revealed randomness, takes
 a Merkle proof for the leaf whose range contains it, CPIs `mpl-core` to mint the
 asset to that address, and pays the crank a bounty capped at 1/10,000 of the
 reserve. Emits the slot, the root, the randomness account and value, the
@@ -231,10 +251,40 @@ set, sort, assign contiguous ranges, and Merkle-ize. The root goes on chain
 before the randomness exists.
 
 **This is recomputable, not trustless, and the site says exactly that.** We
-build the tree, so we could lie about it. The input is public chain state at a
-named slot, so anyone with an archival RPC can rebuild it and compare — and a
-root that did not match would be permanent public evidence. The rebuild command
-is published on the verify page, not buried in a repo.
+build the tree, so we could lie about it.
+
+**Two claims, and only one of them is cheap — the page must not blur them.**
+
+1. **The arithmetic.** We publish the full leaf set for every issuance, so
+   anybody recomputes the root, the commitment, the ranges and the recipient
+   from that file, offline, in seconds, with `node` and nothing installed. That
+   is `scripts/snapshot.ts verify`, and it is the command the verify page
+   prints.
+2. **That the leaf set matched the chain at that slot.** This one is not what
+   an earlier draft of this section claimed. **There is no standard RPC that
+   returns program accounts as they stood at a past slot** — an archival RPC
+   keeps blocks and transactions, not account state at an arbitrary slot. The
+   honest routes are somebody's own indexer running from launch, or a replay of
+   token transfers up to that slot. Saying "anyone with an archival RPC can
+   rebuild it" would be false, and it is exactly the kind of sentence that gets
+   quoted back.
+
+A root that did not match would still be permanent public evidence; the point
+is that the second check is expensive, and the page says so instead of implying
+a one-liner.
+
+**The snapshot is read at the current slot** and the slot it was actually read
+at comes back in the RPC response context, which is what goes on chain. Exact,
+not approximate.
+
+**A scan that cannot return every holder is a skipped hour, never a partial
+tree.** `getProgramAccounts` refuses rather than truncating on a large holder
+set (`references.md`, verified 2026-09-01), and the cranker treats that refusal
+as a skip. A truncated snapshot would produce a root that verifies perfectly
+while leaving holders out of the eligible set — a silent disenfranchisement
+with a valid proof attached, which is the worst failure this design has.
+
+The rebuild command is published on the verify page, not buried in a repo.
 
 Domain-separated leaf and node hashing (distinct prefix bytes) — without it a
 node can be presented as a leaf.
@@ -360,10 +410,51 @@ Two build-time facts, both easy to get wrong once and impossible to fix after:
 
 ### T11 — Randomness liveness and grinding
 
-If Switchboard does not fulfil before the next hour's request, **the issuance is
+If Switchboard does not reveal before the next hour's request, **the issuance is
 skipped and the index does not advance**. There is no re-request. This is what
-removes grinding: a caller who stalls an issuance cannot re-roll it, they can
-only destroy it, which costs them the same piece it costs everyone else.
+removes grinding, and the reason it has to work this way is sharper than it
+first looks: the reveal is fetched off-chain from the oracle gateway, so a
+caller **can see the outcome before submitting it** and simply decline to send
+a transaction they dislike. One request must therefore be one shot. If a
+re-request were allowed inside the same hour, that caller would get as many
+shots as they could pay for, which is grinding with extra steps.
+
+A caller who stalls an issuance cannot re-roll it. They can only destroy it.
+
+### T12 — The oracle is chosen by whoever calls `request_issuance`
+
+**New, and it is the cost of T11's design.** Switchboard's `randomness_commit`
+takes the `oracle` account as an argument (`references.md`, read 2026-09-01).
+The queue does not assign it; the caller names it. `request_issuance` is
+permissionless, so **the caller who lands first each hour picks the oracle that
+will serve that hour.**
+
+An adversary who names a dead or uncooperative oracle burns one transaction fee
+and costs the collection one hour. Repeated every hour, it does not destroy
+pieces — `issued_count` does not advance, so the piece is issued later — but it
+**stretches the collection indefinitely**, which is why §2's 166d16h is a floor
+and not a date.
+
+T11's old framing said this "costs them the same piece it costs everyone else".
+That is true of a holder and false of the attacker who matters: somebody who
+holds nothing pays ~5,000 lamports an hour to stall a project indefinitely.
+The asymmetry is real and it should not be described away.
+
+What the program can enforce, and does:
+
+- `queue` must equal the queue written at `initialize`. An oracle outside it is
+  refused by Switchboard itself.
+- The Switchboard program ID is the one written at `initialize`, asserted
+  literally against the cluster's published value, never taken from the caller.
+
+What it cannot enforce is that a valid oracle is a *live* one. The mitigations
+that remain are operational, and they are honest rather than clever: our crank
+requests at the top of the hour with a healthy oracle and a priority fee, so an
+attacker has to win a race every hour, forever, in public, with each attempt
+visible on chain and attributable to a funder.
+
+**No re-request is added to fix this.** The cure is grinding and the disease is
+delay.
 
 ---
 

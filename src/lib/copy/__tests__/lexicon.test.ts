@@ -1,8 +1,8 @@
 import { readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
-import { BANNED_TERMS } from '../banned-terms.js'
-import { findBanned, countWord, scanCorpus, corpusFiles } from '../lexicon.js'
+import { BANNED_TERMS } from '../banned-terms.ts'
+import { findBanned, countWord, scanCorpus, corpusFiles } from '../lexicon.ts'
 
 const fixture = (name: string) =>
   readFileSync(join(import.meta.dirname, 'fixtures', name), 'utf8')

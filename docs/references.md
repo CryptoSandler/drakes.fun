@@ -239,6 +239,74 @@ Switchboard On-Demand and ORAO both provide verifiable randomness on Solana
 today. Switchboard published a VRF request cost "just under 0.002 SOL". This is
 a capability Quantums explicitly did not have on its chain.
 
+#### Switchboard On-Demand, read from the crate source 2026-09-01
+
+Source of truth: `switchboard-on-demand` **v0.13.0**, vendored from crates.io
+and read at
+`~/.cargo/registry/src/index.crates.io-*/switchboard-on-demand-0.13.0/src`.
+Not from documentation and not from memory.
+
+- Program IDs — mainnet `SBondMDrcV3K4kxZR1HNVT7osZxAHVHgYXL5Ze1oMUv`,
+  devnet `Aio4gaXjXzJNVLtzwtNVmSqGKpANtXhybbkhtAC94ji2`
+  (`src/program_id.rs`). **They are different**, so the program takes the ID
+  from config rather than a constant, and the mainnet value is asserted
+  literally at `initialize`.
+- `RandomnessAccountData` (`src/on_demand/accounts/randomness.rs`):
+  `authority`, `queue`, `seed_slothash`, `seed_slot`, `oracle`, `reveal_slot`,
+  `value: [u8; 32]`. Discriminator `[10, 66, 229, 135, 220, 239, 217, 114]`.
+- **`get_value(clock_slot)` returns the value only when
+  `clock_slot == self.reveal_slot`.** Any other slot returns
+  `SwitchboardRandomnessTooOld`. This is the fact that shapes the whole
+  issuance path: the value is readable **in the reveal slot and in no other**,
+  so a settle instruction has to travel in the same transaction as the reveal,
+  or it cannot read anything at all.
+- `is_revealable(clock_slot)` is `seed_slot < clock_slot`.
+- `RandomnessCommit` (`src/on_demand/instructions/randomness_commit.rs`):
+  accounts are `randomness` (w), `queue` (r), `oracle` (w), `SlotHashes` sysvar
+  (r), `authority` (**signer**). `invoke` uses `invoke_signed` and takes
+  seeds — **so the authority can be a PDA of our program**, which is what keeps
+  `request_issuance` permissionless.
+- The commit **takes an `oracle` account as an argument.** Which oracle serves
+  a request is therefore a choice made by whoever calls, not a property of the
+  queue. See `DESIGN.md` T12.
+
+### Cluster genesis hashes, verified live 2026-09-01
+
+`getGenesisHash` against the public endpoints, so the classifier is checked
+against the chain and not against memory:
+
+- mainnet-beta — `5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d`
+- devnet — `EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG`
+
+These are what `clusterName()` classifies against. A hash that matches neither
+returns `unknown`, and `unknown` blocks (CLAUDE.md, showing the network before
+a signature).
+
+### `getProgramAccounts` refuses a large holder scan — verified 2026-09-01
+
+Run against `api.devnet.solana.com`, SPL Token program, `dataSize: 165` plus a
+`memcmp` on the mint at offset 0, `dataSlice` of 40 bytes:
+
+- A mint with **no** token accounts returns `200` with
+  `{"context":{"slot":…},"value":[]}`. The context comes back, so an empty
+  holder set and a broken query are distinguishable.
+- Devnet USDC (`4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU`) returns
+  **JSON-RPC error `-32012`, "scan aborted: The accumulated scan results
+  exceeded the limit"**.
+
+**It refuses; it does not truncate.** That matters more than it looks: a
+truncated scan would produce a Merkle root that verifies perfectly while
+silently leaving holders out of the eligible set. A token with a few thousand
+holders will hit this on any public endpoint, so the snapshot read needs a
+provider that supports large scans, and the cranker treats the abort as a
+skipped hour rather than a snapshot.
+
+### Not verified here
+
+- The devnet faucet was **rate-limited** on 2026-09-01, so no funded devnet
+  keypair exists yet and no live `getProgramAccounts` run against **our own**
+  mint has happened. The rehearsal runbook names funding as a manual step.
+
 ### Solana audit market, 2026
 
 Reported ranges, read 2026-09-01 (Zealynx, Accretion, Sherlock):
