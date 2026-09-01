@@ -52,6 +52,15 @@ const MAX_PROOF_LEN: usize = 24;
 /// Switchboard program publishes on devnet on 2026-09-01. Both agree.
 const RANDOMNESS_REVEAL_DISCRIMINATOR: [u8; 8] = [197, 181, 187, 10, 30, 58, 20, 73];
 
+/// `sha256("global:randomness_init")[..8]`, checked against the devnet IDL on
+/// 2026-09-01. Both agree. Params are a single `recent_slot: u64`.
+const RANDOMNESS_INIT_DISCRIMINATOR: [u8; 8] = [9, 9, 204, 33, 50, 116, 113, 15];
+
+const ASSOCIATED_TOKEN_ID: Pubkey =
+    solana_program::pubkey!("ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL");
+const ADDRESS_LOOKUP_TABLE_ID: Pubkey =
+    solana_program::pubkey!("AddressLookupTab1e1111111111111111111111111");
+
 /// Checked by address on the settle accounts. Written as literals so the guard
 /// is an absolute assertion against a known value (CLAUDE.md).
 const SPL_TOKEN_ID: Pubkey = solana_program::pubkey!("TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA");
@@ -88,10 +97,66 @@ pub mod issuance {
         config.issued_count = 0;
         config.live_supply = 0;
         config.excluded = params.excluded;
+        config.manifest_hash = params.manifest_hash;
 
-        // The randomness account has to already be ours, or `request_issuance`
-        // could never sign its commit. Asserted here rather than discovered at
-        // the first issuance.
+        // **This instruction creates the randomness account**, and it has to.
+        // Switchboard's `randomness_init` requires its `authority` to sign, and
+        // the authority must be this config PDA or `request_issuance` could
+        // never commit without a privileged signer (T13). A PDA cannot sign a
+        // top-level instruction, so the account cannot be created from outside
+        // the program at all.
+        let config_key = config.key();
+        let bump = config.bump;
+        let seeds: &[&[u8]] = &[CONFIG_SEED, &[bump]];
+        let init = Instruction {
+            program_id: ctx.accounts.switchboard_program.key(),
+            accounts: vec![
+                AccountMeta::new(ctx.accounts.randomness.key(), true),
+                AccountMeta::new(ctx.accounts.reward_escrow.key(), false),
+                AccountMeta::new_readonly(config_key, true),
+                AccountMeta::new(ctx.accounts.queue.key(), false),
+                AccountMeta::new(ctx.accounts.deployer.key(), true),
+                AccountMeta::new_readonly(ctx.accounts.system_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.token_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.associated_token_program.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.wrapped_sol_mint.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.switchboard_state.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.lut_signer.key(), false),
+                AccountMeta::new(ctx.accounts.lut.key(), false),
+                AccountMeta::new_readonly(ctx.accounts.address_lookup_table_program.key(), false),
+            ],
+            data: {
+                let mut d = Vec::with_capacity(16);
+                d.extend_from_slice(&RANDOMNESS_INIT_DISCRIMINATOR);
+                d.extend_from_slice(&params.recent_slot.to_le_bytes());
+                d
+            },
+        };
+        invoke_signed(
+            &init,
+            &[
+                ctx.accounts.randomness.to_account_info(),
+                ctx.accounts.reward_escrow.to_account_info(),
+                config.to_account_info(),
+                ctx.accounts.queue.to_account_info(),
+                ctx.accounts.deployer.to_account_info(),
+                ctx.accounts.system_program.to_account_info(),
+                ctx.accounts.token_program.to_account_info(),
+                ctx.accounts.associated_token_program.to_account_info(),
+                ctx.accounts.wrapped_sol_mint.to_account_info(),
+                ctx.accounts.switchboard_state.to_account_info(),
+                ctx.accounts.lut_signer.to_account_info(),
+                ctx.accounts.lut.to_account_info(),
+                ctx.accounts.address_lookup_table_program.to_account_info(),
+                ctx.accounts.switchboard_program.to_account_info(),
+            ],
+            &[seeds],
+        )
+        .map_err(|_| error!(IssuanceError::RandomnessInitFailed))?;
+
+        // Read it back rather than assume the CPI did what was asked. This is
+        // the difference between "we sent the instruction" and "the account is
+        // ours" (CLAUDE.md, money verdicts are read off the chain).
         let randomness = RandomnessAccountData::parse(ctx.accounts.randomness.data.borrow())
             .map_err(|_| error!(IssuanceError::RandomnessUnreadable))?;
         require_keys_eq!(
@@ -438,10 +503,12 @@ pub struct Config {
     /// it cannot enforce the set, and pretending otherwise would be worse than
     /// saying so.
     pub excluded: Vec<Pubkey>,
+    /// Commits the full piece-by-piece manifest before issuance 1 (D19).
+    pub manifest_hash: [u8; 32],
 }
 
 impl Config {
-    pub const SIZE: usize = 8 + 1 + 32 * 5 + 8 + 8 + 4 * 3 + 4 + 32 * MAX_EXCLUDED;
+    pub const SIZE: usize = 8 + 1 + 32 * 5 + 8 + 8 + 4 * 3 + 4 + 32 * MAX_EXCLUDED + 32;
 }
 
 #[account]
@@ -469,6 +536,13 @@ impl Issuance {
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
 pub struct InitializeParams {
+    /// Required by Switchboard's `randomness_init`, which derives the address
+    /// lookup table from it. Computed off-chain by the deployer and forwarded.
+    pub recent_slot: u64,
+    /// Commits the piece-by-piece manifest -- id, tier, traits, URI -- for all
+    /// 4,000, fixed and public before issuance 1 (D19). The program never reads
+    /// a tier; this is what makes rarity checkable in advance.
+    pub manifest_hash: [u8; 32],
     pub weight_mint: Pubkey,
     pub genesis_unix: i64,
     pub period_seconds: i64,
@@ -520,9 +594,33 @@ pub struct Initialize<'info> {
     /// CHECK: recorded, and its update authority is checked by mpl-core at mint.
     pub collection: UncheckedAccount<'info>,
     /// CHECK: recorded and asserted against the randomness account's own queue.
+    #[account(mut)]
     pub queue: UncheckedAccount<'info>,
-    /// CHECK: parsed as Switchboard randomness and asserted to be ours.
-    pub randomness: UncheckedAccount<'info>,
+    /// CHECK: created by the CPI below, then parsed and asserted to be ours.
+    #[account(mut)]
+    pub randomness: Signer<'info>,
+    /// CHECK: Switchboard's reward escrow for the randomness account.
+    #[account(mut)]
+    pub reward_escrow: UncheckedAccount<'info>,
+    /// CHECK: Switchboard's program state.
+    pub switchboard_state: UncheckedAccount<'info>,
+    /// CHECK: Switchboard derives and checks its own lookup-table signer.
+    pub lut_signer: UncheckedAccount<'info>,
+    /// CHECK: the lookup table Switchboard creates from `recent_slot`.
+    #[account(mut)]
+    pub lut: UncheckedAccount<'info>,
+    /// CHECK: checked by address.
+    #[account(address = ADDRESS_LOOKUP_TABLE_ID)]
+    pub address_lookup_table_program: UncheckedAccount<'info>,
+    /// CHECK: checked by address.
+    #[account(address = SPL_TOKEN_ID)]
+    pub token_program: UncheckedAccount<'info>,
+    /// CHECK: checked by address.
+    #[account(address = ASSOCIATED_TOKEN_ID)]
+    pub associated_token_program: UncheckedAccount<'info>,
+    /// CHECK: checked by address.
+    #[account(address = WRAPPED_SOL_MINT)]
+    pub wrapped_sol_mint: UncheckedAccount<'info>,
     /// CHECK: recorded; the cluster's published id is asserted off-chain at the
     /// deploy checklist, because devnet and mainnet differ.
     pub switchboard_program: UncheckedAccount<'info>,
@@ -702,6 +800,8 @@ pub enum IssuanceError {
     CounterOverflow,
     #[msg("the switchboard reveal CPI failed")]
     RevealFailed,
+    #[msg("the switchboard randomness_init CPI failed")]
+    RandomnessInitFailed,
 }
 
 // --------------------------------------------------------------------- tests
@@ -818,6 +918,7 @@ mod tests {
             issued_count: 0,
             live_supply: 0,
             excluded: vec![],
+            manifest_hash: [0u8; 32],
         };
         assert_eq!(current_hour(&config, 1_000_000).unwrap(), 0);
         assert_eq!(current_hour(&config, 1_000_000 + 3_599).unwrap(), 0);
