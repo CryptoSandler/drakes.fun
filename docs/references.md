@@ -259,3 +259,53 @@ Recorded so nobody treats these as checked:
 - Whether any specific audit firm accepts a **pseudonymous** engagement, and on
   what terms.
 - Pump.fun's current published tokenomics page (secondary sources only above).
+
+---
+
+## Additions — 2026-09-01, name and cost verification
+
+### Name collision: "Cinder" / "Cinders"
+
+- **`Cinder` (singular) was a Solana NFT project** by WildWorks / Cinder Studios
+  — "Cinder Fae", 4,444 avatars, announced November 2021. Its servers and
+  website were **shut down without prior announcement on 2023-02-08** and Cinder
+  Studios was disbanded. Listings survive on Solanart (`cindernft`) and SolSea.
+- **`Cinders` (plural) is free** as a project name in this space as far as the
+  search reached. No live collection, no token.
+- Ticker `$CINDER`: no Jupiter-listed token with that symbol above $50k
+  liquidity, 2026-09-01.
+- `cinders.fun`: available, $1.99/yr, checked 2026-09-01.
+
+**The residual risk, stated rather than dismissed:** the singular name carries a
+small negative memory in Solana NFT circles — a studio that closed a beloved
+game to pivot to NFTs, then shut the NFT project down thirteen months later.
+Anyone who was around will half-remember it. Plural, different species,
+different mechanism, three years dead. Judged acceptable; it is the owner's call
+and it is recorded here so it was a call.
+
+**Not checked:** USPTO / EUIPO trademark registers. A registered mark for
+"Cinder" in software or entertainment is plausible and a search of the register
+is a separate, cheap step that has not been run.
+
+### Irys upload cost — live quotes, 2026-09-01
+
+From `uploader.irys.xyz/price/solana/:bytes`. SOL at **$103.62** (Jupiter).
+
+| Payload | Lamports | SOL | USD |
+|---|---|---|---|
+| 400 MB | 15,661,255 | 0.0157 | **$1.62** |
+| 800 MB | 31,322,509 | 0.0313 | **$3.25** |
+| 2 GB | 78,306,271 | 0.0783 | **$8.11** |
+| 4 GB | 156,612,541 | 0.1566 | **$16.23** |
+
+4,000 images at 500 KB is 2 GB, so **the entire permanent upload costs about
+$8**, and even a generous 1 MB per image lands at $16. This is not a budget line
+item. The earlier "under $100, estimated" is superseded.
+
+### Correction: SOL price
+
+Earlier projections in `spec-round-2026-09-01.md` valued redemption fees at an
+assumed $220/SOL. **SOL is $103.62** (2026-09-01). A 0.05 SOL redemption fee is
+**$5.18**, and 1,000 redemptions is **~$5,180**, not ~$11k. The conclusion is
+unchanged — it is a rounding error against the fee stream — but the number was
+wrong and is corrected here.
