@@ -464,17 +464,26 @@ precision is **±59 minutes**, and an hourly expression **fails deployment**
 wait for the oracle, then a reveal that must land in the same transaction as the
 settle — belongs in a process rather than a request handler.
 
-**Decided: a minimal VPS running `scripts/crank-loop.ts` under systemd with
-`Restart=always` and `StartLimitIntervalSec=0`.** The lazier alternative is
-named so the choice stays with the owner: Railway Hobby at US$5/month runs the
-identical process with no machine to patch, and an unpatched box we forget about
-is worse than five dollars.
+**Decided by the owner, 2026-09-01: Railway Hobby**, US$5/month, account and
+payment theirs. The VPS under systemd was the written recommendation and the
+owner took the alternative it named — no machine to patch, which was the
+argument against the VPS all along. The unit file stays in the document because
+only the supervisor differs; `scripts/crank-loop.ts` does not know which host it
+is on.
 
-**Not applied, and the reason is a rule rather than an oversight.** Every
-candidate needs an account with a payment method, and CLAUDE.md is explicit that
-anything paid is paid by a route the owner decides and that this repository
-never records which. The devnet run of 2026-09-01 therefore ran from a developer
-machine, and `docs/crank-hosting-run.md` says so rather than implying otherwise.
+**Prepared, not deployed.** `railway.toml` is committed, the process serves
+`/healthz`, and the service has never been created: creating an account and
+attaching a card is the owner's step, and CLAUDE.md is explicit that anything
+paid is paid by a route the owner decides and that this repository never records
+which. The devnet run of 2026-09-01 therefore ran from a developer machine, and
+`docs/crank-hosting-run.md` says so rather than implying otherwise.
+
+**The healthcheck verdict is derived, never set.** `/healthz` compares the
+instant the loop last woke against the schedule's own period and answers 503
+past two of them. There is no `healthy` flag, because a flag keeps reporting
+healthy from inside a loop that has stopped looping — which is the one state the
+whole hosting batch exists to notice. Two periods rather than one, since an hour
+may legitimately spend its entire window failing and retrying.
 
 **Alerting is Telegram**, one HTTPS POST with no dependency. A 200 carrying
 `ok: false` — what a wrong chat id returns — is treated as a failure, because a
@@ -494,9 +503,16 @@ version of the figure, it is a false one**, on the number this project is
 ultimately judged by.
 
 The mechanism fits both futures: `RESERVE_OWNER` switches it on and nothing else
-changes. **The policy is left open** — whether to show the Phase 1 multisig
-balance under its real name, *temporary custody*, is the owner's call
-(`docs/round-2026-09-01-b5.md` §4).
+changes. **Closed by the owner, 2026-09-01: nothing is shown until the pool exists.**
+Not a reserve figure, and not the Phase 1 custody balance under its real name
+either — no number at all, including no zero. The reserve section appears when
+there is a pool accruing fees into it and not before.
+
+That is stricter than the mechanism requires and the strictness is the point: a
+figure labelled *temporary custody* still trains a reader to look for a number
+in that spot, and the number would be one the project does not yet stand behind.
+`RESERVE_OWNER` stays unset, and setting it is a deliberate act at B3, not a
+default that drifts into being.
 
 **`$PUMP` is Token-2022** (`references.md`, 2026-09-01), so the balance is read
 by filtering `getTokenAccountsByOwner` on the mint, and no associated-token

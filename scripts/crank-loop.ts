@@ -1,6 +1,7 @@
 // The issuance cranker, as the thing a host actually runs.
 //
 //   node scripts/crank-loop.ts --rig <rig.json> [--hours N] [--out <dir>]
+//                              [--health-port N]
 //   node scripts/crank-loop.ts --alert-test
 //
 // Caller: the host. `docs/crank-hosting.md` carries the systemd unit and the
@@ -20,7 +21,14 @@ import { join } from 'node:path'
 import { Connection, Keypair, PublicKey } from '@solana/web3.js'
 import { runLoop, type HourReport } from '../src/lib/crank/loop.ts'
 import { IssuanceEngine, type Rig } from '../src/lib/crank/issue.ts'
-import { consoleSink, fallbackSink, telegramSink, type Sink } from '../src/lib/crank/alert.ts'
+import {
+  consoleSink,
+  fallbackSink,
+  resolveChatId,
+  telegramSink,
+  type Sink,
+} from '../src/lib/crank/alert.ts'
+import { serveHealth } from '../src/lib/crank/health.ts'
 import { clusterName } from '../src/lib/snapshot/rpc.ts'
 import type { Schedule } from '../src/lib/protocol/schedule.ts'
 
@@ -42,20 +50,43 @@ const emit = (row: Record<string, unknown>): void => {
 const CONFIG_GENESIS = 8 + 1 + 32 * 5
 const CONFIG_PERIOD = CONFIG_GENESIS + 8
 
-function alertSink(): Sink {
+async function alertSink(): Promise<Sink> {
   const token = process.env.TELEGRAM_BOT_TOKEN
-  const chatId = process.env.TELEGRAM_CHAT_ID
-  if (token === undefined || chatId === undefined || token === '' || chatId === '') {
-    emit({ level: 'warn', msg: 'no TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID; alerts go to stderr only' })
+  if (token === undefined || token === '') {
+    emit({ level: 'warn', msg: 'no TELEGRAM_BOT_TOKEN; alerts go to stderr only' })
     return consoleSink()
   }
+
+  let chatId = process.env.TELEGRAM_CHAT_ID
+  if (chatId === undefined || chatId === '') {
+    // Discovered from getUpdates rather than configured: the operator messages
+    // the bot once and the id follows. It refuses on nothing and on more than
+    // one, because an alert delivered to the wrong chat is worse than one that
+    // fails loudly.
+    try {
+      const resolved = await resolveChatId({ token })
+      chatId = resolved.chatId
+      emit({
+        level: 'info',
+        msg: 'chat id resolved from getUpdates',
+        chatId,
+        from: resolved.from,
+        note: 'pin it as TELEGRAM_CHAT_ID; getUpdates conflicts with a webhook and ages out',
+      })
+    } catch (error) {
+      emit({ level: 'warn', msg: 'could not resolve a chat id', why: String(error) })
+      return consoleSink()
+    }
+  }
+
   // The console sink is last and never removed. An alerting path whose only
   // channel can fail silently is worse than none, because it is trusted.
   return fallbackSink([telegramSink({ token, chatId }), consoleSink()])
 }
 
 async function alertTest(): Promise<void> {
-  await alertSink()({
+  const sink = await alertSink()
+  await sink({
     title: 'DRAKES: alert channel test',
     lines: [
       'If you are reading this, the cranker can reach you.',
@@ -142,7 +173,7 @@ async function main(): Promise<void> {
 
   const out = flag('out')
   if (out !== undefined) mkdirSync(out, { recursive: true })
-  const sink = alertSink()
+  const sink = await alertSink()
   const balance = await conn.getBalance(payer.publicKey)
 
   emit({
@@ -156,6 +187,23 @@ async function main(): Promise<void> {
     genesisUnix: schedule.genesisUnix,
     periodSeconds: schedule.periodSeconds,
   })
+
+  // Railway sets PORT; systemd does not, and a VPS can pass --health-port.
+  const healthPort = Number(flag('health-port') ?? process.env.PORT ?? 0)
+  const health = { lastFiredAtMs: undefined as number | undefined, fired: 0, settled: 0 }
+  const startedAtMs = Date.now()
+  const healthServer =
+    healthPort > 0
+      ? serveHealth(healthPort, () => ({
+          nowMs: Date.now(),
+          lastFiredAtMs: health.lastFiredAtMs,
+          startedAtMs,
+          periodSeconds: schedule.periodSeconds,
+          hoursFired: health.fired,
+          hoursSettled: health.settled,
+        }))
+      : undefined
+  if (healthServer !== undefined) emit({ level: 'info', msg: 'health endpoint up', path: '/healthz', port: healthPort })
 
   const stopping = { aborted: false }
   for (const signal of ['SIGINT', 'SIGTERM'] as const) {
@@ -204,6 +252,9 @@ async function main(): Promise<void> {
         }
       },
       onHour: (report) => {
+        health.lastFiredAtMs = report.firedAt
+        health.fired += 1
+        if (report.settled) health.settled += 1
         emit({
           level: report.settled ? 'info' : 'error',
           msg: 'hour',
@@ -234,6 +285,7 @@ async function main(): Promise<void> {
       },
     },
   })
+  await healthServer?.close()
   emit({ level: 'info', msg: 'cranker down' })
 }
 

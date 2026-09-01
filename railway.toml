@@ -1,0 +1,39 @@
+# The issuance cranker as a Railway service. `docs/crank-hosting.md` has the
+# evaluation (D22) and the three-line runbook.
+#
+# This deploys the WORKER, not the site: the site is on Vercel and nothing here
+# builds it. `buildCommand` is the reason — Nixpacks would otherwise find
+# `npm run build` in package.json and produce a whole Next application on a
+# service that never serves a page.
+
+[build]
+builder = "NIXPACKS"
+# Install only, and only what the crank needs at runtime. There is nothing to
+# compile: the scripts are `.ts` run directly by node, which is why
+# `engines.node` is `>=22.18` -- type stripping is enabled by default from
+# 22.18.0 and 23.6.0, and a 22.0 would fail on the first import
+# (nodejs.org/api/typescript.html, read 2026-09-01).
+buildCommand = "npm ci --omit=dev"
+
+[deploy]
+# CRANK_RIG names the rig file. Devnet today; the mainnet rig does not exist
+# until B3 and B8 have run, and pointing this at a rig whose `expectCluster`
+# disagrees with the genesis hash refuses to sign rather than guessing.
+startCommand = "node scripts/crank-loop.ts --rig $CRANK_RIG --out /data/snapshots"
+
+# The process binds PORT and answers /healthz. The verdict is derived from how
+# long ago the loop last woke, against the schedule's own period -- there is no
+# healthy flag to go stale. A cranker that died quietly is the failure this
+# whole batch exists to notice.
+healthcheckPath = "/healthz"
+healthcheckTimeout = 30
+
+# The entire supervision requirement.
+restartPolicyType = "ALWAYS"
+restartPolicyMaxRetries = 0
+
+# A single instance, always. Two crankers on one rig race for the same hour:
+# the loser gets "account already exists" on request_issuance, retries, and
+# spends fees achieving nothing. The program is safe -- an hour still settles
+# exactly once -- but the second instance is pure cost.
+numReplicas = 1

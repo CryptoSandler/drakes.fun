@@ -246,9 +246,16 @@ than fatal.
 - **Survivor selection (D19).** The program still mints sequentially by
   `issued_count`. The rehearsal exercised the schedule, the snapshot, the
   randomness and the mint — not the random piece pick, which is unwritten.
-- **A production cranker.** The rehearsal driver is a scratchpad script. The
-  cranker that ships needs the gateway health check above, and it needs a home
-  in this repository with a test that drives it.
+- ~~**A production cranker.**~~ **Closed 2026-09-01.** The driver is now
+  `src/lib/crank/` plus `scripts/crank-loop.ts`: the gateway probe, a scheduler
+  anchored to the on-chain genesis, retries bounded by the request window, a
+  derived `/healthz`, and one alert per hour that closed unsettled. Its
+  behavioural tests run a full day on an injected clock. `docs/crank-hosting.md`
+  has the host; `docs/crank-hosting-run.md` has the run and, more usefully, what
+  the run does not establish.
+
+  The old driver is kept as evidence rather than in the tree:
+  `~/proyectos/evidencia/drakes/2026-09-01-b4-rehearsal/crank.mjs`.
 - **The Switchboard randomness account.** It is created off-chain by the
   deployer with its authority set to the config PDA, and passed to
   `initialize`, which asserts both the authority and the queue. One account is

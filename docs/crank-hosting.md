@@ -113,34 +113,108 @@ What it buys that the managed options do not:
 
 What it costs: a machine that needs patching, and one more thing to lose.
 
-## 2. Recommendation
+## 2. Decided: Railway Hobby
 
-**A minimal VPS running `scripts/crank-loop.ts` under systemd with
-`Restart=always`.** The scheduling lives in the process, anchored to the chain,
-so the host is supervising and nothing else.
+**The owner's vote, 2026-09-01: Railway Hobby.** Account and payment are the
+owner's; this repository deploys with a `RAILWAY_TOKEN` from `.env.local` once
+one exists, and records nothing about how it is paid.
 
-**The lazier alternative, named so the choice stays with the owner:** Railway
-Hobby at US$5/month runs the identical process with no machine to maintain. If
-the answer to "who patches the VPS" is "nobody, reliably", take Railway — an
-unpatched box we forget about is worse than five dollars.
+US$5/month, including US$5 of usage credit, charged whether or not the credit is
+consumed (`docs.railway.com/pricing/plans`, read 2026-09-01). For a process this
+small that buys a supervised container with retained logs and **no machine to
+patch** — which was the argument against the VPS all along: an unpatched box
+nobody remembers is worse than five dollars.
+
+**The VPS remains evaluated and not chosen.** Its unit file stays in §4 because
+the process is identical either way; only the supervisor changes. Nothing in
+`scripts/crank-loop.ts` knows which host it is on.
 
 **Not Vercel cron on any plan**, and not GitHub Actions.
 
-### What is blocked, and why it is the owner's call
+## 3. Railway, ready to deploy
 
-**Neither option can be provisioned from this repository.** Render, Railway, Fly
-and every VPS host need an account with a payment method attached, and
-`flyctl auth whoami` and `vercel whoami` both report no local credentials
-(2026-09-01). CLAUDE.md is explicit that anything that must be paid is paid by a
-route the owner has decided on, and that this repository never records which.
-Creating an account and attaching a card is therefore not a technical step this
-work may take on its own.
+`railway.toml` is committed and the service has never been created. Everything
+below is what exists in the repository; **nothing here has been run**, because
+the token does not exist yet.
 
-So this document ends at the unit file, and the devnet rehearsal in §5 ran from
-a developer machine rather than from the recommended host. What that rehearsal
-does and does not prove is stated there rather than blurred.
+### What the config does, and the two lines that matter
 
-## 3. The unit file
+- **`buildCommand = "npm ci --omit=dev"`.** Without it Nixpacks finds
+  `npm run build` in `package.json` and builds the whole Next application on a
+  service that never serves a page. The site is on Vercel; this is the worker.
+- **`numReplicas = 1`, deliberately.** Two crankers on one rig race for the same
+  hour. The loser gets "account already exists" on `request_issuance`, retries,
+  and spends fees achieving nothing. The program stays correct — an hour settles
+  exactly once, structurally — so this is a cost control, not a safety one.
+- `restartPolicyType = "ALWAYS"` with `restartPolicyMaxRetries = 0` (unlimited).
+  Giving up after N restarts is the shape of an outage that then needs a human
+  who is asleep.
+
+### The healthcheck
+
+`/healthz`, served by the process itself on `PORT`.
+
+**The verdict is derived, never set.** There is no `healthy = true` anywhere: the
+endpoint compares the instant the loop last woke against the schedule's own
+period, and answers **503** past two of them. A boolean flag would keep
+reporting healthy from inside a loop that had stopped looping, which is exactly
+the state worth catching.
+
+Two periods rather than one, because an hour may legitimately spend its whole
+window failing and retrying, and restarting a cranker in the middle of that work
+is worse than waiting. It scales with `period_seconds` read from the chain — a
+hardcoded two hours would call a devnet rig at a 60-second period perfectly
+healthy an hour after it died.
+
+### Variables
+
+Set on the Railway service. None of them is optional except where noted.
+
+| Variable | Value | Why |
+|---|---|---|
+| `RPC_URL` | the provider endpoint | the only endpoint the crank talks to; the cluster is classified from its genesis hash and a disagreement with the rig refuses to sign |
+| `CRANK_KEYPAIR` | `/data/crank.json` | path to the key. Its total authority is spending its own SOL on permissionless instructions (`DESIGN.md` T4) |
+| `CRANK_RIG` | `rigs/devnet-rehearsal.json` | the rig file. The mainnet rig does not exist until B3 and B8 |
+| `TELEGRAM_BOT_TOKEN` | from `@BotFather` | one message per hour that closed unsettled |
+| `TELEGRAM_CHAT_ID` | *optional* | resolved from `getUpdates` at start-up when absent, and the resolved value is logged so it can be pinned |
+| `PORT` | set by Railway | the health endpoint binds it |
+| `NIXPACKS_NODE_VERSION` | `22` or higher | `engines.node` is `>=22.18`; type stripping is enabled by default from **22.18.0** and 23.6.0, so a 22.0 fails on the first import (`nodejs.org/api/typescript.html`, read 2026-09-01) |
+
+**A volume is required, mounted at `/data`.** Two things live there and neither
+survives a redeploy otherwise:
+
+- The crank key. It is a key whose worst case is public, but losing it means
+  funding a new one.
+- `snapshots/`. Every value in a published artifact **except the leaf set** is
+  recoverable from the `IssuanceSettled` event (D21). The leaf set is not, and
+  it is the half a reader cannot rebuild without their own indexer. An ephemeral
+  filesystem here loses it permanently, one hour at a time.
+
+### The runbook, for when the token exists
+
+```sh
+railway link                                   # pick the project, then the service
+railway volume add --mount-path /data          # then upload the crank key to it
+railway up --detach                            # builds from railway.toml and starts
+```
+
+Then, and this is not optional: `railway logs` until an hour settles,
+`curl $RAILWAY_PUBLIC_DOMAIN/healthz` for a 200, and
+`node scripts/crank-loop.ts --alert-test` to prove the alert channel reaches a
+phone. An alert path that has never delivered an alert is not an alert path.
+
+### What is still blocked
+
+One thing: the token. `railway.toml`, the health endpoint, the alert channel and
+the rig are all in the repository and none of them has been run against Railway,
+because creating the account and attaching a payment method is the owner's step
+— CLAUDE.md is explicit that anything paid is paid by a route the owner decides
+and that this repository never records which.
+
+The moment `RAILWAY_TOKEN` is in `.env.local`, §3's three lines are the whole
+deploy. Nothing else waits on it.
+
+## 4. The unit file, if the host ever changes
 
 ```ini
 # /etc/systemd/system/drakes-crank.service
@@ -194,7 +268,7 @@ TELEGRAM_CHAT_ID=...
 `systemctl enable --now drakes-crank`, then
 `journalctl -u drakes-crank -f -o cat`.
 
-## 4. The alert channel
+## 5. The alert channel
 
 `onMissed` fires once for any hour whose window closed with no settlement, and
 sends one message. Telegram, because it is a single HTTPS POST with no
@@ -226,7 +300,7 @@ not visible to third parties and the chat is private, but it is still an account
 adjacent to the pseudonym. Which account that is, is the owner's decision and is
 not recorded here.
 
-## 5. The devnet run
+## 6. The devnet run
 
 See `docs/crank-hosting-run.md`, written after the run, for what was measured
 and from where.

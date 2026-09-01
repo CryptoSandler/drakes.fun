@@ -85,3 +85,63 @@ export function fallbackSink(sinks: Sink[]): Sink {
     throw new Error(`every alert channel failed: ${failures.join('; ')}`)
   }
 }
+
+/**
+ * The chat id, asked of Telegram rather than configured.
+ *
+ * `getUpdates` returns what the bot has recently received, so the operator
+ * messages the bot once and the id is discovered. Two refusals rather than a
+ * guess, because an alert delivered to the wrong chat is worse than one that
+ * fails loudly:
+ *
+ * - **No updates** — the bot has been spoken to by nobody, or the updates have
+ *   aged out (Telegram keeps them ~24 h). Say so; do not fall back to anything.
+ * - **More than one chat** — the bot is in several conversations and there is
+ *   no basis in the data for picking one. List them and require
+ *   `TELEGRAM_CHAT_ID` to settle it.
+ *
+ * `getUpdates` conflicts with a webhook and with another long-poll consumer, so
+ * this is a start-up convenience and `TELEGRAM_CHAT_ID` remains the way to pin
+ * it once it is known.
+ */
+export async function resolveChatId(args: {
+  token: string
+  fetchImpl?: typeof fetch
+}): Promise<{ chatId: string; from: string }> {
+  if (args.token === '') throw new Error('resolveChatId needs a token')
+  const doFetch = args.fetchImpl ?? fetch
+  const res = await doFetch(`https://api.telegram.org/bot${args.token}/getUpdates`)
+  if (!res.ok) throw new Error(`telegram getUpdates: HTTP ${res.status}`)
+  const body = (await res.json()) as {
+    ok?: boolean
+    description?: string
+    result?: { message?: { chat?: { id?: number; type?: string; username?: string; title?: string } } }[]
+  }
+  // A 200 with ok:false is how Telegram reports a bad token, and it is the same
+  // trap the send path has.
+  if (body.ok !== true) throw new Error(`telegram getUpdates: ${body.description ?? 'refused'}`)
+
+  const chats = new Map<string, string>()
+  for (const update of body.result ?? []) {
+    const chat = update.message?.chat
+    if (chat?.id === undefined) continue
+    chats.set(String(chat.id), chat.username ?? chat.title ?? chat.type ?? 'chat')
+  }
+
+  if (chats.size === 0) {
+    throw new Error(
+      'telegram returned no updates, so there is no chat id to resolve.\n' +
+        'Send the bot any message from the account that should receive alerts, then retry. ' +
+        'Telegram drops updates after about 24 hours.',
+    )
+  }
+  if (chats.size > 1) {
+    const listed = [...chats].map(([id, name]) => `${id} (${name})`).join(', ')
+    throw new Error(
+      `telegram has ${chats.size} chats and nothing here can choose between them: ${listed}.\n` +
+        'Set TELEGRAM_CHAT_ID to the one that should receive alerts.',
+    )
+  }
+  const [chatId, from] = [...chats][0]!
+  return { chatId, from }
+}

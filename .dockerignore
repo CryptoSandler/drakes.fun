@@ -1,0 +1,12 @@
+# Only consulted if the builder is ever switched from Nixpacks to a Dockerfile.
+node_modules
+.next
+.git
+target
+programs
+Cargo.lock
+Cargo.toml
+Anchor.toml
+app
+migrations
+public
