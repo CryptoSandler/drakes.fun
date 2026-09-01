@@ -5,7 +5,7 @@ scope; nothing here is negotiable art direction dressed as a suggestion.
 
 **No wordmark, no lettering, no logo anywhere in the deliverables** — not on a
 background, not on a relic, not in a corner. And **no reference to any real
-person.** The ticker `$DRAKE` already collides with a famous musician's
+person.** The ticker `$DRAKES` already collides with a famous musician's
 memecoins (`docs/decisions.md` D1); the art must never make that association
 look intentional.
 

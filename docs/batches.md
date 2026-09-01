@@ -77,12 +77,12 @@ Arweave gateways and diff against local bytes.
 
 Three things in order, each irreversible:
 
-1. **Grind the `$DRAKE` mint keypair until its pubkey sorts below
+1. **Grind the `$DRAKES` mint keypair until its pubkey sorts below
    `pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn`.** `DESIGN.md` T10. Getting
    this backwards inverts the entire fee design and cannot be fixed after the
    pool exists.
 2. Create the mint, whole supply, mint authority and freeze authority revoked.
-3. Create the `$DRAKE`/`$PUMP` pool on config
+3. Create the `$DRAKES`/`$PUMP` pool on config
    `HQ6vW45Kug23h2A4LkyUqB4UFfGx4LqY1uZLLfQemEjU`, seed all liquidity,
    permanently lock the position. **One bundle**, before the mint is public
    (T10).

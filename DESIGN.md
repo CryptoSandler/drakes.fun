@@ -9,8 +9,8 @@ date they were read live in `docs/references.md`.
 ## 1. The thesis
 
 **4,000 pieces that cannot be bought at issuance. One per hour, issued by the
-protocol to a `$DRAKE` holder chosen in proportion to their holding. Every
-trade of `$DRAKE` pays 2%, taken in `$PUMP`, into a reserve. Any piece can be
+protocol to a `$DRAKES` holder chosen in proportion to their holding. Every
+trade of `$DRAKES` pays 2%, taken in `$PUMP`, into a reserve. Any piece can be
 burned to redeem its share of that reserve, and the slot it leaves never
 refills.**
 
@@ -151,7 +151,7 @@ sees a token account, so the exclusion is applied when the snapshot is built
 off-chain. Recording it makes the verify page able to state the set; pretending
 the program enforced it would be worse than saying this.
 
-Immutable after this call in the Phase 2 program: the `$DRAKE` mint, the `$PUMP` mint (asserted
+Immutable after this call in the Phase 2 program: the `$DRAKES` mint, the `$PUMP` mint (asserted
 literally equal to `pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn`, per CLAUDE.md
 "a schema guard is never `==` against another variable"), the Core collection,
 the Meteora pool and position, the creator ATA, the genesis instant, the
@@ -285,7 +285,7 @@ permanently stranded reserve (T1).
 Solana has no equivalent of a token contract that updates a balance tree on
 every transfer, so the snapshot is built off-chain and committed on-chain.
 
-At the request slot we read every `$DRAKE` token account, drop the excluded
+At the request slot we read every `$DRAKES` token account, drop the excluded
 set, sort, assign contiguous ranges, and Merkle-ize. The root goes on chain
 before the randomness exists.
 
@@ -441,9 +441,9 @@ Two build-time facts, both easy to get wrong once and impossible to fix after:
 
 - **`$PUMP` must sort as token B.** The pool PDA derives from the config plus
   the *sorted* mint pair, and `collect_fee_mode = 1` collects in token B. The
-  `$DRAKE` mint keypair is therefore **ground until its pubkey sorts below**
+  `$DRAKES` mint keypair is therefore **ground until its pubkey sorts below**
   `pumpCmXqMfrsAkQ5r49WcJnRayYRqmXz6ae8H7H9Dfn`. Get this backwards and every
-  fee arrives in `$DRAKE` instead of `$PUMP`, and the whole design inverts.
+  fee arrives in `$DRAKES` instead of `$PUMP`, and the whole design inverts.
 - **The pool is created and seeded in one bundle**, before the mint is public,
   so nobody creates a competing pool on a different config and splits liquidity.
 

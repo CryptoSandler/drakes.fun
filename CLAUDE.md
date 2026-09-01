@@ -4,7 +4,7 @@ Every message you send to the user starts with the line `[drakes]` on its own,
 before anything else, so the user can tell which project is talking when several
 Claude Code sessions run in parallel.
 
-**The species is `Drakes`** — dragons — ticker `$DRAKE`, domain `drakes.fun`,
+**The species is `Drakes`** — dragons — ticker `$DRAKES`, domain `drakes.fun`,
 settled by the owner on 2026-09-01 (`docs/decisions.md` D1). The name marks the
 species, the way `Quantums` names a species and not a mechanism.
 

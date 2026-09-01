@@ -8,7 +8,7 @@ person who needs it is an operator six months from now, not a reviewer.
 
 ## Decided 2026-09-01
 
-### D1 — The species is **Drakes**: dragons. `$DRAKE`, `drakes.fun`. **Closed 2026-09-01.**
+### D1 — The species is **Drakes**: dragons. `$DRAKES`, `drakes.fun`. **Closed 2026-09-01.**
 
 A dragon asleep on its hoard. The name marks the species, not the mechanism —
 `Drakes` is a species of dragon, the way `Quantums` names a species.
@@ -28,13 +28,13 @@ exactly what the copy rule needs (`DESIGN.md` §6).
 |---|---|
 | `drakes.fun` | **Bought.** My own RDAP probe never answered for `.fun` (no endpoint at `rdap.org`), so availability was confirmed by the registrar at purchase, not by me. |
 | `drakes.lol` (backup) | RDAP **404 — unregistered** at the time of the check. |
-| `$DRAKE` on Jupiter | **20 results, none material.** Deepest liquidity **US$8,952**, largest market cap **US$36,532** — an order of magnitude under the >$50k threshold this project set. **But the ticker is saturated**: almost every hit is a Drake-the-rapper memecoin. |
+| `$DRAKES` on Jupiter | **20 results, none material.** Deepest liquidity **US$8,952**, largest market cap **US$36,532** — an order of magnitude under the >$50k threshold this project set. **But the ticker is saturated**: almost every hit is a Drake-the-rapper memecoin. |
 | NFT collections | **Two exact collisions on Solana** — *Danger Valley Drakes* and *Lucid Drakes*, both live on Magic Eden — plus a crowded dragon field. EVM **not checked**. |
 | Trademark | Live US marks for **DRAKE'S** in food and drink classes (pastry, beer, cocktails). **Nothing found in software, digital goods or entertainment classes.** |
 
 **Cost, and it is real:**
 
-1. **The ticker collides with a famous person, not with a project.** `$DRAKE`
+1. **The ticker collides with a famous person, not with a project.** `$DRAKES`
    search results are dominated by rapper memecoins. That is a discovery
    problem every day and a publicity-rights problem if the branding ever drifts
    toward the person. **The art must never reference him**, and the brief says

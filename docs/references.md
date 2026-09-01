@@ -387,7 +387,7 @@ no endpoint for that registry — so **availability was confirmed by the registr
 at purchase, not independently by me.** `drakes.lol`, kept as a backup, returned
 RDAP **404 (unregistered)** at the time of the check.
 
-**Ticker `$DRAKE` on Jupiter**, read 2026-09-01 via `lite-api.jup.ag/tokens/v2`:
+**Ticker `$DRAKES` on Jupiter**, read 2026-09-01 via `lite-api.jup.ag/tokens/v2`:
 20 results. Deepest liquidity **US$8,952** (`Xqfwj8Pr…pump`, "DRAKE COIN",
 mcap US$36,532); everything else sits near US$2–3k. **All are an order of
 magnitude below the >US$50k liquidity threshold this project set**, so there is
