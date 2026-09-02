@@ -103,13 +103,6 @@ const u64 = (n: bigint | number): Buffer => {
   return b
 }
 
-const borshString = (s: string): Buffer => {
-  const body = Buffer.from(s, 'utf8')
-  const len = Buffer.alloc(4)
-  len.writeUInt32LE(body.length)
-  return Buffer.concat([len, body])
-}
-
 export function parseQueue(data: Buffer): QueueView {
   const len = data.readUInt32LE(QUEUE_ORACLE_KEYS_LEN)
   if (len === 0 || len > 78) throw new Error(`queue reports ${len} oracles; the layout is wrong`)
@@ -138,8 +131,6 @@ export interface EngineOptions {
   rpcUrl: string
   rig: Rig
   payer: Keypair
-  /** Names the piece in the mpl-core asset. Defaults to the devnet form. */
-  assetName?: (hour: number, pieceId: number) => { name: string; uri: string }
   onNote?: (note: string) => void
 }
 
@@ -157,7 +148,6 @@ export class IssuanceEngine {
   private readonly rig: Rig
   private readonly payer: Keypair
   private readonly note: (s: string) => void
-  private readonly assetName: (hour: number, pieceId: number) => { name: string; uri: string }
   private readonly recentlyFailed = new Set<string>()
   private sbProgram: unknown
   private programState?: PublicKey
@@ -169,9 +159,6 @@ export class IssuanceEngine {
     this.rig = options.rig
     this.payer = options.payer
     this.note = options.onNote ?? (() => {})
-    this.assetName =
-      options.assetName ??
-      ((hour) => ({ name: `Drake #${hour + 1}`, uri: `https://drakes.fun/a/${hour + 1}` }))
   }
 
   get crankAddress(): string {
@@ -243,7 +230,7 @@ export class IssuanceEngine {
       throw new Error('the local proof did not verify; refusing to settle')
     }
 
-    const signature = await this.settle(hour, oracle, resolved, sigBuf, recovery, value, pieceId)
+    const signature = await this.settle(hour, oracle, resolved, sigBuf, recovery, value)
     this.recentlyFailed.delete(oracle.toBase58())
     return {
       hour,
@@ -337,13 +324,17 @@ export class IssuanceEngine {
     sigBuf: Buffer,
     recovery: number,
     value: Uint8Array,
-    pieceId: number,
   ): Promise<string> {
     const asset = Keypair.generate()
     const proof = Buffer.concat(resolved.proof.map((p) => Buffer.from(p)))
     const proofLen = Buffer.alloc(4)
     proofLen.writeUInt32LE(resolved.proof.length)
-    const named = this.assetName(hour, pieceId)
+    // **The cranker no longer names the piece, and cannot.** `piece_id` is
+    // chosen inside `settle_issuance` from the revealed value, so nothing here
+    // knows it in time to name it; the program builds the name and the URI from
+    // the `base_uri` and `name_prefix` `initialize` wrote once.
+    // docs/round-2026-09-02-asset-uri.md. The default this file used to carry
+    // named the asset for the HOUR, which is a different piece.
     const data = Buffer.concat([
       SETTLE_IX,
       sigBuf,
@@ -355,8 +346,6 @@ export class IssuanceEngine {
       u64(resolved.leaf.rangeEnd),
       proofLen,
       proof,
-      borshString(named.name),
-      borshString(named.uri),
     ])
     const keys = [
       { pubkey: this.payer.publicKey, isSigner: true, isWritable: true },
@@ -391,9 +380,32 @@ export class IssuanceEngine {
       .add(ComputeBudgetProgram.setComputeUnitLimit({ units }))
       .add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 20_000 }))
     for (const ix of instructions) tx.add(ix)
-    return sendAndConfirmTransaction(this.conn, tx, [this.payer, ...extraSigners], {
-      commitment: 'confirmed',
-    })
+    try {
+      return await sendAndConfirmTransaction(this.conn, tx, [this.payer, ...extraSigners], {
+        commitment: 'confirmed',
+      })
+    } catch (error) {
+      // **`Simulation failed.` with nothing after it is not an error report.**
+      // web3.js puts the detail on the SECOND line of `message` and the program
+      // logs on `transactionLogs` -- not `logs`, which is what a reasonable
+      // guess reaches for and what returns undefined. Everything downstream
+      // keeps one line, so an hour that failed on a `require!` in OUR program
+      // reached the alert channel as the two words "Simulation failed."
+      //
+      // Measured 2026-09-02 while chasing a refusal we had deliberately
+      // introduced and still could not see: the AnchorError, its code and its
+      // message were all present on the object and none of them was readable.
+      const logs = (error as { transactionLogs?: string[] }).transactionLogs ?? []
+      // The line that names the failure, when our program is the one that threw.
+      const anchor = logs.find((line) => line.includes('AnchorError'))
+      const failed = logs.find((line) => /Program \S+ failed:/.test(line))
+      const detail = [anchor, failed].filter((line) => line !== undefined).join(' | ')
+      throw new Error(
+        detail === ''
+          ? (error as Error).message.split('\n').join(' ')
+          : `${(error as Error).message.split('\n')[0]} ${detail}`,
+      )
+    }
   }
 
   private issuancePda(hour: number): PublicKey {

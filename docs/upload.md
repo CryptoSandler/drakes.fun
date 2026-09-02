@@ -57,8 +57,14 @@ increasing order of what they cost:
 | B | The site serves `/a/<hour>`, which reads the chain and answers with the piece's metadata. | No program change. The asset's metadata is then served by us and not by Arweave, which is a centralisation this project otherwise refuses. |
 | C | Leave it. | Every asset carries the wrong name and a dead link, forever. |
 
-**A is the recommendation** and it wants its own round before a line is written
-(CLAUDE.md). It is on `docs/decisions.md` under "Still open".
+**A was taken.** `docs/round-2026-09-02-asset-uri.md` is the round and **D32**
+is the decision: the program builds both strings from a `base_uri` and a
+`name_prefix` written once by `initialize`, and it carries no name of its own.
+Deployed to devnet through the Squads 2-of-3 on 2026-09-02.
+
+**What that means for this document:** `base_uri` is the metadata folder this
+pipeline produces, **with its trailing slash**, and it is a C2 argument. Get it
+wrong and every asset points somewhere that does not exist, permanently.
 
 ## The upload key is a throwaway, and the script enforces it
 

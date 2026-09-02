@@ -36,6 +36,10 @@ thing: the current authority signing over the programdata account. So the
 ceremony — vault → proposal → loader — is proven, and it is the part that could
 have been wrong.
 
+**A full `Upgrade` WAS run on 2026-09-02** — see the end of this file. What
+follows was written before that and is left as the record of what the first
+rehearsal did and did not cover.
+
 **A full `Upgrade` was not run.** It additionally needs a buffer holding the new
 program, and for this 352,989-byte program that is **2.46 SOL of rent** on a
 devnet wallet holding 0.09. Devnet airdrops were rate-limited on every attempt.
@@ -59,3 +63,41 @@ RPC_URL="https://devnet.helius-rpc.com/?api-key=<key>" \
 
 It refuses any cluster but devnet, and refuses to run at all if the authority
 has already been revoked.
+
+---
+
+## The gap is closed — a real `Upgrade`, 2026-09-02
+
+The section above says a full `Upgrade` was not run because the buffer's rent
+was 2.46 SOL and the wallet held 0.09. It has now been run, with the program
+change of D32 as its payload.
+
+**Where the SOL came from, because it is the thing that blocked it twice.** Both
+faucets were exhausted for the day after one 2 SOL grant. The rest was
+consolidated rather than requested: **0.092 SOL withdrawn from an idle Irys
+balance** left over from the B2 upload, and **0.124 SOL swept** from two
+`solana-devnet-moneypath` keys, leaving each enough to keep signing. Total
+2.260903 against a buffer rent of **2.156089**.
+
+    buffer            HLYyB9Y5eNM9mUgMiMaM1qmAqFL4oEjw6bDJdB6m1xD3
+    buffer authority  8MxzqgfotX2vms5SnopoNpx7VKNtY5E7DgLYoFGrcL6Q  (the vault)
+    program bytes     340,288
+
+    proposal 4   two approvals   executed
+      5b1U5uMyfaekFYH1Pagx4QnXaPJVEhwZ6nuMGSpQh4KVPU1NAAScuwzAGxjs731VrBguGQua4YwBH6o2Q7SBHxj4
+
+    last deployed slot   491548588  ->  492036791
+    authority after      still the vault
+
+**And the bytes on chain are the bytes that were built.** `solana program dump`
+against the deployed program returns 352,944 bytes, of which the first **340,288
+are byte-identical to the local `issuance.so`** (`sha256
+8aa3808f0ffb2ff7b2ff480285be0e50b0c68013cebf028b1737f70e6af715bd`) and the
+remainder is zero padding to the programdata's original capacity.
+
+**The buffer's rent came back.** The wallet went 2.260903 → 2.259203, so the
+whole ceremony cost 0.0017 SOL in fees. The 2.16 SOL was never spent, only
+parked — which is worth knowing before the mainnet upgrade is budgeted.
+
+`scripts/rehearse-program-upgrade.ts` is the script, and it refuses any cluster
+but devnet.

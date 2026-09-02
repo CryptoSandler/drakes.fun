@@ -776,6 +776,41 @@ three lines.
 **Revisit if:** the fee schedule ever pays *more* at size. That would invert the
 shape the decision was made on, and it is pump.fun's to change.
 
+## D32 — the program builds the asset's name and URI, and carries no name
+*Decided by the owner, 2026-09-02, after `docs/round-2026-09-02-asset-uri.md`.*
+
+`settle_issuance` no longer takes `name` and `uri` from its caller. It builds
+both from two strings `initialize` writes once:
+
+    name = name_prefix + piece_id
+    uri  = base_uri + {piece_id:04} + ".json"
+
+**Why it had to be the program.** The piece id is chosen INSIDE
+`settle_issuance`, from the revealed value, so no caller can know which piece it
+is minting — the cranker could not pass the right URI and every caller could
+pass a wrong one. Measured on devnet before the change: hour 378 issued piece
+**#2951** and the asset in that holder's wallet reads **`Drake #379`**. Twelve
+consecutive hours checked, twelve wrong.
+
+**The name is DATA, and that is the part worth keeping.** `CLAUDE.md` says a
+name in a codebase is a name nobody can change, and a program is the most
+permanent place one can go — after revocation, unfixable. So the program builds
+`name_prefix + piece_id` without ever knowing what the prefix says. A test
+asserts it: build an asset with `"Quantum "` and the program is unchanged.
+
+**What it cost, and what was refused.** There is a version needing no program
+change — the site serves `/a/<hour>` and reads the chain — and it was rejected
+for one reason: it would make our server the authority for what a Drake is, for
+an asset whose whole claim is that the chain is the evidence.
+
+**The window is why it happened now.** D8 keeps Phase 1 upgradeable because it
+holds nothing; that ends at revocation and does not reopen. A defect that is
+permanent per asset gets fixed while upgrades exist.
+
+**A config written before these fields refuses to mint rather than minting a
+broken URI** (`AssetPrefixUnset`). Proven on devnet, which is the state the
+rehearsal rig is now in.
+
 ## D8 addendum — when the upgrade authority is revoked
 *2026-09-02.*
 
@@ -823,7 +858,11 @@ the condition is met — it is deliberately **not** a step in
   the reserve PDA and an audit** (B9) — this is not in it, and adding it would
   be the owner's decision and its own round, after the audit rather than before.
   Recorded so it is not re-derived from scratch in six months.
-- **The asset's URI is not bound to its piece, and only the program can bind
+- ~~**The asset's URI is not bound to its piece.**~~ **Closed 2026-09-02 by
+  D32**, which is the change itself.
+
+  *The original entry, kept because it is what the round argued from:*
+  **The asset's URI is not bound to its piece, and only the program can bind
   it.** `settle_issuance` takes `name` and `uri` from the caller and mints
   with them unvalidated; the piece id is chosen inside the same instruction, so
   the cranker cannot pass the right one and today's default names the asset for

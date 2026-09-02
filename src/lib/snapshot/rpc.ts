@@ -116,7 +116,37 @@ export async function fetchHoldings(args: {
   throw last
 }
 
+/**
+ * The mint's supply, read at or after `minContextSlot`.
+ *
+ * **The scan's slot and the node's slot are two different clocks now.** The DAS
+ * index answers with `last_indexed_slot`, which can be AHEAD of the RPC node
+ * serving `getAccountInfo` — measured 2026-09-02, where the supply read failed
+ * with *"Minimum context slot has not been reached"* against a slot the index
+ * had already passed. Waiting is correct and bounded; giving up on the control
+ * because the node is a second behind would throw away the check that catches a
+ * partial scan.
+ *
+ * It waits and does not widen the check: the supply is still read at or after
+ * the scan's slot, never before it.
+ */
 async function readSupply(rpcUrl: string, mint: string, minContextSlot: bigint): Promise<bigint> {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    try {
+      return await readSupplyOnce(rpcUrl, mint, minContextSlot)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      if (!/Minimum context slot has not been reached/i.test(message)) throw error
+      await new Promise((resolve) => setTimeout(resolve, 500 * (attempt + 1)))
+    }
+  }
+  throw new Error(
+    `the node never reached slot ${minContextSlot}, which the index had already passed. ` +
+      'Refusing to compare a supply read before the scan against it.',
+  )
+}
+
+async function readSupplyOnce(rpcUrl: string, mint: string, minContextSlot: bigint): Promise<bigint> {
   const account = (await rpc(rpcUrl, 'getAccountInfo', [
     mint,
     {
@@ -129,10 +159,126 @@ async function readSupply(rpcUrl: string, mint: string, minContextSlot: bigint):
   return Buffer.from(account.value.data[0], 'base64').readBigUInt64LE(0)
 }
 
+/** One page of Helius's DAS `getTokenAccounts`. The shape was read from a real
+ *  response on 2026-09-02, not from documentation. */
+interface TokenAccountsPage {
+  last_indexed_slot?: number
+  total?: number
+  limit?: number
+  token_accounts?: { owner: string; amount: number | string }[]
+}
+
+/**
+ * The holder set, by mint, paginated — which is what **D17 decided on
+ * 2026-09-01** and the code never did: *"The read is paginated (DAS /
+ * `getTokenAccounts`), and an incomplete page set is a skipped hour, never a
+ * partial tree."* It kept using an unpaginated `getProgramAccounts` until
+ * Helius started refusing that outright, mid-run, on 2026-09-02.
+ *
+ * **Indexed by mint, so it is O(holders) and not O(the token program).** The
+ * V2 pagination Helius points at in its error walks the whole program and
+ * applies the filter per page: against devnet's SPL Token program that is
+ * millions of accounts and did not finish in ten minutes. Same answer, wrong
+ * axis.
+ *
+ * **It is an INDEX and it says so.** `last_indexed_slot` is where Helius has
+ * read to, not a consensus slot, so the caller's `minContextSlot` check is what
+ * keeps a lagging indexer from producing a stale eligible set — and the supply
+ * control below is what catches one that is merely incomplete.
+ *
+ * Returns `null` when the endpoint does not implement it, so the public
+ * endpoints still work through the single-shot path they have always used.
+ */
+async function scanPaged(
+  args: { rpcUrl: string; mint: string; minContextSlot?: bigint },
+): Promise<HoldingsAtSlot | null> {
+  const holdings: { owner: Uint8Array; balance: bigint }[] = []
+  const LIMIT = 1_000
+  let slot: number | undefined
+  let total: number | undefined
+
+  for (let page = 1; page <= 10_000; page += 1) {
+    let response: TokenAccountsPage
+    try {
+      // **DAS takes its params as an OBJECT, not the JSON-RPC array every
+      // other method here uses.** Wrapping it in an array sends
+      // `params: [{...}]`, which this endpoint rejects -- and the rejection
+      // looks exactly like "the method is not implemented", so the code falls
+      // back to the unpaginated path and fails there instead. Cast rather than
+      // widen `rpc`: one method is odd, the helper is not.
+      response = (await rpc(
+        args.rpcUrl,
+        'getTokenAccounts',
+        { mint: args.mint, limit: LIMIT, page } as unknown as unknown[],
+      )) as TokenAccountsPage
+    } catch (error) {
+      // Only on the FIRST page. A method that vanished halfway through a walk
+      // is a partial scan, and a partial scan must never become a fallback
+      // that looks complete.
+      if (page === 1) return null
+      throw error
+    }
+
+    const rows = response.token_accounts
+    if (rows === undefined || response.last_indexed_slot === undefined) {
+      throw new Error('getTokenAccounts returned no accounts field; the query shape is wrong')
+    }
+    slot ??= response.last_indexed_slot
+    total ??= response.total
+
+    for (const row of rows) {
+      // **A u64 through JSON is a precision hazard.** Above 2^53 a JSON number
+      // is already wrong before it reaches us, and a balance that is quietly
+      // rounded is a weight that is quietly wrong. Refusing is the only honest
+      // answer, and a string amount is parsed exactly.
+      if (typeof row.amount === 'number' && !Number.isSafeInteger(row.amount)) {
+        throw new Error(
+          `a balance came back as the JSON number ${row.amount}, which is past 2^53 and ` +
+            'therefore already rounded. Refusing to weight an issuance by it.',
+        )
+      }
+      holdings.push({
+        owner: decodeBase58(row.owner),
+        balance: BigInt(row.amount),
+      })
+    }
+
+    // Page numbers, not a cursor: the walk ends on a short page, and the count
+    // is checked against the index's own total rather than assumed.
+    if (rows.length < LIMIT) {
+      if (total !== undefined && holdings.length !== total) {
+        throw new Error(
+          `the index says ${total} token accounts and the pages returned ${holdings.length}. ` +
+            'D17: an incomplete page set is a skipped hour, never a partial tree.',
+        )
+      }
+      return { slot: BigInt(slot), holdings }
+    }
+  }
+  throw new Error('getTokenAccounts did not terminate; refusing a partial holder set')
+}
+
 async function scanHolders(
   args: { rpcUrl: string; mint: string; minContextSlot?: bigint },
   programId: string,
 ): Promise<HoldingsAtSlot> {
+  // **Paginated, and the pagination is not optional any more.** Helius began
+  // refusing an unpaginated `getProgramAccounts` over a program the size of
+  // SPL Token: *"Too many accounts requested (Large number of pubkeys), Please
+  // use getProgramAccountsV2 with pagination"*. Measured 2026-09-02, mid-run:
+  // the cranker's snapshot step failed on two consecutive hours and neither
+  // reached the program. The filter is applied per page, so the pre-filter set
+  // is what trips the limit, not our eight holders.
+  //
+  // **A page can be empty and there can still be more.** Verified against the
+  // rig's own mint the same day: the first V2 page returned `count: 0` and a
+  // NON-NULL `paginationKey`. Stopping at the first empty page would build a
+  // snapshot over nothing and a root that verifies -- the same silent shape
+  // D30 fixed in the size filter. The loop runs to a null key, and the supply
+  // control below is what catches it if it does not.
+  const paged = await scanPaged(args)
+  if (paged !== null) return paged
+
   const response = await rpc(args.rpcUrl, 'getProgramAccounts', [
     programId,
     {

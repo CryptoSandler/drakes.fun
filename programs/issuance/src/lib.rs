@@ -54,6 +54,20 @@ const MAX_SNAPSHOT_AGE_SLOTS: u64 = 150;
 
 /// Bounded so `initialize` cannot write an account nobody can afford to read.
 const MAX_EXCLUDED: usize = 8;
+
+/// The asset's metadata prefix, written once at `initialize`.
+///
+/// **These are DATA and not constants, and that is the whole point.** The name
+/// of the species belongs in `package.json`, in copy and in `SITE_URL`
+/// (`CLAUDE.md`) -- never in a program, which is the most permanent and most
+/// public place a name can go and, after the upgrade authority is revoked, the
+/// one place it can never be corrected. So the program builds
+/// `name_prefix + piece_id` without ever knowing what the prefix says.
+///
+/// 128 is a gateway URL with room to spare; 32 is "Drake #" eight times over.
+/// Both are bounded because `Config` is allocated once and cannot grow.
+const MAX_BASE_URI: usize = 128;
+const MAX_NAME_PREFIX: usize = 32;
 /// A tree of 2^24 leaves is more holders than the chain will ever carry here.
 const MAX_PROOF_LEN: usize = 24;
 
@@ -92,6 +106,16 @@ pub mod issuance {
             params.excluded.len() <= MAX_EXCLUDED,
             IssuanceError::TooManyExcluded
         );
+        // Non-empty and bounded. Empty would mint `0001.json` with nothing in
+        // front of it, and over-long would not fit an account that cannot grow.
+        require!(
+            !params.base_uri.is_empty() && params.base_uri.len() <= MAX_BASE_URI,
+            IssuanceError::InvalidBaseUri
+        );
+        require!(
+            !params.name_prefix.is_empty() && params.name_prefix.len() <= MAX_NAME_PREFIX,
+            IssuanceError::InvalidNamePrefix
+        );
 
         let config = &mut ctx.accounts.config;
         config.bump = ctx.bumps.config;
@@ -107,6 +131,8 @@ pub mod issuance {
         config.live_supply = 0;
         config.excluded = params.excluded;
         config.manifest_hash = params.manifest_hash;
+        config.base_uri = params.base_uri;
+        config.name_prefix = params.name_prefix;
 
         {
             let mut survivors = ctx.accounts.survivors.load_init()?;
@@ -421,6 +447,31 @@ pub mod issuance {
                 params.owner,
                 IssuanceError::RecipientMismatch
             );
+
+            // **The asset names the piece the line above just chose.** Not a
+            // string the caller passed: `piece_id` is derived here, from the
+            // revealed value, so a caller could not have known it -- and every
+            // caller could have passed something else. Built from data
+            // `initialize` wrote once, so this program contains no name.
+            //
+            // A config written before those fields existed reads them as empty
+            // (they land in the space `MAX_EXCLUDED` reserved), and refusing is
+            // the only safe answer: minting would produce `0001.json` with
+            // nothing in front of it, permanently, in somebody's wallet.
+            require!(
+                !ctx.accounts.config.base_uri.is_empty()
+                    && !ctx.accounts.config.name_prefix.is_empty(),
+                IssuanceError::AssetPrefixUnset
+            );
+            // `{:04}` because the manifest names its files four-wide, so a
+            // folder sorts the way a person expects. The name is unpadded
+            // because a person reads it.
+            let (name, uri) = asset_strings(
+                &ctx.accounts.config.name_prefix,
+                &ctx.accounts.config.base_uri,
+                piece_id,
+            );
+
             let seeds: &[&[u8]] = &[CONFIG_SEED, &[ctx.accounts.config.bump]];
             CreateV2CpiBuilder::new(&ctx.accounts.mpl_core_program)
                 .asset(&ctx.accounts.asset)
@@ -429,8 +480,8 @@ pub mod issuance {
                 .payer(&ctx.accounts.payer)
                 .owner(Some(&ctx.accounts.recipient))
                 .system_program(&ctx.accounts.system_program)
-                .name(params.name.clone())
-                .uri(params.uri.clone())
+                .name(name)
+                .uri(uri)
                 .invoke_signed(&[seeds])?;
         }
 
@@ -564,6 +615,22 @@ fn verify_proof(params: &SettleParams, root: &[u8; 32]) -> bool {
 
 // ------------------------------------------------------------------ accounts
 
+/// The asset's name and URI for one piece.
+///
+/// A free function and not two `format!`s inline, so the one thing that is
+/// permanent per asset -- the exact bytes a wallet will show forever -- has a
+/// test that does not need a Context, a chain or a CPI.
+///
+/// `{:04}` because the manifest names its files four wide, so a folder sorts
+/// the way a person expects (`src/lib/art/manifest.ts`). The name is unpadded
+/// because a person reads it and `Drake #0007` is not how anyone writes it.
+pub fn asset_strings(name_prefix: &str, base_uri: &str, piece_id: u16) -> (String, String) {
+    (
+        format!("{name_prefix}{piece_id}"),
+        format!("{base_uri}{piece_id:04}.json"),
+    )
+}
+
 pub const CONFIG_SEED: &[u8] = b"config";
 pub const SURVIVORS_SEED: &[u8] = b"survivors";
 
@@ -634,10 +701,30 @@ pub struct Config {
     pub excluded: Vec<Pubkey>,
     /// Commits the full piece-by-piece manifest before issuance 1 (D19).
     pub manifest_hash: [u8; 32],
+    /// Everything before the piece id in an asset's URI, with its trailing
+    /// slash. `settle_issuance` appends `{piece_id:04}.json`.
+    ///
+    /// **Appended after `manifest_hash` on purpose.** Every off-chain reader
+    /// of this account parses it by offset -- `src/lib/site/collection.ts`,
+    /// `scripts/crank-loop.ts`, `scripts/xbot.ts` -- and `manifest_hash`
+    /// already sits behind a `Vec`, so appending here moves nothing they read.
+    /// It also lands in space the account already has: `MAX_EXCLUDED` reserves
+    /// 256 bytes and the rig runs with zero exclusions, so a config written by
+    /// the previous program deserializes these two as empty strings rather than
+    /// failing. That is what makes this change an upgrade and not a migration.
+    pub base_uri: String,
+    /// Everything before the piece id in an asset's name.
+    pub name_prefix: String,
 }
 
 impl Config {
-    pub const SIZE: usize = 8 + 1 + 32 * 5 + 8 + 8 + 4 * 3 + 4 + 32 * MAX_EXCLUDED + 32;
+    pub const SIZE: usize =
+        8 + 1 + 32 * 5 + 8 + 8 + 4 * 3 + 4 + 32 * MAX_EXCLUDED + 32
+        // The two strings, each a 4-byte borsh length plus its bound. A config
+        // created by THIS program is allocated with room for them; one created
+        // by the previous program is 489 bytes and reads them out of the space
+        // MAX_EXCLUDED reserved and nobody used.
+        + (4 + MAX_BASE_URI) + (4 + MAX_NAME_PREFIX);
 }
 
 #[account]
@@ -678,6 +765,11 @@ pub struct InitializeParams {
     pub period_seconds: i64,
     pub collection_size: u32,
     pub excluded: Vec<Pubkey>,
+    /// The asset URI prefix, including its trailing slash. Written once, here,
+    /// beside the manifest hash it has to agree with.
+    pub base_uri: String,
+    /// The asset name prefix, e.g. the species and a space and a hash.
+    pub name_prefix: String,
 }
 
 #[derive(AnchorSerialize, AnchorDeserialize, Clone)]
@@ -705,8 +797,11 @@ pub struct SettleParams {
     pub range_start: u64,
     pub range_end: u64,
     pub proof: Vec<[u8; 32]>,
-    pub name: String,
-    pub uri: String,
+    // `name` and `uri` USED TO BE HERE and are deliberately gone. The piece
+    // id is chosen inside `settle_issuance`, from the revealed value, so no
+    // caller can know which piece it is minting -- which meant no caller could
+    // pass the right URI, and every caller could pass a wrong one. The program
+    // builds both from `Config`. See docs/round-2026-09-02-asset-uri.md.
 }
 
 #[derive(Accounts)]
@@ -898,6 +993,12 @@ pub enum IssuanceError {
     InvalidCollectionSize,
     #[msg("too many excluded addresses")]
     TooManyExcluded,
+    #[msg("base_uri must be non-empty and at most MAX_BASE_URI bytes")]
+    InvalidBaseUri,
+    #[msg("name_prefix must be non-empty and at most MAX_NAME_PREFIX bytes")]
+    InvalidNamePrefix,
+    #[msg("this config carries no base_uri or name_prefix: it predates them and cannot mint")]
+    AssetPrefixUnset,
     #[msg("the current time is before genesis")]
     BeforeGenesis,
     #[msg("the hour argument is not the hour the clock derives")]
@@ -985,6 +1086,33 @@ mod tests {
         "ec602638831ed9ee849b031c8a6d3617dc5718dbfb04e64da9de103fac99173f",
     ];
 
+    /// The devnet rig's config account, read 2026-09-02 from
+    /// `4ooopeJoL2TaBEkKxR89ZqMYE9XafiojZW9suV2caX4m`. 489 bytes, written by a
+    /// program that had never heard of `base_uri`.
+    const RIG_CONFIG_HEX: &str = concat!(
+        "9b0caae01efacc82ff29260e6a0a9289ae69ea5d49887096d74123d7788bef0356cd6abf",
+        "d93bc4b9456b9a7ab20bf16b8757382cc00d8d5cddb50bc3593e9d9d1f8db11b1206a56b",
+        "8c906e1464c5f8b7633cc05a424cddb3aecd6dabb8aec747bc4f3e11301e4063cbc9477b",
+        "fb5ff1012859f336cf98725680e7705ba2abece17188cfb28ca66ca5b08e74aafaf532ce",
+        "d8e066693bc6c6fb51b9bafe25b36010363e6ee2f21ed5c55c5601976a000000003c0000",
+        "0000000000a00f00002e0100002e01000000000000633ece4b16cee4702d21444e78c1e1",
+        "2183ed15993a99695bd57aa199e58e82ad00000000000000000000000000000000000000",
+        "000000000000000000000000000000000000000000000000000000000000000000000000",
+        "000000000000000000000000000000000000000000000000000000000000000000000000",
+        "000000000000000000000000000000000000000000000000000000000000000000000000",
+        "000000000000000000000000000000000000000000000000000000000000000000000000",
+        "000000000000000000000000000000000000000000000000000000000000000000000000",
+        "000000000000000000000000000000000000000000000000000000000000000000000000",
+        "000000000000000000000000000000000000000000",
+    );
+
+    fn unhex(s: &str) -> Vec<u8> {
+        (0..s.len())
+            .step_by(2)
+            .map(|i| u8::from_str_radix(&s[i..i + 2], 16).unwrap())
+            .collect()
+    }
+
     fn params() -> SettleParams {
         SettleParams {
             signature: [0u8; 64],
@@ -995,9 +1123,95 @@ mod tests {
             range_start: 4_000,
             range_end: 10_000,
             proof: PROOF.iter().map(|p| hex32(p)).collect(),
-            name: String::new(),
-            uri: String::new(),
         }
+    }
+
+    /// **A config written by the PREVIOUS program still deserializes.**
+    ///
+    /// This is the claim the whole upgrade rests on, checked against the account
+    /// the devnet rig actually holds rather than against one this test built.
+    /// `MAX_EXCLUDED` reserves 256 bytes for exclusions the rig does not use,
+    /// and Borsh reads the two new `String`s out of that zeroed space as empty.
+    ///
+    /// If this fails, the upgrade bricks the rig's config instead of upgrading
+    /// it -- and the same mistake on mainnet would brick a config that cannot be
+    /// recreated, because the PDA seed is fixed and there is one per program for
+    /// its whole life.
+    #[test]
+    fn a_config_from_before_these_fields_still_reads() {
+        let raw = unhex(RIG_CONFIG_HEX);
+        assert_eq!(raw.len(), 489);
+
+        // Past the 8-byte anchor discriminator, exactly as Anchor would.
+        let mut cursor: &[u8] = &raw[8..];
+        let config =
+            Config::deserialize(&mut cursor).expect("the old account must still deserialize");
+
+        // The fields the old program wrote are intact and are the rig's.
+        assert_eq!(config.genesis_unix, 1_788_281_174);
+        assert_eq!(config.period_seconds, 60);
+        assert_eq!(config.collection_size, 4_000);
+        assert!(config.excluded.is_empty());
+
+        // And the new ones read as empty rather than as garbage.
+        assert_eq!(config.base_uri, "");
+        assert_eq!(config.name_prefix, "");
+    }
+
+    /// The control for the test above. It passes because the account HAS 256
+    /// spare bytes; truncate them and the same deserialize must fail. Without
+    /// this, a change that made `Config` shrink instead of grow would leave the
+    /// compatibility test passing for the wrong reason.
+    #[test]
+    fn the_compatibility_depends_on_the_spare_bytes_being_there() {
+        let raw = unhex(RIG_CONFIG_HEX);
+        // Everything the old program actually wrote, with no slack behind it.
+        let truncated = &raw[8..233];
+        let mut cursor: &[u8] = truncated;
+        assert!(
+            Config::deserialize(&mut cursor).is_err(),
+            "an account with no spare bytes must fail, or the test above proves nothing",
+        );
+    }
+
+    /// The other half: an empty prefix must REFUSE, never be formatted.
+    #[test]
+    fn an_unset_prefix_would_have_produced_this_and_is_refused_instead() {
+        let (name, uri) = asset_strings("", "", 2951);
+        // What minting against an unset prefix would put in a wallet, forever.
+        assert_eq!(name, "2951");
+        assert_eq!(uri, "2951.json");
+        // Which is why `settle_issuance` requires both non-empty before it
+        // formats anything: `IssuanceError::AssetPrefixUnset`.
+    }
+
+    /// The bytes that end up in somebody's wallet forever.
+    #[test]
+    fn the_asset_names_the_piece_and_nothing_else() {
+        let (name, uri) = asset_strings("Drake #", "https://gateway.example/META/", 2951);
+        assert_eq!(name, "Drake #2951");
+        assert_eq!(uri, "https://gateway.example/META/2951.json");
+    }
+
+    /// The file name is four wide and the display name is not.
+    #[test]
+    fn the_uri_pads_to_four_and_the_name_does_not() {
+        let (name, uri) = asset_strings("Drake #", "ar://x/", 7);
+        assert_eq!(name, "Drake #7");
+        assert_eq!(uri, "ar://x/0007.json");
+
+        let (_, last) = asset_strings("Drake #", "ar://x/", 3_999);
+        assert_eq!(last, "ar://x/3999.json");
+    }
+
+    /// The program holds no name. Change the prefix and the program is unchanged;
+    /// this test fails only if somebody hard-codes one back in.
+    #[test]
+    fn the_prefix_is_data_and_the_program_carries_no_species() {
+        let (name, uri) = asset_strings("Quantum ", "https://other.example/", 1);
+        assert_eq!(name, "Quantum 1");
+        assert_eq!(uri, "https://other.example/0001.json");
+        assert!(!name.contains("Drake"));
     }
 
     #[test]
@@ -1153,6 +1367,8 @@ mod tests {
             live_supply: 0,
             excluded: vec![],
             manifest_hash: [0u8; 32],
+            base_uri: String::new(),
+            name_prefix: String::new(),
         };
         assert_eq!(current_hour(&config, 1_000_000).unwrap(), 0);
         assert_eq!(current_hour(&config, 1_000_000 + 3_599).unwrap(), 0);

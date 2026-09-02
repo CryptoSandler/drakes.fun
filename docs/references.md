@@ -483,6 +483,44 @@ assumed $220/SOL. **SOL is $103.62** (2026-09-01). A 0.05 SOL redemption fee is
 unchanged — it is a rounding error against the fee stream — but the number was
 wrong and is corrected here.
 
+## Helius stopped serving the snapshot's scan — 2026-09-02
+
+Measured mid-run, twice, on consecutive hours: the cranker's snapshot step
+failed with
+
+    getProgramAccounts: Too many accounts requested (Large number of pubkeys),
+    Please use getProgramAccountsV2 with pagination to handle large datasets.
+
+**This is the mainnet issuance path, and it was broken by somebody else's
+deploy.** Nothing in this repository changed.
+
+**`getProgramAccountsV2` is the wrong axis and was measured too.** It paginates
+over the PROGRAM's accounts and applies the filter per page, so a scan for one
+mint walks every token account on the cluster: the first page came back
+`count: 0` with a **non-null** `paginationKey`, and a full walk had not
+finished after ten minutes. Worth recording twice over, because a naive
+implementation that stops at the first empty page builds a snapshot over nothing
+and a root that verifies — the same silent shape D30 fixed in the size filter.
+
+**The fix is what D17 decided on 2026-09-01 and the code never did:** DAS
+`getTokenAccounts`, indexed by mint, paginated by page number. Against the rig's
+mint it returns **7 accounts holding 14,500,001,000,000 — exactly the supply**,
+which is the control passing.
+
+Three things learned in the doing, each of which cost a run:
+
+- **DAS takes its params as an OBJECT**, not the JSON-RPC array every other
+  method here uses. Wrapped in an array it is rejected, and the rejection is
+  indistinguishable from "method not implemented" — so the code silently fell
+  back to the broken path.
+- **`last_indexed_slot` is not a consensus slot.** It can be AHEAD of the RPC
+  node, and the supply control's `minContextSlot` read then fails with
+  *"Minimum context slot has not been reached"*. The read waits for the node
+  rather than dropping the control.
+- **A u64 balance through JSON is a precision hazard.** Above 2^53 the number is
+  already rounded before it arrives, so an amount that is not a safe integer is
+  refused rather than weighted.
+
 ## samilore.org — what a creator fee is worth when a coin moves
 
 *Read **2026-09-02** from `https://samilore.org`, and the signatures below were
