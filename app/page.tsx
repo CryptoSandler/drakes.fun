@@ -23,6 +23,7 @@ import { missingConfig, readConfig } from '../src/lib/site/config.ts'
 import { encodeBase58 } from '../src/lib/solana/base58.ts'
 import { Countdown } from '../src/components/Countdown.tsx'
 import { ArtSlot } from '../src/components/ArtSlot.tsx'
+import { MAX_CREATOR_PERCENT, MIN_CREATOR_PERCENT } from '../src/lib/hoard/pump-fees.ts'
 
 export const dynamic = 'force-dynamic'
 
@@ -274,11 +275,18 @@ export default async function Page() {
                 made false twice over: the pool is quoted in SOL, and 2% is what
                 the trader pays rather than what arrives. Caught by reading a
                 capture — the footer three lines below already said the fee
-                arrives in SOL, so the page contradicted itself. */}
-            <strong>1.6% of every trade reaches the hoard.</strong> The pool charges 2% and
-            Meteora keeps 0.4% of the trade as its protocol share, so 1.6% is what arrives. It
-            arrives in SOL, and the multisig converts it to $PUMP on a rule published in advance.
-            That is the mechanism, stated as a mechanism.
+                arrives in SOL, so the page contradicted itself.
+
+                Superseded again by D30: the venue is pump.fun and the fee is a
+                band, not a number. A headline with a rate in it is a headline
+                that goes stale the next time their config moves. */}
+            <strong>Every trade sends its creator fee to the hoard.</strong> $DRAKES launches on
+            pump.fun, whose creator fee is set by market cap and by them — between{' '}
+            {MIN_CREATOR_PERCENT}% and {MAX_CREATOR_PERCENT}% of a trade, and{' '}
+            <strong>it falls as the coin grows</strong>. It arrives in SOL and the multisig
+            converts it to $PUMP on a rule published in advance.{' '}
+            <a href="/verify">The rate in force is on /verify</a>. That is the mechanism, stated
+            as a mechanism — and there is no fixed rate to state.
           </p>
           <p style={{ marginTop: 'var(--space-24)' }}>
             <a className="btn" href="/verify">

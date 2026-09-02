@@ -9,21 +9,37 @@ date they were read live in `docs/references.md`.
 ## 1. The thesis
 
 **4,000 pieces that cannot be bought at issuance. One per hour, issued by the
-protocol to a `$DRAKES` holder chosen in proportion to their holding. **1.6% of
-every trade reaches the hoard.** Any piece can be burned to redeem its share of
-that hoard, and the slot it leaves never refills.**
+protocol to a `$DRAKES` holder chosen in proportion to their holding. **Every
+trade sends its creator fee to the hoard.** Any piece can be burned to redeem
+its share of that hoard, and the slot it leaves never refills.**
 
-*The fine print, because the headline is a net figure: the pool charges a **2%**
-trading fee and Meteora keeps **0.4%** of the trade as its protocol share, so
-1.6% is what arrives. Measured on devnet 2026-09-01 rather than inferred — a
-swap of 10,000 quote tokens produced a 200,000,000-base-unit fee of which
-160,000,000 accrued to the position (`docs/moneypath-devnet.md`). The thesis
-said "pays 2% into a reserve", which is true of what the trader pays and false
-of what arrives.*
+*The fine print, because "its creator fee" is not one number and never will be.
+`$DRAKES` launches on **pump.fun** (D30), whose creator fee is set by market cap
+and by them, not by us. Read from `pump.fun/docs/fees` on **2026-09-02**:*
 
-*The hoard is `$PUMP`. **The fee arrives in SOL** and the multisig converts it on
-a published rule (§3.6), because the `$DRAKES`/`$PUMP` pool cannot be created —
-D24. What changed is how `$PUMP` gets in, not what the hoard is.*
+| Market cap (SOL) | To the creator | Total trade fee |
+|---|---|---|
+| bonding curve, before graduation | **0.300%** | 1.250% |
+| 0 – 420 | 0.300% | 1.250% |
+| **420 – 1,470** | **0.950%** | 1.200% |
+| 4,420 – 9,820 | 0.750% | 1.000% |
+| 19,650 – 24,560 | 0.600% | 0.850% |
+| 49,120 – 54,030 | 0.300% | 0.550% |
+| **98,240 +** | **0.050%** | 0.300% |
+
+*The full table is `src/lib/hoard/pump-fees.ts`, and `/verify` shows the rate in
+force with the date this was read beside it.*
+
+***The rate falls as the coin grows**, and this is stated rather than buried:
+the creator's share peaks at 0.950% while `$DRAKES` is small and settles at
+0.050% above 98,240 SOL of market cap. The abandoned Meteora plan was a flat
+1.6% at any size. **So no copy anywhere states a rate as though it were fixed,
+and the redemption promise never quotes one.***
+
+***The schedule is pump.fun's and they can change it.** Meteora's static config
+`HQ6vW45Kug23h2A4LkyUqB4UFfGx4LqY1uZLLfQemEjU` is immutable; this is a config in
+somebody else's program. That is a real difference in kind and it is the price
+of launching where the buyers already are.*
 
 Three properties follow, and a feature that serves none of them belongs to a
 different product:
@@ -312,9 +328,9 @@ here, with numbers, before there is any SOL to convert.
 
 | | |
 |---|---|
-| **Threshold** | convert when the multisig's SOL balance reaches **25 SOL** |
+| **Threshold** | convert when the multisig's SOL balance reaches **5 SOL** |
 | **Ceiling on frequency** | **at most once every 7 days** |
-| **Floor on frequency** | **at least once every 30 days** whenever the balance is **≥ 5 SOL** |
+| **Floor on frequency** | **at least once every 30 days** whenever the balance is **≥ 1 SOL** |
 | **Venue** | Jupiter, best route at execution **that fits in a packet** (§3.7) |
 | **Authority** | a Squads **2-of-3** proposal — no key converts alone |
 | **Record** | the signature is listed on `/verify`, with the amounts read out of that transaction |
@@ -329,9 +345,14 @@ reader can derive that provenance from the chain the way they can derive every
 amount beside it. **A figure that cannot be derived is labelled as asserted or
 it is not shown.**
 
-**Why 25.** Below it the ceremony costs more than it moves: two people have to
-approve, and a conversion small enough to be dominated by slippage and fees is a
-conversion that should have waited. `$PUMP` carried **US$37.75M of on-chain
+**Why 5, and it was 25.** The threshold was sized for a flat 1.6% fee. Under
+pump.fun's schedule the same threshold means **417 days** of waiting on the
+bonding curve and **five days** again at a hundred times the volume, because the
+rate collapses exactly where volume grows (§1). A threshold that produces one
+conversion a year is a rule that reads as a promise and behaves as an excuse.
+Five SOL still clears the ceremony's cost — two approvals and one Jupiter
+route — and it converts often enough that the table on `/verify` is a record
+rather than a plan. `$PUMP` carried **US$37.75M of on-chain
 liquidity** when it was last read (`references.md`, 2026-09-01), so 25 SOL is far
 inside the range where routing is not the interesting variable.
 
@@ -1024,6 +1045,36 @@ invitation to assume the ladder is economic — and here it is not, ever, by
 construction: `redeem` computes a share from `live_supply` and reads no trait.
 
 ---
+
+## 9.6 D30 — the launch venue is pump.fun, and what that retires
+
+*Owner's decision, 2026-09-02, after `docs/round-2026-09-02-pumpfun.md`.*
+
+**Retired in full: B3.** There is no pool of ours, so the mint has no sort order
+to satisfy against wSOL and the CI assertion that pinned it is gone. The Meteora
+token badge request (`docs/meteora-badge-request.md`) was never sent and is now
+moot.
+
+**Kept: the ground mint as an identity pin.**
+`1212YJcDwzgLXxmwbtmkYaEB53p6y958cn2tENt3C3dM` is still the mint `$DRAKES`
+launches with. pump.fun's `create` takes the mint as a signer, so a keypair we
+ground and published in advance is a mint nobody can claim was swapped at
+launch. The `pump` suffix is a convention of their vanity grinder and not
+enforced by the program — observed 2026-09-02 on a coin launched without it.
+
+**Kept: everything about Squads and Jupiter.** The devnet rehearsals were about
+the multisig ceremony and the proposal size ceiling, not about Meteora.
+
+**The creator is set once and we cannot change it.** `create` takes
+`creator: pubkey` as an **argument**, so the Squads vault can be the creator
+from launch with no PDA signing — confirmed on-chain 2026-09-02, where a live
+coin's `creator` reads back as an off-curve address. But `set_creator` requires
+a `set_creator_authority` signer that belongs to pump.fun, so **if it is wrong
+at launch it is wrong forever**. This is the one irreversible step of the launch.
+
+**`collect_creator_fee` needs no signer** on either program. The crank can claim
+on a schedule and a stolen crank key cannot redirect a lamport of it, which is
+exactly the property `CLAUDE.md` asks for.
 
 ## 10. The site: type, colour, and what the page refuses
 

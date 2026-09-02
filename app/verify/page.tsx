@@ -17,6 +17,10 @@ import { ThemeSwitch } from '../../src/components/ThemeSwitch.tsx'
 import { missingConfig, readConfig } from '../../src/lib/site/config.ts'
 import { clusterName } from '../../src/lib/snapshot/rpc.ts'
 import { provenanceLabel } from '../../src/lib/site/provenance.ts'
+import {
+  CURVE_CREATOR_PERCENT, FEE_TABLE_READ, MAX_CREATOR_PERCENT, MIN_CREATOR_PERCENT,
+  creatorFeePercent,
+} from '../../src/lib/hoard/pump-fees.ts'
 import { connect } from '../../src/lib/db/client.ts'
 import { LiveWindow } from '../../src/components/LiveWindow.tsx'
 
@@ -102,6 +106,10 @@ export default async function Verify() {
   // page tells a reader that figures are checkable; which chain they are
   // checkable on is part of that sentence, not a footnote to it.
   const [cluster, run, bought] = await Promise.all([clusterName(config.rpcUrl), lastRun(), purchases()])
+  // The coin does not exist yet, so there is no market cap to read and no rate
+  // to state. When the mint is configured this reads the bonding curve or the
+  // pool; until then the page says there is nothing to read (D30).
+  const marketCapSol: number | null = null
 
   return (
     <>
@@ -211,11 +219,40 @@ export default async function Verify() {
             </p>
             <div>
               <p style={{ marginTop: 0, color: 'var(--color-ink-2)', maxWidth: '62ch' }}>
-                The fee arrives in SOL, because the pool is quoted in SOL. The multisig converts it
-                to <code>$PUMP</code> on a published rule — <strong>at 25 SOL, at most weekly, and
-                at least monthly above 5 SOL</strong> (<code>DESIGN.md</code> §3.6) — and every
-                conversion is a transaction anyone can fetch.
+                The fee arrives in SOL. The multisig converts it to <code>$PUMP</code> on a
+                published rule — <strong>at 5 SOL, at most weekly, and at least monthly above
+                1 SOL</strong> (<code>DESIGN.md</code> §3.6) — and every conversion is a
+                transaction anyone can fetch.
               </p>
+              {/* The rate in force. It is pump.fun's schedule, set by market cap
+                  and by them, so the page shows the band the coin is in and the
+                  date the table was read — never a rate stated as fixed. Until
+                  the coin exists there is no market cap to read, and saying so
+                  is the honest render. */}
+              <dl className="facts">
+                <dt>creator fee in force</dt>
+                <dd>
+                  {marketCapSol === null ? (
+                    <span className="note">
+                      no coin yet — the rate runs between {MIN_CREATOR_PERCENT}% and{' '}
+                      {MAX_CREATOR_PERCENT}%, and is {CURVE_CREATOR_PERCENT}% on the bonding curve
+                    </span>
+                  ) : (
+                    <>
+                      <strong>{creatorFeePercent(marketCapSol)}%</strong>{' '}
+                      <span className="note">
+                        at {Math.round(marketCapSol).toLocaleString('en')} SOL of market cap
+                      </span>
+                    </>
+                  )}
+                </dd>
+                <dt>schedule</dt>
+                <dd className="note">
+                  pump.fun&rsquo;s, read {FEE_TABLE_READ}. It is a config in their program and
+                  they can change it — and the rate <strong>falls as the coin grows</strong>,
+                  from {MAX_CREATOR_PERCENT}% down to {MIN_CREATOR_PERCENT}%.
+                </dd>
+              </dl>
               {bought.length === 0 ? (
                 <p className="note">No conversion has been recorded yet.</p>
               ) : (
