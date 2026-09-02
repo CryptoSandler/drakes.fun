@@ -67,7 +67,12 @@ describe('the endpoint', () => {
     await new Promise((r) => server.server.once('listening', r))
     const address = server.server.address()
     if (address === null || typeof address === 'string') throw new Error('no port')
-    return { port: address.port, close: server.close }
+    // Bound. `close: server.close` hands out a detached method: calling it
+    // throws on `this`, the `finally` that closes the server fails, and the
+    // server leaks for the rest of the run. Suspected in a one-off red where
+    // this file's last test saw 200 where it asserts 404 — not reproduced, so
+    // this is the defect that was actually found rather than a claimed cause.
+    return { port: address.port, close: () => server.close() }
   }
 
   it('answers 200 when live and 503 when stalled', async () => {
