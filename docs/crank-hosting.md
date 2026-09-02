@@ -343,3 +343,25 @@ this project publishes can go false with nothing in the repository changing.
 That is deliberate: a job that silently stops is indistinguishable from a
 schedule that has not moved, and the page must not keep asserting a figure
 nobody has checked. If the cron dies, the page says so on its own.
+
+## Which pushes build
+
+The project carries an **ignore command** so a commit that changes nothing the
+site serves does not consume a deployment:
+
+    git diff --quiet HEAD^ HEAD -- ":(exclude)docs" ":(exclude).claude" \
+      ":(exclude)scripts" ":(exclude)migrations" ":(exclude,glob)*.md"
+
+`scripts` and `migrations` were added on 2026-09-02, after a docs-and-scripts
+commit carrying `[vercel skip]` built anyway. **`[vercel skip]` in a message is
+not what stops a build here — this command is.** The excluded set matches
+`.vercelignore`: those directories are not uploaded, so a change to them cannot
+change what is served.
+
+Falsified rather than assumed:
+
+| commit | touches | verdict |
+|---|---|---|
+| `577a5dd` | `docs/` only | skips |
+| `a6b1592` | `app/`, `src/` | **builds** |
+| `47ccb50` | `src/` | **builds** |
