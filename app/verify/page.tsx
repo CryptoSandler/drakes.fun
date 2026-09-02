@@ -15,6 +15,7 @@
 
 import { missingConfig, readConfig } from '../../src/lib/site/config.ts'
 import { clusterName } from '../../src/lib/snapshot/rpc.ts'
+import { provenanceLabel } from '../../src/lib/site/provenance.ts'
 import { connect } from '../../src/lib/db/client.ts'
 import { LiveWindow } from '../../src/components/LiveWindow.tsx'
 
@@ -27,7 +28,9 @@ interface Purchase {
   pump_received: string
   slot: string
   block_time: string | null
-  funded_by: 'fees' | 'creator'
+  /** Typed `unknown` on purpose: the database is what it is, not what the
+   *  migration intended. `provenanceLabel` is the only thing that reads it. */
+  funded_by: unknown
 }
 
 interface Run {
@@ -230,11 +233,24 @@ export default async function Verify() {
                           <td className="num">{b.sol_spent}</td>
                           <td className="num">{b.pump_received}</td>
                           <td>
-                            {b.funded_by === 'creator' ? (
-                              <span className="note">seeded by the creator, not from fees</span>
-                            ) : (
-                              'fees'
-                            )}
+                            {(() => {
+                              const source = provenanceLabel(b.funded_by)
+                              return source.kind === 'fees' ? (
+                                source.text
+                              ) : (
+                                <span
+                                  className="note"
+                                  data-source={source.kind}
+                                  style={
+                                    source.kind === 'unknown'
+                                      ? { color: 'var(--color-accent)' }
+                                      : undefined
+                                  }
+                                >
+                                  {source.text}
+                                </span>
+                              )
+                            })()}
                           </td>
                           <td className="num">{b.signature.slice(0, 8)}…{b.signature.slice(-8)}</td>
                         </tr>

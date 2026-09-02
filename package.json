@@ -6,16 +6,18 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "test": "vitest run",
+    "build": "next build",
+    "check:migrations": "node scripts/check-migrations.ts",
+    "crank": "node scripts/crank-loop.ts",
+    "dev": "next dev",
+    "index-events": "node scripts/index-events.ts",
     "lint": "eslint .",
+    "migrate": "node scripts/migrate.ts",
+    "migrate:preview": "DATABASE_URL=$PREVIEW_DATABASE_URL node scripts/migrate.ts",
+    "migrate:test": "node scripts/migrate-test.ts",
+    "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "verify": "npm run typecheck && npm run lint && npm test",
-    "crank": "node scripts/crank-loop.ts",
-    "migrate": "node scripts/migrate.ts",
-    "migrate:test": "node scripts/migrate-test.ts",
-    "index-events": "node scripts/index-events.ts",
-    "dev": "next dev",
-    "build": "next build",
     "verify:full": "node scripts/verify-full.ts"
   },
   "devDependencies": {
