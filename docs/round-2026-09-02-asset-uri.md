@@ -119,6 +119,10 @@ correct by construction; whether the *bytes at that URI* are the right ones is
 the manifest's job, and the manifest hash is what commits that (B2). The program
 still cannot check the content of a URL, and no program can.
 
+**Outcome, 2026-09-02.** Built, upgraded onto the devnet rig through the 2-of-3,
+and rehearsed on both sides: the guard refuses against a config that predates the
+fields, and a throwaway program proved the happy path 2 of 2. Recorded as **D32**.
+
 **The honest summary:** this is a correctness change with a small security
 by-product, taken now because the window closes at revocation and never reopens.
 The version that needs no program change works and was rejected for one reason —

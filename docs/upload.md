@@ -66,6 +66,12 @@ Deployed to devnet through the Squads 2-of-3 on 2026-09-02.
 pipeline produces, **with its trailing slash**, and it is a C2 argument. Get it
 wrong and every asset points somewhere that does not exist, permanently.
 
+**The two halves were joined on devnet, 2026-09-02.** A rig initialized with
+`https://gateway.irys.xyz/Es6PTfT129ohfi8dWqiyGwScFDyi1jSnZfRHxREtWDDa/` — this
+pipeline's own metadata folder — minted an asset whose URI the program built,
+and that URI returns `Drake #2676` with an image that resolves. The manifest,
+the upload and the program agree end to end.
+
 ## The upload key is a throwaway, and the script enforces it
 
 `upload-collection.ts` refuses to run with a wallet holding more than

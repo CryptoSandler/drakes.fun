@@ -42,6 +42,39 @@ the manifest hash is committed forever at C2.
 
 ---
 
+## What is rehearsed on chain, and what is not
+
+**The column that matters is the last one.** A step whose verification is a unit
+test is a step whose first real execution is on mainnet, and this table exists so
+that is never discovered on the day.
+
+| Step | Rehearsed on devnet | Evidence |
+|---|---|---|
+| C1 deploy | ✅ and **a full `Upgrade` through the 2-of-3** | `docs/upgrade-authority-devnet.md` |
+| C1b authority → vault | ✅ including a loader instruction executed by the vault | same |
+| **C2 `initialize`, and the asset naming its piece** | ✅ **end to end, 2026-09-02** | `evidencia/drakes/2026-09-02-b25-happy-path/` |
+| C3 `create_v2` | ✅ | `docs/pumpfun-create-devnet.md` |
+| C4 crank | ✅ 303 issuances over the standing rig | `docs/runbook-devnet-rehearsal.md` |
+| C5 Vercel env | ✅ the chip and the sentence are env-driven (D29) | the live domain |
+| C6 schedule guard | ✅ runs daily | `docs/crank-hosting.md` |
+| C7 first conversion | ✅ the ceremony, on an equivalent pool | `docs/vaultclaim-devnet.md` |
+
+**C2's rehearsal needed a second program id and this is why.** The config PDA
+seed is fixed, so a program has exactly one config for its whole life and
+`initialize` cannot run twice — the standing rig's config was written before
+`base_uri` existed and reads it as empty forever. So a throwaway program was
+deployed, initialized with a real `base_uri`, cranked, and closed.
+
+    program      FX2EB2zB4Ja6XukBK9QRtkVWXuvmaTenmmeye82xBi9b  (closed)
+    hour 0  ->  piece 2676  ->  Drake #2676  ->  .../2676.json
+    hour 1  ->  piece 3394  ->  Drake #3394  ->  .../3394.json
+    2 of 2 assets name the piece the event emitted
+
+Both URIs resolve to the metadata B2 uploaded, and their images resolve too —
+so the chain closed from the manifest through `initialize` to what a wallet
+shows. `scripts/rehearse-rig.ts` is the bootstrap and it is in the repository
+now rather than in a scratchpad.
+
 ## The budget, measured then ×1.2
 
 **Read from the chain 2026-09-02.** The programdata figure is the real size of
@@ -54,7 +87,8 @@ the deployed devnet program (352,989 bytes) priced at mainnet rent.
 | `create_v2` | ~0.0025 |
 | first seeded conversion: proposal + vault tx + ATA + the swap | 0.063016 |
 | ~30 signatures and priority fees | 0.005150 |
-| **subtotal** | **2.590477** |
+| a program upgrade through the 2-of-3, NET | 0.001700 |
+| **subtotal** | **2.592177** |
 | **×1.2** | **3.11** |
 
 | What the owner funds | SOL |
@@ -67,6 +101,18 @@ the deployed devnet program (352,989 bytes) priced at mainnet rent.
 
 **Total ×1.2: 28.46 SOL.**
 
+**An upgrade's cost is a peak, not a spend.** Measured on devnet 2026-09-02: the
+full `Upgrade` by 2-of-3 cost **0.0017 SOL net**, because the buffer's rent —
+**2.156089 SOL for a 340,288-byte program** — is returned when the upgrade
+executes. The wallet still has to HOLD that peak first, and it is the number
+that blocked this rehearsal twice. Budget the peak; spend the fee.
+
+**The same shape applies to a fresh deploy.** `solana program deploy`
+over-funds the buffer to cover the programdata's rent, so the peak is one
+rent and not two: 2.158883 spent, 2.156140 reclaimed on `solana program close`,
+**0.002744 net** — of which 0.001039 is the 36-byte program stub, whose rent
+`close` does not return.
+
 **The crank is the whole budget** and it is the one number that is a projection
 rather than a measurement of mainnet: 0.0048 SOL per issuance is what devnet
 cost, and mainnet priority fees are not devnet's. **Fund it in tranches rather
@@ -77,6 +123,30 @@ production runbook closes those accounts after each monthly conversion rather
 than leaving rent behind forever.
 
 ---
+
+## The rule the snapshot leaves for mainnet
+
+**The holder scan is DAS `getTokenAccounts`, by mint, paginated. Never
+`getProgramAccounts`, and never `getProgramAccountsV2`.**
+
+- `getProgramAccounts` unpaginated is what **D17 already forbade** on
+  2026-09-01, and Helius began refusing it outright on 2026-09-02 — mid-run,
+  on two consecutive hours of the standing rig. It is the mainnet issuance path
+  and it was broken by somebody else's deploy.
+- `getProgramAccountsV2`, which is what their error suggests, is the wrong
+  axis: it paginates over the PROGRAM's accounts and applies the filter per
+  page, so a scan for one mint walks every token account on the cluster. It did
+  not finish in ten minutes on devnet, and **its first page returns `count: 0`
+  with a non-null `paginationKey`** — an implementation that stops there builds
+  a root over nothing.
+- **DAS is an index, not a chain read**, and the code treats it as one: its
+  `last_indexed_slot` can run ahead of the RPC node, the supply control waits
+  for the node rather than being dropped, and a balance that arrives as a JSON
+  number past 2^53 is refused rather than weighted.
+
+The control that decides whether a scan may be committed is unchanged and is the
+only thing that matters at the top of the hour: **the balances must sum to the
+supply**, and an incomplete page set is a skipped hour, never a partial tree.
 
 ## The three irreversible steps, together
 

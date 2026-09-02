@@ -811,6 +811,14 @@ permanent per asset gets fixed while upgrades exist.
 broken URI** (`AssetPrefixUnset`). Proven on devnet, which is the state the
 rehearsal rig is now in.
 
+**And the happy path is proven too, 2026-09-02.** A throwaway program was
+deployed, initialized with a real `base_uri`, cranked and closed: hour 0 issued
+piece 2676 and its asset is `Drake #2676` at `…/2676.json`; hour 1 issued 3394
+and reads `Drake #3394`. Both URIs resolve to the metadata B2 uploaded and both
+images resolve. A second program id was necessary and not incidental — the
+config PDA seed is fixed, so `initialize` runs once per program for its whole
+life.
+
 ## D8 addendum — when the upgrade authority is revoked
 *2026-09-02.*
 
