@@ -661,6 +661,27 @@ would have rendered a stack trace where the page should be. Both pages now say
 *"this deployment is not pointed at a chain"* and show no figures. `CLAUDE.md`:
 refusing is the safe failure.
 
+## D8 addendum — when the upgrade authority is revoked
+*2026-09-02.*
+
+D8 says the Phase 1 program holds nothing, which is what makes it deployable
+before an audit. That leaves a window: **a mainnet program with real value under
+it and an upgrade authority still alive.**
+
+**The authority is not held by one key during that window.** Launch step C1b
+hands it to the Squads 2-of-3 immediately after the deploy and before
+`initialize`, so the program is mutable only by two people who both have to
+agree. Rehearsed on devnet against the deployed program, including a loader
+instruction executed by the vault through a real 2-of-3
+(`docs/upgrade-authority-devnet.md`).
+
+**Revocation is tied to a condition, not to a date: Phase 2 audited and
+deployed.** Revoking earlier means a bug in Phase 1 is permanent; revoking later
+than that has no argument for it, because by then the thing the authority exists
+to fix has been replaced. It is a one-way door and it gets its own round when
+the condition is met — it is deliberately **not** a step in
+`docs/launch-runbook.md`.
+
 ## Still open
 
 - **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*

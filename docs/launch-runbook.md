@@ -31,7 +31,8 @@ the manifest hash is committed forever at C2.
 
 | # | Step | Verification | Undo |
 |---|---|---|---|
-| C1 | **Deploy the program to mainnet** and record the **sha256 of the dump**. | `solana program dump <id> out.so && sha256sum out.so`, compared against the sha256 of the locally built artifact. Both go in `docs/references.md` with the date. | Redeploy while the upgrade authority exists. **Once the authority is revoked this becomes ⛔** — and revoking it is its own decision, not part of this runbook. |
+| C1 | **Deploy the program to mainnet** and record the **sha256 of the dump**. | `solana program dump <id> out.so && sha256sum out.so`, compared against the sha256 of the locally built artifact. Both go in `docs/references.md` with the date. | Redeploy while the upgrade authority exists — first as C1's own key, then through the 2-of-3 once C1b has run. |
+| C1b | **Hand the upgrade authority to the Squads vault** (`set-upgrade-authority`). Between the deploy and the revocation the program is mutable with real value inside it, and during that window the authority must not be one key. | Read the **programdata** account back: 4-byte tag, 8-byte slot, 1-byte option, then the authority at offset 13. Assert it equals the vault. Rehearsed on devnet against the deployed program, including a loader instruction executed **by the vault through a real 2-of-3** — `docs/upgrade-authority-devnet.md`. | Set it back, while the vault still holds it. After revocation there is nothing to set. |
 | C2 | ⛔ **`initialize`** with the manifest hash, the collection size, the genesis instant and the period. | Read the config account back and assert every field, especially `period_seconds` and the manifest hash. `src/lib/site/collection.ts` already parses it. | **None.** D15: the values are written once by `initialize` and the config PDA has a fixed seed, so a second one means a different program. |
 | C3 | ⛔ **`create_v2`** with the ground mint `1212YJcDwzgLXxmwbtmkYaEB53p6y958cn2tENt3C3dM`, `creator` = **the Squads vault**, `is_mayhem_mode: false`, `is_cashback_enabled: false`. | Read `BondingCurve.creator` at offset 49 and assert it equals the vault. Rehearsed end to end on devnet: `docs/pumpfun-create-devnet.md`. | **None.** `set_creator` is gated on an authority that belongs to pump.fun. Wrong here is wrong forever. |
 | C4 | **Point the crank at mainnet**: config address, program id, RPC, and the absolute cluster assertion. | `scripts/crank-loop.ts` classifies the cluster from the genesis hash and refuses a mismatch. Watch one full period fire and settle. | Stop the process; the schedule waits. |
@@ -83,9 +84,11 @@ than leaving rent behind forever.
    Everything the collection promises about rarity is fixed here.
 2. **C3 `create_v2`** — the creator. The hoard's entire income belongs to
    whatever address this names, forever.
-3. **Revoking the program's upgrade authority**, if and when the owner decides
-   to. It is not in this runbook because it is not part of launching; it is a
-   separate decision with its own round.
+3. **Revoking the program's upgrade authority.** Not in this runbook and not
+   dated here. **D8 ties it to a condition rather than to a date: Phase 2
+   audited and deployed.** Until then the authority lives in the 2-of-3 (C1b),
+   which is the difference between "mutable by whoever holds a key" and
+   "mutable by two people who both have to agree".
 
 **Each of the first two has a devnet rehearsal that was actually run**, and the
 rehearsal is the verification step, not a paragraph promising care.
