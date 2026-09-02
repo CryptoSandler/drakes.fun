@@ -52,22 +52,22 @@ the chain actually names.
 That trade is defensible on its own terms: the claim under test is *"the process
 wakes at the boundary"*, and 250 samples test it far better than 24 do.
 
-## What the run shows
+## What the run shows — complete, 250 of 250
 
-Snapshot at 117 hours; the run continues to 250.
+The run finished.
 
 | | |
 |---|---|
-| Hours fired | **117**, indices 166–293 |
-| Settled | **115** |
+| Hours fired | **250**, indices 166–427, over **4.35 hours** of wall clock |
+| Settled | **248** |
 | **Not settled** | **2** — indices 265 and 270 |
-| Hours needing a retry | 0 |
-| Trigger jitter, 115 of 117 | **−122 ms to +26 ms**, median **+2** |
+| Hours needing a retry | **1** |
+| Trigger jitter, 248 of 250 | **−122 ms to +70 ms**, median **+2** |
 | Trigger jitter, the other 2 | **+246 s** and **+509 s** |
 | Fires later than 5 minutes after the boundary | **1** |
 
-**The median is 2 ms and two hours were lost anyway, and the second fact is the
-useful one.**
+**The median is 2 ms across two hundred and fifty hours, and two were still lost.
+The second fact is the useful one.**
 
 ### The two lost hours were the machine, not the scheduler
 
