@@ -8,17 +8,52 @@
 // this and Meteora's immutable static config. The read date travels with the
 // table for that reason, and `/verify` prints it.
 //
-// The shape is the finding: the creator's share **rises** to 0.950% between 420
-// and 1,470 SOL of market cap and then **decays to 0.050%** above 98,240. Our
-// abandoned Meteora plan was a flat 1.6% at any size. So the hoard earns most
-// while the coin is small and least when it is large, and no copy anywhere may
-// state a rate as if it were fixed.
+// **The table below is their documentation and it is NOT what the chain says.**
+// Read on 2026-09-02: `GlobalConfig` under the AMM carries a flat
+// `coin_creator_fee_basis_points: 5` — 0.05% — and no `FeeConfig` account is
+// deployed on either cluster, though both IDLs define one with a `fee_tiers`
+// vector. So the tiers exist in the program and are not in force.
+//
+// The table is kept because it is what the tiers WOULD be if switched on, and
+// because the gap between it and the chain is the reason the guard exists. Every
+// figure the site shows comes from `RECORDED_SCHEDULE`, which is the chain.
 
-/** When this table was read from pump.fun's own documentation. */
+/** When the schedule was last read FROM THE CHAIN. */
 export const FEE_TABLE_READ = '2026-09-02'
 
-/** On the bonding curve, before graduation: flat, of a 1.25% total. */
-export const CURVE_CREATOR_PERCENT = 0.3
+/**
+ * What `GlobalConfig` carried on mainnet when it was last read.
+ *
+ * **This, not the tier table below, is what anyone is actually paying.** The
+ * documentation describes tiers from 0.950% down to 0.050%; the chain carries a
+ * flat 5 bps and no `FeeConfig` account exists to hold tiers. Corroborated by
+ * watching real PumpSwap trades pay two identical small amounts — the protocol
+ * and the creator, both at 5 bps.
+ *
+ * `scripts/check-pump-schedule.ts` re-reads this and alerts when it moves.
+ */
+export const RECORDED_SCHEDULE = {
+  readAt: '2026-09-02',
+  // PumpSwap, after graduation, from `GlobalConfig`.
+  lpFeeBps: 20,
+  protocolFeeBps: 5,
+  creatorFeeBps: 5,
+  tiered: false,
+  // The bonding curve, from `Global` — where a coin spends its first hours.
+  // The documentation says the creator gets 0.300% here. The chain says 5 bps.
+  curveCreatorFeeBps: 5,
+  curveProtocolFeeBps: 95,
+} as const
+
+/** The live creator fee as a percentage, from the recorded on-chain value. */
+export const RECORDED_CREATOR_PERCENT = RECORDED_SCHEDULE.creatorFeeBps / 100
+
+/**
+ * What the DOCUMENTATION says the creator gets on the curve. **The chain says
+ * 0.05%** — `Global.creator_fee_basis_points` is 5 on both clusters, read
+ * 2026-09-02, against a 95 bps protocol fee. Kept only so the gap is visible.
+ */
+export const DOCUMENTED_CURVE_CREATOR_PERCENT = 0.3
 
 /** `[market cap in SOL, exclusive upper bound]` → creator percent on PumpSwap. */
 export const CREATOR_FEE_BANDS: readonly (readonly [number, number])[] = [

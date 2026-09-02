@@ -9,6 +9,48 @@ Every number below was read on **2026-09-02** from the source named beside it.
 
 ---
 
+> ## CORRECTION, same day, from the chain
+>
+> **Everything below about the fee schedule came from `pump.fun/docs/fees`, and
+> the chain says something else.** Read 2026-09-02 from
+> `Global.creator_fee_basis_points` (bonding curve) and
+> `GlobalConfig.coin_creator_fee_basis_points` (PumpSwap), on both clusters:
+>
+> **The creator fee is a flat 0.05% in both phases.** Not 0.300% on the curve,
+> and not a table tiered from 0.950%. **No `FeeConfig` account is deployed** on
+> either program on either cluster, though both IDLs define one holding
+> `fee_tiers` — so the tiers are written and not switched on.
+>
+> Every projection in §1 below is therefore **6× to 19× too generous**. At 0.05%
+> the hoard takes 7.5 SOL a month on 500 SOL of daily volume, against 240 under
+> the abandoned 1.6% plan — **thirty-two times less, at every size**, not only
+> at the top.
+>
+> The document is kept as written because the gap between it and the chain is
+> the reason `scripts/check-pump-schedule.ts` exists. `DESIGN.md` §1 carries the
+> corrected numbers.
+
+> ## CORRECTION, same day, from the chain
+>
+> **Everything below about the fee schedule came from `pump.fun/docs/fees`, and
+> the chain says something else.** Read 2026-09-02 from
+> `Global.creator_fee_basis_points` (bonding curve) and
+> `GlobalConfig.coin_creator_fee_basis_points` (PumpSwap), on both clusters:
+>
+> **The creator fee is a flat 0.05% in both phases.** Not 0.300% on the curve,
+> and not a table tiered from 0.950%. **No `FeeConfig` account is deployed** on
+> either program on either cluster, though both IDLs define one holding
+> `fee_tiers` — so the tiers are written and not switched on.
+>
+> Every projection in §1 below is therefore **6x to 19x too generous**. At 0.05%
+> the hoard takes 7.5 SOL a month on 500 SOL of daily volume, against 240 under
+> the abandoned 1.6% plan — **thirty-two times less, at every size**, not only
+> at the top.
+>
+> The document is kept as written because the gap between it and the chain is
+> the reason `scripts/check-pump-schedule.ts` exists. `DESIGN.md` §1 carries the
+> corrected numbers.
+
 ## What was read, and where
 
 | Fact | Source | Read |

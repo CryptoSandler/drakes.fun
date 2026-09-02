@@ -1,14 +1,26 @@
 import { describe, expect, it } from 'vitest'
 import {
-  CREATOR_FEE_BANDS, CURVE_CREATOR_PERCENT, creatorFeePercent,
+  CREATOR_FEE_BANDS, DOCUMENTED_CURVE_CREATOR_PERCENT, RECORDED_SCHEDULE, creatorFeePercent,
   hoardPerVolume, MAX_CREATOR_PERCENT, MIN_CREATOR_PERCENT,
 } from '../pump-fees.ts'
 
 describe("pump.fun's creator fee", () => {
-  it('is 0.300% on the bonding curve and in the first band', () => {
-    expect(CURVE_CREATOR_PERCENT).toBe(0.3)
+  it('is 0.300% on the curve and 0.300% in the first band — in the DOCUMENTATION', () => {
+    expect(DOCUMENTED_CURVE_CREATOR_PERCENT).toBe(0.3)
     expect(creatorFeePercent(0)).toBe(0.3)
     expect(creatorFeePercent(419)).toBe(0.3)
+  })
+
+  it('is 0.05% everywhere ON THE CHAIN, which is what anyone actually pays', () => {
+    // Read 2026-09-02 from `Global` under the curve and `GlobalConfig` under
+    // the AMM, on both clusters. The documented tiers are not deployed: no
+    // FeeConfig account exists to hold them.
+    expect(RECORDED_SCHEDULE.creatorFeeBps).toBe(5)
+    expect(RECORDED_SCHEDULE.curveCreatorFeeBps).toBe(5)
+    expect(RECORDED_SCHEDULE.tiered).toBe(false)
+    // The gap the guard exists for: six times what the docs promise on the
+    // curve, and nineteen times at the top of the documented table.
+    expect(DOCUMENTED_CURVE_CREATOR_PERCENT / (RECORDED_SCHEDULE.curveCreatorFeeBps / 100)).toBeCloseTo(6, 10)
   })
 
   it('rises to its maximum between 420 and 1,470 SOL of market cap', () => {

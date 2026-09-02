@@ -23,7 +23,7 @@ import { missingConfig, readConfig } from '../src/lib/site/config.ts'
 import { encodeBase58 } from '../src/lib/solana/base58.ts'
 import { Countdown } from '../src/components/Countdown.tsx'
 import { ArtSlot } from '../src/components/ArtSlot.tsx'
-import { MAX_CREATOR_PERCENT, MIN_CREATOR_PERCENT } from '../src/lib/hoard/pump-fees.ts'
+import { RECORDED_CREATOR_PERCENT } from '../src/lib/hoard/pump-fees.ts'
 
 export const dynamic = 'force-dynamic'
 
@@ -281,12 +281,11 @@ export default async function Page() {
                 band, not a number. A headline with a rate in it is a headline
                 that goes stale the next time their config moves. */}
             <strong>Every trade sends its creator fee to the hoard.</strong> $DRAKES launches on
-            pump.fun, whose creator fee is set by market cap and by them — between{' '}
-            {MIN_CREATOR_PERCENT}% and {MAX_CREATOR_PERCENT}% of a trade, and{' '}
-            <strong>it falls as the coin grows</strong>. It arrives in SOL and the multisig
-            converts it to $PUMP on a rule published in advance.{' '}
-            <a href="/verify">The rate in force is on /verify</a>. That is the mechanism, stated
-            as a mechanism — and there is no fixed rate to state.
+            pump.fun and the creator fee is theirs to set — <strong>{RECORDED_CREATOR_PERCENT}% of
+            a trade</strong> when it was last read from their program. It arrives in SOL and the
+            multisig converts it to $PUMP on a rule published in advance.{' '}
+            <a href="/verify">The rate and the date it was confirmed are on /verify</a>. That is
+            the mechanism, stated as a mechanism.
           </p>
           <p style={{ marginTop: 'var(--space-24)' }}>
             <a className="btn" href="/verify">

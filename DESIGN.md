@@ -13,33 +13,37 @@ protocol to a `$DRAKES` holder chosen in proportion to their holding. **Every
 trade sends its creator fee to the hoard.** Any piece can be burned to redeem
 its share of that hoard, and the slot it leaves never refills.**
 
-*The fine print, because "its creator fee" is not one number and never will be.
-`$DRAKES` launches on **pump.fun** (D30), whose creator fee is set by market cap
-and by them, not by us. Read from `pump.fun/docs/fees` on **2026-09-02**:*
+*The fine print, and the number is small. `$DRAKES` launches on **pump.fun**
+(D30). **Read from the chain on 2026-09-02** — `Global.creator_fee_basis_points`
+under the bonding curve and `GlobalConfig.coin_creator_fee_basis_points` under
+PumpSwap, on both clusters:*
 
-| Market cap (SOL) | To the creator | Total trade fee |
+| Phase | To the creator | Rest of the fee |
 |---|---|---|
-| bonding curve, before graduation | **0.300%** | 1.250% |
-| 0 – 420 | 0.300% | 1.250% |
-| **420 – 1,470** | **0.950%** | 1.200% |
-| 4,420 – 9,820 | 0.750% | 1.000% |
-| 19,650 – 24,560 | 0.600% | 0.850% |
-| 49,120 – 54,030 | 0.300% | 0.550% |
-| **98,240 +** | **0.050%** | 0.300% |
+| bonding curve | **0.05%** | 0.95% protocol |
+| PumpSwap, after graduation | **0.05%** | 0.05% protocol · 0.20% LP |
 
-*The full table is `src/lib/hoard/pump-fees.ts`, and `/verify` shows the rate in
-force with the date this was read beside it.*
+***Their documentation says something else, and the chain is what people pay.***
+`pump.fun/docs/fees` describes 0.300% on the curve and a table tiered from
+0.950% down to 0.050% on PumpSwap. **No `FeeConfig` account is deployed under
+either program on either cluster**, so the tiers exist in the code and are not in
+force. Corroborated by watching real PumpSwap trades pay two identical small
+amounts — the protocol and the creator, both at 5 bps. Anyone who had published
+the documented table would be publishing a rate nobody is paying.
 
-***The rate falls as the coin grows**, and this is stated rather than buried:
-the creator's share peaks at 0.950% while `$DRAKES` is small and settles at
-0.050% above 98,240 SOL of market cap. The abandoned Meteora plan was a flat
-1.6% at any size. **So no copy anywhere states a rate as though it were fixed,
-and the redemption promise never quotes one.***
+*`scripts/check-pump-schedule.ts` re-reads both accounts, records the verdict,
+and alerts when it moves; `/verify` prints the confirmed figure with its slot
+and date, and **says "not confirmed" rather than repeating a stale one**.*
+
+***What this costs, stated plainly.** The abandoned Meteora plan was a flat 1.6%.
+At 0.05% the hoard receives **thirty-two times less at every size** — 7.5 SOL a
+month on 500 SOL of daily volume, against 240. This is the price of launching
+where the buyers are, and it is not softened anywhere in the copy.*
 
 ***The schedule is pump.fun's and they can change it.** Meteora's static config
 `HQ6vW45Kug23h2A4LkyUqB4UFfGx4LqY1uZLLfQemEjU` is immutable; this is a config in
-somebody else's program. That is a real difference in kind and it is the price
-of launching where the buyers already are.*
+somebody else's program, and the tier table sitting unused in their code is
+evidence they intend to move it.*
 
 Three properties follow, and a feature that serves none of them belongs to a
 different product:
@@ -351,8 +355,8 @@ bonding curve and **five days** again at a hundred times the volume, because the
 rate collapses exactly where volume grows (§1). A threshold that produces one
 conversion a year is a rule that reads as a promise and behaves as an excuse.
 Five SOL still clears the ceremony's cost — two approvals and one Jupiter
-route — and it converts often enough that the table on `/verify` is a record
-rather than a plan. `$PUMP` carried **US$37.75M of on-chain
+route. **At the real 0.05% it is still twenty days of 500 SOL daily volume**, and
+that is the honest shape of the thing rather than a number chosen to look busy. `$PUMP` carried **US$37.75M of on-chain
 liquidity** when it was last read (`references.md`, 2026-09-01), so 25 SOL is far
 inside the range where routing is not the interesting variable.
 

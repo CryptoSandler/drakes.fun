@@ -17,10 +17,7 @@ import { ThemeSwitch } from '../../src/components/ThemeSwitch.tsx'
 import { missingConfig, readConfig } from '../../src/lib/site/config.ts'
 import { clusterName } from '../../src/lib/snapshot/rpc.ts'
 import { provenanceLabel } from '../../src/lib/site/provenance.ts'
-import {
-  CURVE_CREATOR_PERCENT, FEE_TABLE_READ, MAX_CREATOR_PERCENT, MIN_CREATOR_PERCENT,
-  creatorFeePercent,
-} from '../../src/lib/hoard/pump-fees.ts'
+import { RECORDED_SCHEDULE } from '../../src/lib/hoard/pump-fees.ts'
 import { connect } from '../../src/lib/db/client.ts'
 import { LiveWindow } from '../../src/components/LiveWindow.tsx'
 
@@ -68,6 +65,36 @@ async function purchases(): Promise<Purchase[]> {
   }
 }
 
+interface ScheduleCheck {
+  creator_fee_bps: number
+  lp_fee_bps: number
+  protocol_fee_bps: number
+  tiered: boolean
+  agrees: boolean
+  differences: string
+  slot: string
+  ran_at: string
+}
+
+/** The last time the fee schedule was compared against the chain. */
+async function lastScheduleCheck(): Promise<ScheduleCheck | null> {
+  const url = process.env.DATABASE_URL
+  if (url === undefined || url === '') return null
+  try {
+    const db = await connect(url)
+    try {
+      const { rows } = await db.query(
+        "select * from schedule_checks where cluster = 'mainnet' order by ran_at desc limit 1", [],
+      )
+      return (rows[0] as unknown as ScheduleCheck) ?? null
+    } finally {
+      await db.end()
+    }
+  } catch {
+    return null
+  }
+}
+
 async function lastRun(): Promise<Run | null> {
   const url = process.env.DATABASE_URL
   if (url === undefined || url === '') return null
@@ -105,11 +132,18 @@ export default async function Verify() {
   // Classified server-side from the genesis hash, never from the URL. This
   // page tells a reader that figures are checkable; which chain they are
   // checkable on is part of that sentence, not a footnote to it.
-  const [cluster, run, bought] = await Promise.all([clusterName(config.rpcUrl), lastRun(), purchases()])
-  // The coin does not exist yet, so there is no market cap to read and no rate
-  // to state. When the mint is configured this reads the bonding curve or the
-  // pool; until then the page says there is nothing to read (D30).
-  const marketCapSol: number | null = null
+  const [cluster, run, bought, schedule] = await Promise.all([
+    clusterName(config.rpcUrl), lastRun(), purchases(), lastScheduleCheck(),
+  ])
+  // A confirmation has an age. Older than a week and the figure is printed as
+  // unconfirmed rather than as fact — the schedule is a config in pump.fun's
+  // program and nothing in this repository changes when they move it.
+  const checkedAt = schedule === null ? null : new Date(schedule.ran_at)
+  const staleAfterDays = 7
+  const scheduleStale =
+    schedule === null ||
+    !schedule.agrees ||
+    Date.now() - new Date(schedule.ran_at).getTime() > staleAfterDays * 86_400_000
 
   return (
     <>
@@ -232,25 +266,35 @@ export default async function Verify() {
               <dl className="facts">
                 <dt>creator fee in force</dt>
                 <dd>
-                  {marketCapSol === null ? (
-                    <span className="note">
-                      no coin yet — the rate runs between {MIN_CREATOR_PERCENT}% and{' '}
-                      {MAX_CREATOR_PERCENT}%, and is {CURVE_CREATOR_PERCENT}% on the bonding curve
-                    </span>
+                  {scheduleStale ? (
+                    <>
+                      <strong style={{ color: 'var(--color-accent)' }}>not confirmed</strong>{' '}
+                      <span className="note">
+                        {schedule === null
+                          ? 'no check has run against the chain yet'
+                          : schedule.agrees
+                            ? `last confirmed ${checkedAt!.toISOString().slice(0, 10)}, which is too long ago`
+                            : `the chain has moved: ${schedule.differences}`}
+                        {' '}— we last recorded {RECORDED_SCHEDULE.creatorFeeBps / 100}%, and this
+                        page will not state it as current until a check agrees.
+                      </span>
+                    </>
                   ) : (
                     <>
-                      <strong>{creatorFeePercent(marketCapSol)}%</strong>{' '}
+                      <strong>{schedule!.creator_fee_bps / 100}%</strong>{' '}
                       <span className="note">
-                        at {Math.round(marketCapSol).toLocaleString('en')} SOL of market cap
+                        read from pump.fun&rsquo;s <code>GlobalConfig</code> at slot{' '}
+                        {schedule!.slot}, {checkedAt!.toISOString().slice(0, 10)}
+                        {schedule!.tiered ? '' : ' — a flat rate; no tier table is deployed'}
                       </span>
                     </>
                   )}
                 </dd>
                 <dt>schedule</dt>
                 <dd className="note">
-                  pump.fun&rsquo;s, read {FEE_TABLE_READ}. It is a config in their program and
-                  they can change it — and the rate <strong>falls as the coin grows</strong>,
-                  from {MAX_CREATOR_PERCENT}% down to {MIN_CREATOR_PERCENT}%.
+                  pump.fun&rsquo;s, and <strong>they can change it</strong> — it is a config in
+                  their program, not an immutable one like a Meteora pool&rsquo;s. A job re-reads
+                  it and this line says when it last agreed.
                 </dd>
               </dl>
               {bought.length === 0 ? (
