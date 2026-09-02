@@ -260,3 +260,39 @@ than fatal.
   deployer with its authority set to the config PDA, and passed to
   `initialize`, which asserts both the authority and the queue. One account is
   reused every hour; the commit overwrites the seed each time.
+
+---
+
+## The standing rig was replaced on 2026-09-02
+
+`rigs/devnet-rehearsal.json` now names a **new program**, and the old one is
+kept here because 303 issuances belong to it and its accounts are still on
+chain.
+
+|  | superseded | standing |
+|---|---|---|
+| program | `7qHEeK3Q5UW5jKykXqWeShqpWCypm4hey2EzYGotkTUs` | `EMRgMM6FGfeU3SsWnZYKeD73YSFTxiEYz9abGACRhfGu` |
+| config | `4ooopeJoL2TaBEkKxR89ZqMYE9XafiojZW9suV2caX4m` | `aDX4VeW4otweuNJhWcqwN8KcVRaDnTeLavAanKuRjPA` |
+| survivors | `9ZGWPL6VUFDy2ZtB9ipJQk8srstjnUzV4pmg6yPmppC7` | `3AwuHRXM9pAEXQSanSrN4zKda1Fma91rcuxwNm4Z9gCo` |
+| collection | `8F3FGGasUxKm85CBZw9zFUcPW5wQL3Uq9ffqjV4PsifV` | `Hazyq2ivDE6JariUQBFM4QYccNu67145QmmVWBA6JzJH` |
+
+**Why it had to be a new program.** The old one was upgraded to D32's code,
+which builds each asset's name and URI from a `base_uri` written by
+`initialize` — and its config predates that field, so `settle_issuance` refuses
+with `AssetPrefixUnset`. **`initialize` runs once per program for its whole
+life** (the config PDA seed is fixed), so a rig that can issue again is a rig
+with a new program id. That refusal is the guard working; it is not a fault to
+repair.
+
+**The old program is left deployed and not closed.** Closing it would return
+~2.46 SOL and is irreversible, and `/verify/<hour>` for hours 3–427 reads its
+accounts. That is the owner's call, not this document's.
+
+**The standing rig's upgrade authority is the disposable Squads vault**
+(`8MxzqgfotX2vms5SnopoNpx7VKNtY5E7DgLYoFGrcL6Q`), handed over immediately after
+the deploy and before `initialize` — C1b, rehearsed again by doing it.
+
+`scripts/rehearse-rig.ts` builds one of these from nothing: collection,
+Switchboard randomness, and `initialize` with its `base_uri`. The whole rig cost
+**1.924630 SOL**, of which 1.798806 is programdata rent that returns on close;
+`docs/launch-runbook.md` has the breakdown.

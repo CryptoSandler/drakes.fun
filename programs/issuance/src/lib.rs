@@ -30,7 +30,7 @@ use anchor_lang::solana_program::instruction::{AccountMeta, Instruction};
 use anchor_lang::solana_program::program::invoke_signed;
 use switchboard_on_demand::OracleAccountData;
 
-declare_id!("7qHEeK3Q5UW5jKykXqWeShqpWCypm4hey2EzYGotkTUs");
+declare_id!("EMRgMM6FGfeU3SsWnZYKeD73YSFTxiEYz9abGACRhfGu");
 
 /// Domain separation on the Merkle hashing. Without distinct prefixes an inner
 /// node can be presented as a leaf. These bytes match `src/lib/snapshot`

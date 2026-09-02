@@ -1,15 +1,18 @@
 {
-  "_": "The 2026-09-01 devnet rehearsal rig. Devnet only, holds no value, and every address here is public chain state. The keypair path is NOT in this file: it comes from CRANK_KEYPAIR.",
+  "_": "A devnet rehearsal rig. Devnet only, holds no value, and every address here is public chain state. The keypair path is NOT in this file: it comes from CRANK_KEYPAIR.",
   "rpcEnv": "RPC_URL",
   "keypairEnv": "CRANK_KEYPAIR",
   "expectCluster": "devnet",
   "expectPeriodSeconds": 60,
-  "program": "7qHEeK3Q5UW5jKykXqWeShqpWCypm4hey2EzYGotkTUs",
-  "config": "4ooopeJoL2TaBEkKxR89ZqMYE9XafiojZW9suV2caX4m",
-  "survivors": "9ZGWPL6VUFDy2ZtB9ipJQk8srstjnUzV4pmg6yPmppC7",
-  "collection": "8F3FGGasUxKm85CBZw9zFUcPW5wQL3Uq9ffqjV4PsifV",
-  "randomness": "Ab65LUzrdHHxAgSKSuBjBRhGsB9sg8W5FtakiPdFdatj",
+  "program": "EMRgMM6FGfeU3SsWnZYKeD73YSFTxiEYz9abGACRhfGu",
+  "config": "aDX4VeW4otweuNJhWcqwN8KcVRaDnTeLavAanKuRjPA",
+  "survivors": "3AwuHRXM9pAEXQSanSrN4zKda1Fma91rcuxwNm4Z9gCo",
+  "collection": "Hazyq2ivDE6JariUQBFM4QYccNu67145QmmVWBA6JzJH",
+  "randomness": "EtwVv12CKDoXp7PP2a61nZLyk7n4zVNeQwH2qZ5BFGxo",
   "queue": "EYiAmGSdsQTuCw413V5BzaruWuCCSDgTPtBGvLkXHbe7",
   "mint": "3mdNd6KVgrVq3QbnubsA8fcejqMHHjT3EEDwYCAW6imJ",
-  "collectionSize": 4000
+  "collectionSize": 4000,
+  "baseUri": "https://gateway.irys.xyz/Es6PTfT129ohfi8dWqiyGwScFDyi1jSnZfRHxREtWDDa/",
+  "namePrefix": "Drake #",
+  "genesisUnix": 1788378648
 }

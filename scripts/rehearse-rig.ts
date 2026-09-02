@@ -178,7 +178,7 @@ const initializeSig = await sendAndConfirmTransaction(
 out(`initialize ${initializeSig.slice(0, 16)}…`)
 
 const rig = {
-  _: 'A devnet rehearsal rig. Devnet only, holds no value, every address here is public chain state.',
+  _: 'A devnet rehearsal rig. Devnet only, holds no value, and every address here is public chain state. The keypair path is NOT in this file: it comes from CRANK_KEYPAIR.',
   rpcEnv: 'RPC_URL',
   keypairEnv: 'CRANK_KEYPAIR',
   expectCluster: 'devnet',

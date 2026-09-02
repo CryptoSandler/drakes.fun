@@ -55,7 +55,7 @@ that is never discovered on the day.
 | **C2 `initialize`, and the asset naming its piece** | ✅ **end to end, 2026-09-02** | `evidencia/drakes/2026-09-02-b25-happy-path/` |
 | C3 `create_v2` | ✅ | `docs/pumpfun-create-devnet.md` |
 | C4 crank | ✅ 303 issuances over the standing rig | `docs/runbook-devnet-rehearsal.md` |
-| C5 Vercel env | ✅ the chip and the sentence are env-driven (D29) | the live domain |
+| C5 Vercel env | ✅ **the whole program swap, end to end** | `evidencia/drakes/2026-09-02-b26-rig-swap/` |
 | C6 schedule guard | ✅ runs daily | `docs/crank-hosting.md` |
 | C7 first conversion | ✅ the ceremony, on an equivalent pool | `docs/vaultclaim-devnet.md` |
 
@@ -82,7 +82,7 @@ the deployed devnet program (352,989 bytes) priced at mainnet rent.
 
 | What Claude Code spends | SOL |
 |---|---|
-| program + programdata rent | 2.458835 |
+| program + programdata rent | **1.802309** |
 | `initialize`: config 489 B + survivors 8,016 B | 0.060976 |
 | `create_v2` | ~0.0025 |
 | first seeded conversion: proposal + vault tx + ATA + the swap | 0.063016 |
@@ -100,6 +100,14 @@ the deployed devnet program (352,989 bytes) priced at mainnet rent.
 | **×1.2** | **25.35** |
 
 **Total ×1.2: 28.46 SOL.**
+
+**The program got smaller and the rent went with it.** `opt-level = "z"` and
+`strip = true` on the release profile took the artifact from **340,288 to
+283,864 bytes** — 17% — and the programdata's rent from 2.156140 to
+**1.798806 SOL**. That is **0.357 SOL off this budget, permanently**, and it
+costs nothing: `overflow-checks` stays on, the error strings survive the strip
+(checked with `strings`, against a control), and the rig has been settling
+hours on the smaller build since.
 
 **An upgrade's cost is a peak, not a spend.** Measured on devnet 2026-09-02: the
 full `Upgrade` by 2-of-3 cost **0.0017 SOL net**, because the buffer's rent —
@@ -123,6 +131,60 @@ production runbook closes those accounts after each monthly conversion rather
 than leaving rent behind forever.
 
 ---
+
+## C5 rehearsed: what a program swap by env actually costs
+
+**Run on 2026-09-02.** A second devnet rig was stood up from nothing and
+`drakes.fun` was moved onto it **by changing three environment variables and
+redeploying — no code change**, which is exactly the shape of C5.
+
+    ISSUANCE_PROGRAM     EMRgMM6FGfeU3SsWnZYKeD73YSFTxiEYz9abGACRhfGu
+    ISSUANCE_CONFIG      aDX4VeW4otweuNJhWcqwN8KcVRaDnTeLavAanKuRjPA
+    ISSUANCE_SURVIVORS   3AwuHRXM9pAEXQSanSrN4zKda1Fma91rcuxwNm4Z9gCo
+
+Afterwards the front page read **8 of 4,000 issued** against the new program's
+own counters, the register listed the new hours with their signatures, and
+`/verify/2` showed `Drake #2210` — the piece `verify-assets` independently
+says hour 2 emitted. **9 of 9 assets name the piece the event emitted**, with
+the name unpadded and the URI four-wide (`Drake #703` → `0703.json`).
+
+### The hazard, and it cancelled two attempts
+
+**An env change does nothing until a deployment BUILDS, and the Ignored Build
+Step can cancel exactly the deployment you are waiting for.** The last push was
+documentation only, so the ignore command skipped it — and `vercel redeploy` on
+that same commit re-evaluates the command and skips again. Two `Canceled`
+deployments, no error anywhere, and the site kept serving the old program.
+
+**What works: redeploy a deployment whose own commit builds.** `vercel ls`
+shows the status per deployment; pick the most recent `● Ready` one and
+redeploy that. It rebuilds with the current environment and aliases to the
+domain.
+
+**At C5 this matters more, not less**, because the mainnet swap is the moment
+the site stops showing a rehearsal. A "done" that silently did nothing is the
+failure to plan for: after changing the env, read the domain and confirm the
+figures moved.
+
+### The cost, measured
+
+| | SOL |
+|---|---|
+| deploy the program (283,864 bytes) | 1.801270 |
+| collection + `initialize` | 0.065824 |
+| ten issuances | 0.057536 |
+| **total** | **1.924630** |
+
+**Only the programdata comes back.** `solana program close` returns
+**1.798806**; the 36-byte program stub (0.001039), the config (0.004971) and
+the survivor array (0.051576) do not, because this program has no instruction
+that closes them. **A rig that stands costs 0.125824 SOL and a rig that is torn
+down costs the same** — the difference is only whether the 1.8 is parked or
+freed.
+
+**Per issuance: 0.005754**, against the 0.0048 the 250-hour run measured. The
+crank budget in this document uses the lower figure; the higher one is a
+one-cluster, ten-hour sample and is recorded rather than substituted.
 
 ## The rule the snapshot leaves for mainnet
 
