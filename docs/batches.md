@@ -73,7 +73,7 @@ Arweave gateways and diff against local bytes.
 
 **Depends on:** B1 + final art.
 
-## B3 — Mint, pool, liquidity ⛔
+## B3 — ~~Mint, pool, liquidity~~ — **RETIRED 2026-09-02 by D30**
 
 Three things in order, each irreversible:
 
@@ -90,12 +90,22 @@ Three things in order, each irreversible:
 Full devnet rehearsal first, including a fee claim that lands in the PUMP-side
 token, asserted rather than eyeballed.
 
-**⛔ BLOCKED as written, 2026-09-01 (D24).** DAMM v2 refuses a pool for a
-Token-2022 mint carrying a `transferHook` extension without a Meteora token
-badge, `$PUMP` has none, and there are zero DAMM v2 pools holding it. **Step 1 —
-grinding the mint keypair — must not run until the venue is settled**, because
-the sort order is a property of the pair. The rest of the money path was
-rehearsed against an equivalent pool and works: `docs/moneypath-devnet.md`.
+**⛔ RETIRED IN FULL, 2026-09-02 (D30).** `$DRAKES` launches on pump.fun's own
+bonding curve: there is no pool of ours, no liquidity of ours to seed, and no
+position of ours to lock. **All three steps above are dead**, including the one
+this document called unfixable — a mint has no sort order to satisfy when there
+is no pair of ours for it to sort in. The CI assertion that pinned it was
+deleted in b22 and `scripts/check-mint-order.ts` became
+`scripts/check-ground-mint.ts`, an identity check.
+
+**What replaced it** is C3 in `docs/launch-runbook.md`: one `create_v2` with the
+Squads vault as `creator`, rehearsed end to end on devnet
+(`docs/pumpfun-create-devnet.md`). It is still irreversible, for a different
+reason — `set_creator` is gated on an authority that belongs to pump.fun.
+
+**Kept:** the ground mint `1212YJcDwzgLXxmwbtmkYaEB53p6y958cn2tENt3C3dM` as an
+identity pin, and the money-path findings from `docs/moneypath-devnet.md`, which
+were about Squads and Jupiter rather than about Meteora.
 
 **Depends on:** B0. **Gate:** owner signs each mainnet transaction.
 
@@ -146,9 +156,11 @@ migrations first, then the one with them, per CLAUDE.md):
    the `disposable_database` stamp, the event runner, and a minimal front page
    that reads the chain and not the database (D23).
 
-**Still outstanding in B5:** the snapshot Merkle work already shipped in B4, but
-the rendered verify page, the per-issuance permalink and the proof widget are
-not built. The reconciliation and the replay exist as commands.
+**Closed 2026-09-02.** The rendered `/verify` page went to production with the
+site (D29, D31). The **per-issuance permalink `/verify/<n>`** and its proof
+widget landed in b22, because B7's post has to link somewhere that shows the
+reader the recipient, the piece and the proof it was derived rather than chosen.
+The reconciliation and the replay remain commands.
 
 ## B6 — Site
 

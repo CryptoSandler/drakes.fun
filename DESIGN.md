@@ -400,7 +400,7 @@ Five SOL still clears the ceremony's cost — two approvals and one Jupiter
 route. **On the bonding curve's 0.300% it is about three days of 500 SOL daily
 volume, and above 98,240 SOL of market cap it is twenty** — the wait gets longer
 as the coin gets bigger, which is the schedule's shape and not a choice of ours. `$PUMP` carried **US$37.75M of on-chain
-liquidity** when it was last read (`references.md`, 2026-09-01), so 25 SOL is far
+liquidity** when it was last read (`references.md`, 2026-09-01), so 5 SOL is far
 inside the range where routing is not the interesting variable.
 
 **Why the 7-day ceiling.** It stops a busy week turning into a daily job and
@@ -1098,7 +1098,11 @@ construction: `redeem` computes a share from `live_supply` and reads no trait.
 *Owner's decision, 2026-09-02, after `docs/round-2026-09-02-pumpfun.md`.*
 
 **Retired in full: B3.** There is no pool of ours, so the mint has no sort order
-to satisfy against wSOL and the CI assertion that pinned it is gone. The Meteora
+to satisfy against wSOL and the CI assertion that pinned it is gone — **deleted
+in b22, 2026-09-02**, where `scripts/check-mint-order.ts` became
+`scripts/check-ground-mint.ts` and the test became the one assertion the pin
+still earns: that every document an operator copies the address from prints it
+identically. The Meteora
 token badge request (`docs/meteora-badge-request.md`) was never sent and is now
 moot.
 
