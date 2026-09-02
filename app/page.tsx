@@ -18,7 +18,7 @@
 import { clusterName } from '../src/lib/snapshot/rpc.ts'
 import { fetchLatestSettled } from '../src/lib/chain/latest.ts'
 import { nextIssuanceAt, placeholderTier, readCollectionState, TIERS } from '../src/lib/site/collection.ts'
-import { readConfig } from '../src/lib/site/config.ts'
+import { missingConfig, readConfig } from '../src/lib/site/config.ts'
 import { encodeBase58 } from '../src/lib/solana/base58.ts'
 import { Countdown } from '../src/components/Countdown.tsx'
 import { ArtSlot } from '../src/components/ArtSlot.tsx'
@@ -58,6 +58,21 @@ async function orNull<T>(work: Promise<T>): Promise<T | null> {
 }
 
 export default async function Page() {
+  const missing = missingConfig()
+  if (missing.length > 0) {
+    return (
+      <main className="sheet">
+        <div className="colophon">
+          <p className="lede">This deployment is not pointed at a chain.</p>
+          <p>
+            {missing.join(' and ')} {missing.length === 1 ? 'is' : 'are'} not set here, so the page
+            is showing nothing rather than something it cannot source. No figure on this site is
+            ever rendered without the chain it came from.
+          </p>
+        </div>
+      </main>
+    )
+  }
   const config = readConfig()
   const cluster = await clusterName(config.rpcUrl)
 
@@ -101,7 +116,7 @@ export default async function Page() {
             cannot wrap and shove `Verify` onto a second line at 390 px. */}
         <div className="masthead__top">
           <b>Drakes</b>
-          <span className="chip">{cluster}</span>
+          <span className={`chip${cluster === 'mainnet' ? '' : ' chip--rehearsal'}`}>{cluster}</span>
           <a href="/verify">Verify</a>
         </div>
 
@@ -270,6 +285,20 @@ export default async function Page() {
             capture of /verify showed that sentence sitting directly under a
             table of conversions. This wording is true before the first
             conversion and after it, and promises nothing either way. */}
+        {/* The page is live on the real domain and the chain under it is
+            devnet (D29). This says so in words, next to the chip that says it
+            in a colour, because the chip is a label and this is a sentence. It
+            is written from the config rather than hard-coded, so pointing
+            ISSUANCE_PROGRAM at mainnet removes it with no deploy. */}
+        {cluster !== 'mainnet' && (
+          <p className="note foot rehearsal">
+            <strong style={{ color: 'var(--color-ink)' }}>
+              These issuances are a rehearsal on {cluster}.
+            </strong>{' '}
+            Mainnet has not started. Nothing on this page has been issued on the network that
+            carries value, and no piece here is the piece you would hold.
+          </p>
+        )}
         <p className="note foot">
           {config.programId} · recomputable, not trustless ·{' '}
           <strong style={{ color: 'var(--color-ink-2)' }}>

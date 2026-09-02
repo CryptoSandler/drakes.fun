@@ -13,7 +13,8 @@
 // in a clone. The row below is a RECORD OF A JOB WE RAN and is labelled as one;
 // the chain stays the evidence.
 
-import { readConfig } from '../../src/lib/site/config.ts'
+import { missingConfig, readConfig } from '../../src/lib/site/config.ts'
+import { clusterName } from '../../src/lib/snapshot/rpc.ts'
 import { connect } from '../../src/lib/db/client.ts'
 import { LiveWindow } from '../../src/components/LiveWindow.tsx'
 
@@ -82,8 +83,21 @@ async function lastRun(): Promise<Run | null> {
 }
 
 export default async function Verify() {
+  if (missingConfig().length > 0) {
+    return (
+      <main className="sheet">
+        <div className="colophon">
+          <p className="lede">This deployment is not pointed at a chain.</p>
+          <p>There is nothing to replay against, so this page is showing nothing.</p>
+        </div>
+      </main>
+    )
+  }
   const config = readConfig()
-  const [run, bought] = await Promise.all([lastRun(), purchases()])
+  // Classified server-side from the genesis hash, never from the URL. This
+  // page tells a reader that figures are checkable; which chain they are
+  // checkable on is part of that sentence, not a footnote to it.
+  const [cluster, run, bought] = await Promise.all([clusterName(config.rpcUrl), lastRun(), purchases()])
 
   return (
     <>
@@ -92,7 +106,9 @@ export default async function Verify() {
           <b>
             <a href="/">Drakes</a>
           </b>
-          <span className="chip">verify</span>
+          <span className={`chip${cluster === 'mainnet' ? '' : ' chip--rehearsal'}`}>
+            {cluster === 'mainnet' ? 'verify' : cluster}
+          </span>
           <a href="/">Plate</a>
         </div>
         <div className="dateline">
@@ -102,6 +118,15 @@ export default async function Verify() {
               Check it yourself
             </p>
           </div>
+          {cluster !== 'mainnet' && (
+            <p className="note foot rehearsal" style={{ marginBottom: 0 }}>
+              <strong style={{ color: 'var(--color-ink)' }}>
+                Everything below is a rehearsal on {cluster}.
+              </strong>{' '}
+              Mainnet has not started. The replay is real and so is the chain it reads — it is not
+              the chain that carries value.
+            </p>
+          )}
         </div>
       </header>
 

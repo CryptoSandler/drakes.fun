@@ -43,6 +43,14 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px
   border: var(--rule) solid var(--color-rule); border-radius: 999px;
   padding: 2px var(--space-8); letter-spacing: 0.16em;
 }
+/* Anything that is not mainnet is filled rather than outlined. The page is
+   public and the data is a rehearsal; the cluster is not a detail here. */
+.chip--rehearsal {
+  background: var(--color-warn);
+  border-color: var(--color-warn);
+  color: var(--color-ink);
+  font-weight: 600;
+}
 @media (max-width: 30rem) { .masthead__top { letter-spacing: 0.12em; } }
 .masthead__top b { font-weight: 600; letter-spacing: 0.24em; color: var(--color-ink); }
 .dateline {
@@ -230,3 +238,13 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px
    scroll the whole page sideways. The table already scrolls inside `.tablewrap`;
    this is what keeps that scroll local. */
 .entry__grid > *, .colophon > *, .dateline > * { min-width: 0; }
+
+/* The rehearsal sentence at the foot. It sits above the colophon line and is
+   the last thing read at every width, so it gets the warning rule rather than
+   the hairline the rest of the footer uses. */
+.foot.rehearsal {
+  border-left: 3px solid var(--color-warn);
+  padding-left: var(--space-12);
+  margin-bottom: var(--space-16);
+  max-width: 62ch;
+}

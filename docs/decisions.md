@@ -634,6 +634,33 @@ derived. Marking it is what keeps the rest of the table trustworthy. The column
 is written by `--seeded` on `scripts/record-hoard-purchase.ts`, defaults to
 `fees`, and is constrained to those two values by migration `0004`.
 
+## D29 — The Bestiary goes to production on `drakes.fun` reading devnet
+*Decided by the owner, 2026-09-01, reversing "production stays on the
+placeholder until mainnet".*
+
+The site is live on the real domain now, and the chain under it is devnet. The
+standing rule was to wait; the owner's reason for not waiting is theirs, and the
+job here is to make a devnet-backed public page honest rather than to argue it.
+
+**What carries the honesty, and all of it is env-driven:**
+
+- **The cluster chip is filled rather than outlined** on anything that is not
+  mainnet. A neutral pill reading `devnet` is a label nobody reads.
+- **A sentence at the foot of `/`** — *"These issuances are a rehearsal on
+  devnet. Mainnet has not started."* — and the equivalent at the head of
+  `/verify`, where a reader has come specifically to trust something.
+- **Both are conditioned on the server-side classification**, so pointing
+  `RPC_URL` and `ISSUANCE_PROGRAM` at mainnet removes them **with no deploy of
+  code**, which was the owner's condition.
+- **The noindex triple is unchanged** and verified against the domain with
+  deployment protection off.
+
+**One thing changed underneath.** `readConfig` threw on a missing `RPC_URL`,
+which is right for a script and wrong for an origin the public can reach: it
+would have rendered a stack trace where the page should be. Both pages now say
+*"this deployment is not pointed at a chain"* and show no figures. `CLAUDE.md`:
+refusing is the safe failure.
+
 ## Still open
 
 - **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*

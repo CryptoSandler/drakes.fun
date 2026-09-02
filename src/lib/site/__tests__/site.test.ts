@@ -81,3 +81,41 @@ describe('the noindex triple', () => {
     expect(layout).toMatch(/noimageindex: true/)
   })
 })
+
+/**
+ * D29 put the Bestiary on drakes.fun reading devnet. Two things then became
+ * load-bearing copy rather than decoration: the chip that names the cluster,
+ * and the sentence that says the issuances are a rehearsal. Both are tied to
+ * the server-side classification, and both are the kind of thing that gets
+ * tidied away by someone who does not know why they are there.
+ *
+ * These are source assertions for the same reason the noindex ones are: the
+ * failure is silent, and a rendering test would pass against a page whose
+ * condition had been inverted.
+ */
+describe('the rehearsal disclosure', () => {
+  it('shows the loud chip on every cluster that is not mainnet', () => {
+    for (const page of ['app/page.tsx', 'app/verify/page.tsx']) {
+      expect(read(page)).toMatch(/cluster === 'mainnet' \? '' : ' chip--rehearsal'/)
+    }
+  })
+
+  it('says in words that mainnet has not started, and only off mainnet', () => {
+    expect(read('app/page.tsx')).toMatch(/cluster !== 'mainnet' &&/)
+    expect(read('app/page.tsx')).toMatch(/These issuances are a rehearsal on/)
+    expect(read('app/page.tsx')).toMatch(/Mainnet has not started/)
+    expect(read('app/verify/page.tsx')).toMatch(/Mainnet has not started/)
+  })
+
+  it('classifies the cluster server-side on both pages, never from the URL', () => {
+    for (const page of ['app/page.tsx', 'app/verify/page.tsx']) {
+      expect(read(page)).toMatch(/clusterName\(/)
+    }
+  })
+
+  it('refuses to render figures when the deployment names no chain', () => {
+    // A production origin with no RPC_URL used to throw. It now says so.
+    expect(read('app/page.tsx')).toMatch(/missingConfig\(\)/)
+    expect(read('app/verify/page.tsx')).toMatch(/missingConfig\(\)/)
+  })
+})

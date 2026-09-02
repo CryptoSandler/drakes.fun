@@ -18,6 +18,10 @@
   --color-accent:    oklch(46% 0.18 27);
   --color-accent-2:  oklch(70% 0.11 27);
   --color-focus:     oklch(46% 0.18 27);
+  /* The rehearsal chip. Loud on purpose: drakes.fun serves devnet data to
+     real traffic, and a neutral pill reading "devnet" is a label nobody
+     reads. Contrast checked against --color-ink. */
+  --color-warn:      oklch(78% 0.15 75);
 
   --space-2: 0.125rem; --space-4: 0.25rem; --space-8: 0.5rem;
   --space-12: 0.75rem; --space-16: 1rem;  --space-24: 1.5rem;
