@@ -25,7 +25,7 @@ import { clusterName } from '../src/lib/snapshot/rpc.ts'
 
 const require = createRequire(import.meta.url)
 const {
-  Connection, Keypair, PublicKey, SystemProgram, SYSVAR_RENT_PUBKEY,
+  Connection, Keypair, PublicKey, SystemProgram,
   Transaction, TransactionInstruction, sendAndConfirmTransaction, ComputeBudgetProgram,
 } = require('@solana/web3.js')
 
