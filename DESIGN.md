@@ -315,9 +315,19 @@ here, with numbers, before there is any SOL to convert.
 | **Threshold** | convert when the multisig's SOL balance reaches **25 SOL** |
 | **Ceiling on frequency** | **at most once every 7 days** |
 | **Floor on frequency** | **at least once every 30 days** whenever the balance is **≥ 5 SOL** |
-| **Venue** | Jupiter, best route at execution |
+| **Venue** | Jupiter, best route at execution **that fits in a packet** (§3.7) |
 | **Authority** | a Squads **2-of-3** proposal — no key converts alone |
 | **Record** | the signature is listed on `/verify`, with the amounts read out of that transaction |
+
+**The first conversion is seeded, and says so.** Before there is any fee to
+convert, the creator puts SOL in the vault and the multisig converts it under
+the same 2-of-3 ceremony. It is not an exception to the rule — it is the rule
+executed once with the creator's SOL — and the row on `/verify` carries
+`seeded by the creator, not from fees` in its own column (D28). The reason for
+marking it rather than quietly listing it: SOL in the vault is fungible, so no
+reader can derive that provenance from the chain the way they can derive every
+amount beside it. **A figure that cannot be derived is labelled as asserted or
+it is not shown.**
 
 **Why 25.** Below it the ceremony costs more than it moves: two people have to
 approve, and a conversion small enough to be dominated by slippage and fees is a
@@ -347,6 +357,59 @@ stands and is unrelated to this.
 **Revisit if:** `$PUMP` gets a Meteora token badge (D24), at which point a direct
 `$DRAKES`/`$PUMP` pool removes the conversion entirely and this section becomes
 history.
+
+### 3.7 The conversion does not reliably fit, and the way out is two changes
+
+A Squads conversion is two transactions and each has its own 1232-byte ceiling.
+`vaultTransactionCreate` carries the whole inner message as instruction data;
+`vaultTransactionExecute` carries every account the inner instructions touch.
+Both grow with the route, in different currencies, and **Jupiter picks the
+route.**
+
+Sixty quotes for a 0.002 SOL → `$PUMP` swap, wrapped for a Squads vault,
+mainnet **2026-09-01** (`docs/jupiter-vault-mainnet.md`):
+
+| | |
+|---|---|
+| Distinct routes | **22** in 60 quotes taken seconds apart |
+| `vaultTransactionCreate` | 672 – **1246** B |
+| `vaultTransactionExecute` | 576 – **1211** B |
+| Refused by the size guard | **10%** |
+| **Above the raw 1232-byte packet — unsendable at all** | **7%** |
+| Cost of one more hop | ≈ 212 B |
+
+`Whirlpool > Whirlpool > Whirlpool` needs **1246 bytes** to create. That is not
+a tight margin; that is a proposal that cannot be sent, and it was one route
+among twenty-two on ordinary quotes.
+
+**So the conversion in §3.6 cannot be built as one plain proposal.** Two changes
+make it fit, both measured:
+
+1. **A transaction buffer for the create side.** Squads v4's
+   `transactionBufferCreate` / `transactionBufferExtend` /
+   `vaultTransactionCreateFromBuffer` upload the inner message in chunks, so its
+   size stops being a ceiling at all. Present in the deployed program and in the
+   `@sqds/multisig` 2.1.4 bundle, though not re-exported under `instructions`.
+2. **A project-owned address lookup table for the execute side.** Holding the
+   ten route-independent accounts — the multisig, the vault, both mints, the
+   three token programs, the system program, Jupiter and Squads — it saved a
+   consistent **90 bytes**. It cannot hold the proposal and transaction PDAs,
+   which move with the conversion index, nor the pool accounts, which are the
+   route.
+
+With both, forty further quotes produced **no refusal**, with **45 bytes** to
+spare on the worst — agreeing with 1211 − 90 measured directly.
+
+**45 bytes is still under one hop, so the guard stays.** Jupiter's `maxAccounts`
+is not a substitute for it: at `maxAccounts = 24` the wrapped transaction
+measured *larger* (1006 B) than at 48 (962 B), because that parameter bounds
+Jupiter's own transaction and not one wrapped in a Squads message. It costs
+≤ 0.23% of output and buys no guarantee.
+
+`src/lib/hoard/vault-swap.ts` builds both transactions, measures them, reserves
+64 bytes of headroom, and refuses to create a proposal that does not fit, naming
+the route and the overflow. **The answer to a refusal is to quote again** — the
+route changed on its own twenty-two times in sixty quotes.
 
 ### 5. `redeem` *(Phase 2)*
 

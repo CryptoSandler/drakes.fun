@@ -26,6 +26,7 @@ interface Purchase {
   pump_received: string
   slot: string
   block_time: string | null
+  funded_by: 'fees' | 'creator'
 }
 
 interface Run {
@@ -193,6 +194,7 @@ export default async function Verify() {
                         <th scope="col">When</th>
                         <th scope="col">SOL spent</th>
                         <th scope="col">$PUMP received</th>
+                        <th scope="col">Source</th>
                         <th scope="col">Signature</th>
                       </tr>
                     </thead>
@@ -202,6 +204,13 @@ export default async function Verify() {
                           <td>{b.block_time === null ? `slot ${b.slot}` : new Date(b.block_time).toISOString().slice(0, 16).replace('T', ' ')}</td>
                           <td className="num">{b.sol_spent}</td>
                           <td className="num">{b.pump_received}</td>
+                          <td>
+                            {b.funded_by === 'creator' ? (
+                              <span className="note">seeded by the creator, not from fees</span>
+                            ) : (
+                              'fees'
+                            )}
+                          </td>
                           <td className="num">{b.signature.slice(0, 8)}…{b.signature.slice(-8)}</td>
                         </tr>
                       ))}
@@ -213,6 +222,10 @@ export default async function Verify() {
                 <strong style={{ color: 'var(--color-ink-2)' }}>
                   Every figure in that table was read out of the transaction it names.
                 </strong>{' '}
+                The one exception is the source column: SOL in the vault is fungible, so no read
+                can separate fee SOL from SOL the creator put there. That column is ours to
+                assert, and it is marked so you can weigh it differently from the numbers beside
+                it.{' '}
                 The operator supplies a signature and nothing else; the amounts come from the
                 transaction&rsquo;s own pre and post balances. Fetch the signature and you get the
                 same numbers, or you get different ones and we are caught.

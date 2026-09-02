@@ -619,6 +619,21 @@ claim about the chain; a table derived from signatures is an index of it. The
 difference is whether a reader who fetches the signature can catch us, and the
 whole page is built on the answer being yes.
 
+## D28 — The first conversion is seeded by the creator, and the row says so
+*Decided by the owner, 2026-09-01.*
+
+`/verify` would otherwise launch with an empty hoard table and a rule describing
+conversions that have never happened. The creator puts SOL in the vault before
+launch and the multisig converts it under the same 2-of-3 ceremony, so the table
+is born with a real transaction in it.
+
+**The row is marked `seeded by the creator, not from fees`.** SOL in a vault is
+fungible: no reader can derive that provenance from the chain, which makes it the
+only asserted column in a table whose whole point is that its figures are
+derived. Marking it is what keeps the rest of the table trustworthy. The column
+is written by `--seeded` on `scripts/record-hoard-purchase.ts`, defaults to
+`fees`, and is constrained to those two values by migration `0004`.
+
 ## Still open
 
 - **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*

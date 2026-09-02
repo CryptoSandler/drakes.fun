@@ -1,7 +1,7 @@
 // A hoard purchase, indexed from its own transaction.
 //
 //   node scripts/record-hoard-purchase.ts --signature <sig> --vault <addr> \
-//     --quote-mint <addr> --hoard-mint <addr> [--no-write]
+//     --quote-mint <addr> --hoard-mint <addr> [--seeded] [--no-write]
 //
 // Caller: the operator, after a purchase proposal executes. `/verify` lists what
 // this writes.
@@ -11,6 +11,13 @@
 // purchase — and the signature travels with the row so a reader can fetch the
 // same transaction and get the same numbers. Typing the amounts in by hand
 // would make this table a claim; reading them makes it an index.
+//
+// `--seeded` is the one exception and it is deliberately awkward. SOL in the
+// vault is fungible, so no read can tell fee SOL from SOL the creator put
+// there; the flag records that provenance because it cannot be derived, and
+// `/verify` prints it as an assertion rather than among the derived figures.
+// D28: the first conversion is seeded before launch so the table is not born
+// empty.
 
 import { connect } from '../src/lib/db/client.ts'
 import { clusterName } from '../src/lib/snapshot/rpc.ts'
@@ -32,6 +39,7 @@ const signature = need('signature')
 const vault = need('vault')
 const quoteMint = need('quote-mint')
 const hoardMint = need('hoard-mint')
+const fundedBy = process.argv.includes('--seeded') ? 'creator' : 'fees'
 
 const cluster = await clusterName(rpcUrl)
 if (cluster === 'unknown') throw new Error('the cluster could not be classified; refusing')
@@ -83,10 +91,10 @@ if (databaseUrl === undefined || databaseUrl === '') throw new Error('DATABASE_U
 const db = await connect(databaseUrl)
 try {
   await db.query(
-    `insert into hoard_purchases (signature, cluster, vault, sol_spent, pump_received, slot, block_time)
-     values ($1,$2,$3,$4,$5,$6,$7)
+    `insert into hoard_purchases (signature, cluster, vault, sol_spent, pump_received, slot, block_time, funded_by)
+     values ($1,$2,$3,$4,$5,$6,$7,$8)
      on conflict (signature) do nothing`,
-    [row.signature, row.cluster, row.vault, row.solSpent, row.pumpReceived, row.slot, row.blockTime],
+    [row.signature, row.cluster, row.vault, row.solSpent, row.pumpReceived, row.slot, row.blockTime, fundedBy],
   )
   process.stdout.write('recorded\n')
 } finally {
