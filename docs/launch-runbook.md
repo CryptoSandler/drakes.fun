@@ -36,7 +36,7 @@ the manifest hash is committed forever at C2.
 | C2 | ⛔ **`initialize`** with **`base_uri` and `name_prefix`** (D32 — written once, here, and the program builds every asset's name and URI from them; `base_uri` ends with a slash and is the metadata folder from `docs/upload.md`), the manifest hash — **the one over `manifest.final.json`, which carries every piece's URI, not the allocation's** (`docs/upload.md`) — the collection size, the genesis instant and the period. | Read the config account back and assert every field, especially `period_seconds` and the manifest hash. `src/lib/site/collection.ts` already parses it. | **None.** D15: the values are written once by `initialize` and the config PDA has a fixed seed, so a second one means a different program. |
 | C3 | ⛔ **`create_v2`** with the ground mint `1212YJcDwzgLXxmwbtmkYaEB53p6y958cn2tENt3C3dM`, `creator` = **the Squads vault**, `is_mayhem_mode: false`, `is_cashback_enabled: false`. | Read `BondingCurve.creator` at offset 49 and assert it equals the vault. Rehearsed end to end on devnet: `docs/pumpfun-create-devnet.md`. | **None.** `set_creator` is gated on an authority that belongs to pump.fun. Wrong here is wrong forever. |
 | C4 | **Point the crank at mainnet**: config address, program id, RPC, and the absolute cluster assertion. | `scripts/crank-loop.ts` classifies the cluster from the genesis hash and refuses a mismatch. Watch one full period fire and settle. | Stop the process; the schedule waits. |
-| C5 | **Change the env on Vercel** — `RPC_URL`, `ISSUANCE_PROGRAM`, `ISSUANCE_CONFIG`, `ISSUANCE_SURVIVORS` — and redeploy. | `drakes.fun` shows the **mainnet** chip and the rehearsal sentence disappears **on its own**, because both are conditioned on the server-side classification. The noindex triple stays until launch is announced. | Revert the env; no code deploy either way. |
+| C5 | **Change the env on Vercel** — `RPC_URL`, `ISSUANCE_PROGRAM`, `ISSUANCE_CONFIG`, `ISSUANCE_SURVIVORS` — then **redeploy a deployment whose own commit builds** (`vercel ls`, the most recent `● Ready`; **not the last one if it was documentation**, which the Ignored Build Step cancels). | **`node scripts/check-deployed-config.ts --site https://drakes.fun --rig <rig>`.** It reads the program and config addresses **off the served page**, reads that config from the chain, asserts the config is owned by the program the page names, and prints the genesis and period the site is therefore counting down to. **Never take C5 as done from the state of the variables** — see below. Then: the **mainnet** chip and the disappearance of the rehearsal sentence, both on their own from the server-side classification. The noindex triple stays until launch is announced. | Revert the env and redeploy the same way; no code deploy either way. |
 | C6 | **The schedule guard in the daily cron.** | `node scripts/check-pump-schedule.ts --alert` exits 0 and writes a `schedule_checks` row; `/verify` stops saying "not confirmed". | Disable the job; `/verify` then says "not confirmed" after a week, which is the correct degraded state. |
 | C7 | **The first conversion, seeded** (D28): the creator funds the vault, the 2-of-3 converts to `$PUMP`, and the row is marked `seeded by the creator, not from fees`. | `scripts/record-hoard-purchase.ts --signature <sig> --seeded` re-derives both amounts from the transaction. `/verify` renders the row. | The row can be deleted; the transaction cannot. |
 
@@ -148,6 +148,19 @@ own counters, the register listed the new hours with their signatures, and
 says hour 2 emitted. **9 of 9 assets name the piece the event emitted**, with
 the name unpadded and the URI four-wide (`Drake #703` → `0703.json`).
 
+### A variable is an intention. The page is the fact.
+
+**C5 is not done when the variables read as changed.** It is done when the
+served page names the program you meant. Those are different states and there is
+no error between them: on 2026-09-02 three variables were changed, two
+deployments came back `Canceled`, and `drakes.fun` went on serving the previous
+program with nothing in any log to say so.
+
+`scripts/check-deployed-config.ts` is the check, and it is deliberately
+end-to-end: it takes the addresses out of the HTML the site actually served,
+not from the environment, not from the dashboard, and not from this repository.
+Falsified against the superseded rig — it names both mismatches and exits 1.
+
 ### The hazard, and it cancelled two attempts
 
 **An env change does nothing until a deployment BUILDS, and the Ignored Build
@@ -181,6 +194,27 @@ the survivor array (0.051576) do not, because this program has no instruction
 that closes them. **A rig that stands costs 0.125824 SOL and a rig that is torn
 down costs the same** — the difference is only whether the 1.8 is parked or
 freed.
+
+**So every rig ever stood up leaves about 0.126 SOL parked forever**, and that
+is a property of the program rather than of the rehearsal: `initialize` creates
+the config and the survivor array and **nothing closes them**. On mainnet it
+happens exactly once and 0.126 SOL is not a budget line. On devnet it is
+per-rig, and the reason a retired rig is worth closing is the 1.8, not the 0.126
+— which stays behind whatever anyone does.
+
+**Retiring one is a 2-of-3, not a CLI call.** Once C1b has run, the upgrade
+authority is the vault, so `solana program close` cannot sign: the loader's
+`Close` goes through a proposal like any other authority instruction
+(`scripts/close-program-by-vault.ts`). Measured 2026-09-02 retiring the first
+devnet rig: **2.236289961 SOL returned**, proposal 5, two approvals.
+
+**A closed program's accounts survive and stay readable.** Checked immediately
+after: the issuance account for hour 378 still decodes, its recipient and piece
+are intact, and the point still recomputes from the revealed value. Nothing can
+modify them ever again, which is the point. The archive
+(`scripts/export-issuances.ts`) is insurance against the RPC, not against the
+chain — 302 of 302 derivations agreed at export time and every row carries the
+revealed value, so the arithmetic is repeatable from the file with no network.
 
 **Per issuance: 0.005754**, against the 0.0048 the 250-hour run measured. The
 crank budget in this document uses the lower figure; the higher one is a
