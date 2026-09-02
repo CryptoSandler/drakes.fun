@@ -309,9 +309,9 @@ node scripts/snapshot.ts pieces \\
                     <>
                       <strong>{schedule!.creator_fee_bps / 100}%</strong>{' '}
                       <span className="note">
-                        read from pump.fun&rsquo;s <code>GlobalConfig</code> at slot{' '}
+                        read from pump.fun&rsquo;s <code>FeeConfig</code> at slot{' '}
                         {schedule!.slot}, {checkedAt!.toISOString().slice(0, 10)}
-                        {schedule!.tiered ? '' : ' — a flat rate; no tier table is deployed'}
+                        {schedule!.tiered ? ' — the bonding curve rate; PumpSwap is tiered by market cap' : ' — a flat rate'}
                       </span>
                     </>
                   )}
