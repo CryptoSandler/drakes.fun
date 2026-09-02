@@ -1197,6 +1197,44 @@ sits above it in the masthead.
    generated stand-in, no borrowed mood reference.
 7. **One accent, spent on the rarest two tiers**, and on nothing else.
 
+### 10.1b Nothing may run past the right edge at 360 px, and it is measured
+
+**The rule.** Every page fits its viewport at **360 px and 390 px**, with no
+element's right edge past the document's. Checked by
+`node scripts/check-viewport.ts --base <url>`, which is run against a dev
+server before any batch that touches the site is closed.
+
+**Why a script and not an eye.** `html, body { overflow-x: clip }` means an
+element that is too wide produces **no scrollbar and no error** — the page
+simply loses its right edge, at exactly the widths nobody develops at.
+
+**Three ways of measuring this that do not work, all of them measured on
+2026-09-02:**
+
+1. **`scrollWidth > clientWidth` cannot fail here.** `overflow-x: clip`
+   removes the scroll container, so `scrollWidth` never grows past the
+   viewport. Planting a 300 px overflow in the masthead left the ratio saying
+   the page fitted. **The verdict is a walk over every element's
+   `getBoundingClientRect().right`**, with the ratio reported beside it.
+2. **A screenshot at `--window-size=390` is not a 390 px render.** macOS Chrome
+   refuses a window narrower than **~560 px**, headless included, so the
+   browser lays out at 560 and the PNG is a 390 px **crop** of it. That looks
+   exactly like clipping, and it is what produced a false report of a site-wide
+   defect in b22. The viewport comes from
+   `Emulation.setDeviceMetricsOverride`, re-applied after each navigation, and
+   the guard asserts the page actually laid out at the width it asked for.
+3. **A walk that flags everything is a guard somebody turns off.** Content
+   inside a container with its own `overflow-x` — the command blocks are
+   `pre.cmd { overflow-x: auto }` — is deliberately wider than the page and is
+   not an overflow. It is excluded, but only while the container itself fits.
+
+**What the pages actually do**, measured after all three traps were closed:
+`/`, `/verify`, `/verify/<hour>` and `/verify/timeline` fit at **280 px**,
+which is narrower than any phone in use. §10.1's masthead — `auto 1fr auto`
+with `white-space: nowrap` — does not impose a floor, because the middle slot
+carries `overflow: hidden; text-overflow: ellipsis` and gives way first. The
+comment there was right.
+
 ### 10.2 Type
 
 **Instrument Serif** (display, upright — never italic) + **Inter** (body,

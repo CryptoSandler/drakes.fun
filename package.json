@@ -8,6 +8,7 @@
   "scripts": {
     "build": "next build",
     "check:migrations": "node scripts/check-migrations.ts",
+    "check:viewport": "node scripts/check-viewport.ts",
     "crank": "node scripts/crank-loop.ts",
     "dev": "next dev",
     "index-events": "node scripts/index-events.ts",
