@@ -19,6 +19,15 @@ import { LiveWindow } from '../../src/components/LiveWindow.tsx'
 
 export const dynamic = 'force-dynamic'
 
+interface Purchase {
+  signature: string
+  vault: string
+  sol_spent: string
+  pump_received: string
+  slot: string
+  block_time: string | null
+}
+
 interface Run {
   ok: boolean
   settled: number
@@ -31,6 +40,22 @@ interface Run {
   took_ms: number
   ran_at: string
   last_signature: string | null
+}
+
+async function purchases(): Promise<Purchase[]> {
+  const url = process.env.DATABASE_URL
+  if (url === undefined || url === '') return []
+  try {
+    const db = await connect(url)
+    try {
+      const { rows } = await db.query('select * from hoard_purchases order by slot desc limit 20', [])
+      return rows as unknown as Purchase[]
+    } finally {
+      await db.end()
+    }
+  } catch {
+    return []
+  }
 }
 
 async function lastRun(): Promise<Run | null> {
@@ -57,7 +82,7 @@ async function lastRun(): Promise<Run | null> {
 
 export default async function Verify() {
   const config = readConfig()
-  const run = await lastRun()
+  const [run, bought] = await Promise.all([lastRun(), purchases()])
 
   return (
     <>
@@ -146,6 +171,56 @@ export default async function Verify() {
           </div>
         </section>
 
+        <section className="entry">
+          <div className="entry__grid">
+            <p className="dateline__label" style={{ margin: 0 }}>
+              The hoard
+            </p>
+            <div>
+              <p style={{ marginTop: 0, color: 'var(--color-ink-2)', maxWidth: '62ch' }}>
+                The fee arrives in SOL, because the pool is quoted in SOL. The multisig converts it
+                to <code>$PUMP</code> on a published rule — <strong>at 25 SOL, at most weekly, and
+                at least monthly above 5 SOL</strong> (<code>DESIGN.md</code> §3.6) — and every
+                conversion is a transaction anyone can fetch.
+              </p>
+              {bought.length === 0 ? (
+                <p className="note">No conversion has been recorded yet.</p>
+              ) : (
+                <div className="tablewrap">
+                  <table className="rows">
+                    <thead>
+                      <tr>
+                        <th scope="col">When</th>
+                        <th scope="col">SOL spent</th>
+                        <th scope="col">$PUMP received</th>
+                        <th scope="col">Signature</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bought.map((b) => (
+                        <tr key={b.signature}>
+                          <td>{b.block_time === null ? `slot ${b.slot}` : new Date(b.block_time).toISOString().slice(0, 16).replace('T', ' ')}</td>
+                          <td className="num">{b.sol_spent}</td>
+                          <td className="num">{b.pump_received}</td>
+                          <td className="num">{b.signature.slice(0, 8)}…{b.signature.slice(-8)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+              <p className="note" style={{ maxWidth: '62ch' }}>
+                <strong style={{ color: 'var(--color-ink-2)' }}>
+                  Every figure in that table was read out of the transaction it names.
+                </strong>{' '}
+                The operator supplies a signature and nothing else; the amounts come from the
+                transaction&rsquo;s own pre and post balances. Fetch the signature and you get the
+                same numbers, or you get different ones and we are caught.
+              </p>
+            </div>
+          </div>
+        </section>
+
         <section className="colophon">
           <p className="lede">Run it yourself</p>
           <p>
@@ -170,8 +245,7 @@ node scripts/snapshot.ts pieces \\
 
       <footer className="sheet">
         <p className="note foot">
-          <a href="/">← the plate</a> · the hoard is empty and there is no pool sending anything to
-          it yet
+          <a href="/">← the plate</a> · recomputable, not trustless
         </p>
       </footer>
     </>

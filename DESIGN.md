@@ -9,16 +9,21 @@ date they were read live in `docs/references.md`.
 ## 1. The thesis
 
 **4,000 pieces that cannot be bought at issuance. One per hour, issued by the
-protocol to a `$DRAKES` holder chosen in proportion to their holding. Every
-trade of `$DRAKES` pays a 2% fee, taken in `$PUMP`; Meteora keeps 20% of it and
-**1.6% of the trade reaches the hoard**. Any piece can be burned to redeem its
-share of that hoard, and the slot it leaves never refills.**
+protocol to a `$DRAKES` holder chosen in proportion to their holding. **1.6% of
+every trade reaches the hoard.** Any piece can be burned to redeem its share of
+that hoard, and the slot it leaves never refills.**
 
-*The 2%/1.6% distinction was measured on devnet on 2026-09-01 rather than
-inferred: a swap of 10,000 token B produced a 200,000,000-base-unit fee, of
-which 160,000,000 accrued to the position. `docs/moneypath-devnet.md`. The
-thesis said "pays 2% into a reserve", which is true of what the trader pays and
-false of what arrives.*
+*The fine print, because the headline is a net figure: the pool charges a **2%**
+trading fee and Meteora keeps **0.4%** of the trade as its protocol share, so
+1.6% is what arrives. Measured on devnet 2026-09-01 rather than inferred — a
+swap of 10,000 quote tokens produced a 200,000,000-base-unit fee of which
+160,000,000 accrued to the position (`docs/moneypath-devnet.md`). The thesis
+said "pays 2% into a reserve", which is true of what the trader pays and false
+of what arrives.*
+
+*The hoard is `$PUMP`. **The fee arrives in SOL** and the multisig converts it on
+a published rule (§3.6), because the `$DRAKES`/`$PUMP` pool cannot be created —
+D24. What changed is how `$PUMP` gets in, not what the hoard is.*
 
 Three properties follow, and a feature that serves none of them belongs to a
 different product:
@@ -275,8 +280,11 @@ readers get wrong.
 ### 4. `claim_fees` *(Phase 2)*
 
 Permissionless. CPIs Meteora's `claim_position_fee` on the permanently locked
-position. Fees arrive as `$PUMP` because the pool is configured
-`collect_fee_mode = 1` and `$PUMP` is token B.
+position. **Fees arrive as SOL**, because the pool is `$DRAKES`/**wSOL** on
+`collect_fee_mode = 1` with wSOL as token B (D26). The `$DRAKES`/`$PUMP` pool
+this section originally assumed cannot be created — DAMM v2 refuses a
+Token-2022 mint carrying a `transferHook` extension without a Meteora token
+badge, and `$PUMP` has none (D24).
 
 **The destination is asserted on the built instruction, never taken from a
 helper.** On devnet 2026-09-01 a claim built with an SDK helper sent the whole
@@ -292,6 +300,53 @@ reserve ATA, 15% to the creator ATA. **Mature** → 100% to the reserve ATA.
 
 Both destinations are addresses written by `initialize`. There is no argument
 for a destination and no branch that computes one.
+
+### 3.6 The conversion rule — how SOL becomes `$PUMP`
+
+**The hoard is `$PUMP`. The fee arrives in SOL.** The gap between those two
+sentences is a decision, and leaving it to judgement would make the hoard's
+composition a thing the operator chooses week by week. So the rule is published
+here, with numbers, before there is any SOL to convert.
+
+**The rule:**
+
+| | |
+|---|---|
+| **Threshold** | convert when the multisig's SOL balance reaches **25 SOL** |
+| **Ceiling on frequency** | **at most once every 7 days** |
+| **Floor on frequency** | **at least once every 30 days** whenever the balance is **≥ 5 SOL** |
+| **Venue** | Jupiter, best route at execution |
+| **Authority** | a Squads **2-of-3** proposal — no key converts alone |
+| **Record** | the signature is listed on `/verify`, with the amounts read out of that transaction |
+
+**Why 25.** Below it the ceremony costs more than it moves: two people have to
+approve, and a conversion small enough to be dominated by slippage and fees is a
+conversion that should have waited. `$PUMP` carried **US$37.75M of on-chain
+liquidity** when it was last read (`references.md`, 2026-09-01), so 25 SOL is far
+inside the range where routing is not the interesting variable.
+
+**Why the 7-day ceiling.** It stops a busy week turning into a daily job and
+stops the conversion becoming a thing anyone can time against us: a predictable
+weekly window is easier to defend than an unpredictable stream of buys.
+
+**Why the 30-day floor.** Without it a quiet quarter leaves the hoard sitting in
+SOL indefinitely while the site says the hoard is `$PUMP`. The floor is what
+makes that sentence true rather than aspirational. The 5 SOL condition on it is
+so the floor never forces a purchase too small to be worth its fees.
+
+**What this costs, and it is a real cost.** Between the trade and the conversion
+the hoard is **exposed to SOL and not to `$PUMP`**. A 30-day floor bounds that
+exposure at thirty days; it does not remove it. Anyone who says the hoard tracks
+`$PUMP` continuously is wrong, and the site must not say it.
+
+**What it does not do.** It does not promise a price, a floor, or a return, and
+the conversion is not a buyback of `$DRAKES` — it is the hoard changing which
+asset it holds. §7's ban on describing a buyback as a property of the reserve
+stands and is unrelated to this.
+
+**Revisit if:** `$PUMP` gets a Meteora token badge (D24), at which point a direct
+`$DRAKES`/`$PUMP` pool removes the conversion entirely and this section becomes
+history.
 
 ### 5. `redeem` *(Phase 2)*
 
@@ -998,10 +1053,16 @@ cache in its place.
 
 ### 10.6 The absence
 
-The hoard gets **one line at the foot** — *"the hoard is empty and there is no
-pool sending anything to it yet"* — and no frame of its own. One of the
+The hoard gets **one line at the foot** and no frame of its own. One of the
 discarded directions gave it a gold-edged section at poster scale, which put the
 emptiest fact on the site in its largest object.
+
+The line read *"the hoard is empty and there is no pool sending anything to it
+yet"* until §3.6 gave the hoard a way in. A capture of `/verify` then showed that
+sentence sitting directly under a table of conversions, which is how it was
+caught. It now reads *"the fee arrives in SOL and the hoard is bought on a
+published rule"* — true before the first conversion and after it, promising
+nothing either way.
 
 The mechanism is stated as a mechanism: *"Every trade of $DRAKES sends 2% in
 $PUMP to the hoard."* **Never `backed`**, which §7 lists among the words this

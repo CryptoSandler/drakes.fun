@@ -577,6 +577,48 @@ worth having. Implemented in `scripts/verify-fee-path.ts` and falsified by
 pointing the receiver at the operator — the script refuses and names both
 addresses.
 
+### D26 — The pair is `$DRAKES`/wSOL, and the hoard is bought on a published rule
+
+**Decided by the owner, 2026-09-01, after D24 showed the `$PUMP` pool cannot be
+created.** The pool is `$DRAKES`/**wSOL** on the same public static config
+(`collect_fee_mode = 1`, wSOL as token B), so the fee arrives in SOL. The hoard
+is still `$PUMP`; what changed is how it gets in.
+
+**Validated on devnet the same day**, which is the point of deciding after a
+rehearsal rather than before one: an all-SPL pair asks for no token badge and
+the pool created on the first attempt, wSOL as token B, `collect_fee_mode = 1`
+(`docs/moneypath-devnet.md` and `docs/vaultclaim-devnet.md`).
+
+**B3 is unblocked and step 1 is done.** The `$DRAKES` mint keypair is ground to
+sort **below wSOL** so wSOL is token B — `1212YJcDwzgLXxmwbtmkYaEB53p6y958cn2tENt3C3dM`,
+its secret at `~/.local/share/drakes-mainnet/` and never in this repository.
+Grinding below wSOL takes ~43 tries against ~21 for `$PUMP`, because wSOL's
+first byte is `0x06`. `scripts/check-mint-order.ts` asserts the order against a
+literal address and the assertion runs in CI, because it is the one property
+that cannot be fixed once the pool exists (T10).
+
+**The conversion rule is published rather than left to judgement** — 25 SOL,
+weekly ceiling, monthly floor above 5 SOL, Jupiter, 2-of-3, every signature on
+`/verify`. `DESIGN.md` §3.6 carries the numbers and the reasons.
+
+**The cost, stated because it is new:** between the trade and the conversion the
+hoard holds SOL and not `$PUMP`. The monthly floor bounds that at thirty days
+and does not remove it. The site may not say the hoard tracks `$PUMP`
+continuously.
+
+### D27 — Every hoard conversion is indexed from its own transaction
+
+The operator supplies a **signature and nothing else**;
+`scripts/record-hoard-purchase.ts` reads the amounts out of that transaction's
+pre and post token balances, refuses a transaction where the vault did not spend
+the quote and receive the hoard token, and stores the signature beside the
+figures. `/verify` prints both.
+
+**Why it is written this way.** A table of amounts typed in by an operator is a
+claim about the chain; a table derived from signatures is an index of it. The
+difference is whether a reader who fetches the signature can catch us, and the
+whole page is built on the answer being yes.
+
 ## Still open
 
 - **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*

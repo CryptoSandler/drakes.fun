@@ -262,14 +262,20 @@ export default async function Page() {
       </main>
 
       <footer className="sheet">
-        {/* The absence, in one line, at the foot. It was a full gold frame in one
+        {/* The hoard, in one line, at the foot. It was a full gold frame in one
             of the discarded directions and that put the emptiest fact on the
-            site in its largest object. */}
+            site in its largest object.
+            The line used to read "the hoard is empty and there is no pool
+            sending anything to it yet". D26 gave the hoard a way in, and a
+            capture of /verify showed that sentence sitting directly under a
+            table of conversions. This wording is true before the first
+            conversion and after it, and promises nothing either way. */}
         <p className="note foot">
           {config.programId} · recomputable, not trustless ·{' '}
           <strong style={{ color: 'var(--color-ink-2)' }}>
-            the hoard is empty and there is no pool sending anything to it yet
-          </strong>
+            the fee arrives in SOL and the hoard is bought on a published rule
+          </strong>{' '}
+          — <a href="/verify">every conversion is listed</a>
         </p>
       </footer>
     </>
