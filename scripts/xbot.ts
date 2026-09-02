@@ -17,11 +17,11 @@
 // not a stub: it is the same text, in the same order, through the same cursor.
 
 import { readFileSync, writeFileSync } from 'node:fs'
-import { createHash } from 'node:crypto'
 import { fetchIssuanceByHour, NOTHING_ISSUED } from '../src/lib/chain/issuance.ts'
 import { buildPost } from '../src/lib/bot/post.ts'
 import { consoleSink, fileSink, xSink, type Sink } from '../src/lib/bot/sink.ts'
 import { runPass, type Cursor, type Scan, type Settled } from '../src/lib/bot/run.ts'
+import { tierGate } from '../src/lib/bot/tiers.ts'
 import { connect } from '../src/lib/db/client.ts'
 import { clusterName } from '../src/lib/snapshot/rpc.ts'
 import { rpc } from '../src/lib/chain/rpc.ts'
@@ -50,7 +50,12 @@ const rig: Partial<Rig> = rigPath === undefined ? {} : (JSON.parse(readFileSync(
 const rpcUrl = process.env.RPC_URL ?? ''
 const programId = rig.program ?? process.env.ISSUANCE_PROGRAM ?? ''
 const configAddress = rig.config ?? process.env.ISSUANCE_CONFIG ?? ''
-const siteUrl = (process.env.SITE_URL ?? 'https://drakes.fun').replace(/\/$/, '')
+// SITE_URL and not a default. CLAUDE.md: the name lands in package.json, in
+// copy, and in SITE_URL -- a fourth copy of it, baked into a script, is one
+// more place nobody remembers to change.
+// An empty value is not a value: `?? ` would let SITE_URL="" through and every
+// post would link to /verify/3 with no host in front of it.
+const siteUrl = (process.env.SITE_URL || die('SITE_URL is not set')).replace(/\/$/, '')
 
 if (rpcUrl === '') die('RPC_URL is not set')
 if (programId === '') die('no program: pass --rig or set ISSUANCE_PROGRAM')
@@ -92,29 +97,24 @@ async function readChainConfig(): Promise<ChainConfig> {
 
 /**
  * Tiers, but only if the manifest we hold is the manifest the chain committed.
- *
- * `placeholderTier` is a stand-in for designing the gallery; publishing it as a
- * piece's rarity would assert something a reader can check and find false
- * (D13). So the gate is the hash `initialize` wrote, against the sha256 of the
- * file we are about to read tiers from, and a mismatch means silence.
+ * The whole decision is `src/lib/bot/tiers.ts`, where it can be tested in both
+ * directions; this reads the file and logs which way it went.
  */
 function tierTable(manifestHash: string): ((pieceId: number) => string | null) | null {
   const path = flag('manifest')
-  if (path === undefined) return null
-  const raw = readFileSync(path, 'utf8')
-  const ours = createHash('sha256').update(raw).digest('hex')
-  if (ours !== manifestHash) {
-    emit({
-      level: 'warn',
-      msg: 'the manifest does not match the hash the chain committed; posts will carry no tier',
-      chain: manifestHash, file: ours,
-    })
+  const gate = tierGate({
+    manifestText: path === undefined ? undefined : readFileSync(path, 'utf8'),
+    chainHash: manifestHash,
+  })
+  if (!gate.open) {
+    // Only worth a line when an operator asked for tiers and did not get them.
+    if (path !== undefined) {
+      emit({ level: 'warn', msg: 'posts will carry no tier', why: gate.why, file: gate.fileHash })
+    }
     return null
   }
-  const manifest = JSON.parse(raw) as { pieces: { id: number; tier: string }[] }
-  const byId = new Map(manifest.pieces.map((p) => [p.id, p.tier]))
-  emit({ level: 'info', msg: 'manifest verified against the chain; posts carry tiers', hash: ours })
-  return (pieceId) => byId.get(pieceId) ?? null
+  emit({ level: 'info', msg: 'manifest verified against the chain; posts carry tiers', hash: gate.fileHash })
+  return gate.lookup
 }
 
 // --- the cursor -------------------------------------------------------------

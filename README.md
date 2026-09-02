@@ -108,6 +108,20 @@ recipient's inclusion proof. The root is rebuilt from the balances and never
 read back out of the file — comparing a published root to itself is the check
 that always passes.
 
+## Checking one hour in a browser
+
+`/verify/<hour>` is the same check without a terminal. It reads two things off
+the chain in your request — the issuance account for that hour, and the
+transaction that settled it — recomputes the point from the value the oracle
+revealed and the eligible supply, and compares it against the point the program
+recorded.
+
+It needs no history, so it cannot be slow and it cannot be partial. What it does
+**not** cover is *which* piece that hour issued: that depends on every hour
+before it, which is the full replay above.
+
+Every post the project publishes links to one of these pages.
+
 ## Reconciling the published set against the chain
 
 ```sh

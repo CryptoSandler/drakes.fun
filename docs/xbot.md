@@ -70,6 +70,17 @@ stream — or in a JSON file with `--cursor`. `last_signature` carries the
 permalink, because a consumer that works in hours has no signature and the
 column is `not null`.
 
+## It needs a provider RPC, not a public one
+
+Each hour is found with one `getProgramAccounts` filtered on the hour at its
+fixed offset. **`api.devnet.solana.com` answers 429 to that** — measured
+2026-09-02, five attempts, same as the scan refusals in `references.md`. The
+bot runs against the provider endpoint the cranker already uses.
+
+The alternative would be deriving the issuance PDA, which needs an on-curve
+check and therefore a keypair library in a process that must never hold a key.
+One filtered read against an endpoint we already pay for is the cheaper trade.
+
 ## Rate limits and retries
 
 **No rate limit is written down here, and that is the policy.** X's caps differ

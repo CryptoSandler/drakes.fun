@@ -71,7 +71,27 @@ public before anyone knows who will be issued anything.
 Verification is behavioural, not a spot check: fetch a random 5% back from
 Arweave gateways and diff against local bytes.
 
-**Depends on:** B1 + final art.
+**The pipeline landed 2026-09-02 in b22 and was run end to end on Irys devnet
+against flat-colour placeholders** — 4,000 images and 4,000 metadata documents,
+uploaded, sampled back and diffed. `docs/upload.md` is the procedure and the
+findings. **The day the art lands is three commands**, and the folder is the
+only thing that changes.
+
+**Two things the run established that the plan did not know:**
+
+1. **There are two manifests and C2 commits the second.** The program's
+   `InitializeParams` says the hash covers "id, tier, traits, **URI**", and a
+   URI cannot exist before the bytes have an address. `generate-collection.ts`
+   printed its own hash as the one `initialize` commits; it now prints the
+   opposite.
+2. **Nothing binds the asset to its piece.** `settle_issuance` takes `name`
+   and `uri` as caller-supplied arguments and mints with them unvalidated,
+   while the piece id is chosen inside that same instruction — so the cranker
+   cannot know which piece it is minting. The crank's current default names the
+   asset for the HOUR. Three ways out in `docs/upload.md`; it is a program
+   decision and it is on "Still open".
+
+**Depends on:** B1 + final art. **The pipeline no longer does** — it runs today.
 
 ## B3 — ~~Mint, pool, liquidity~~ — **RETIRED 2026-09-02 by D30**
 

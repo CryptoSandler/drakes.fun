@@ -457,6 +457,24 @@ From `uploader.irys.xyz/price/solana/:bytes`. SOL at **$103.62** (Jupiter).
 $8**, and even a generous 1 MB per image lands at $16. This is not a budget line
 item. The earlier "under $100, estimated" is superseded.
 
+### Irys, run rather than quoted — 2026-09-02
+
+The quotes above are still the cost model. What a real run adds:
+
+- **The node is `https://devnet.irys.xyz` for devnet and it works with a
+  Solana devnet keypair.** `Uploader(Solana).withWallet(<base58 secret>).withRpc(<devnet rpc>).devnet()`.
+- **Devnet, 4,000 flat-colour PNGs at 512 px = 25.4 MB**, priced at
+  **12,413,705 lamports** by `getPrice` including a metadata allowance.
+- **A funded balance does not bypass the free-upload rate limit.** With
+  13,655,076 lamports funded, 981 of 4,000 items uploaded and the rest returned
+  `402 Free transaction limit exceeded, funds required - retry after 14s`.
+  Items under the node's free threshold are treated as free whether or not you
+  have paid. `uploadFolder` is resumable — it writes `<folder>-manifest.csv`
+  and skips what is in it — so the recovery is to call it again, which
+  `scripts/upload-collection.ts` now does on a loop.
+- **Untested:** whether real art files (~500 KB each, above the free threshold)
+  avoid the limit entirely. The mainnet run will answer it.
+
 ### Correction: SOL price
 
 Earlier projections in `spec-round-2026-09-01.md` valued redemption fees at an

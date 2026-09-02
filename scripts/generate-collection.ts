@@ -1,6 +1,7 @@
 // The whole collection, from the trait counts to a hashed manifest.
 //
-//   node scripts/generate-collection.ts --out <dir> [--seed 1] [--render 24] [--size 1000]
+//   node scripts/generate-collection.ts --out <dir> [--seed 1] [--render 24|all]
+//                                       [--size 512]
 //
 // Caller: the operator, whenever the trait table changes, and B1 when the art
 // arrives. Nothing in the site or the cranker calls it.
@@ -28,7 +29,10 @@ import { encodePng, guardAt48, paintPlaceholder, sha256Hex, GUARD } from '../src
 const flag = (n: string) => { const i = process.argv.indexOf(`--${n}`); return i === -1 ? undefined : process.argv[i + 1] }
 const out = flag('out') ?? 'build/collection'
 const seed = Number(flag('seed') ?? 1)
-const renderCount = Number(flag('render') ?? 24)
+// `all` is what B2 runs: every piece, because the upload needs a file per id.
+// A sample is what a person looks at.
+const renderAll = flag('render') === 'all'
+const renderCount = renderAll ? 4000 : Number(flag('render') ?? 24)
 const size = Number(flag('size') ?? 512)
 
 mkdirSync(`${out}/pieces`, { recursive: true })
@@ -115,15 +119,27 @@ const hash = sha256Hex(canonical)
 writeFileSync(`${out}/manifest.json`, canonical)
 writeFileSync(`${out}/manifest.sha256`, `${hash}\n`)
 
-// a sample of masters, so a person can look --------------------------------
-const step = Math.max(1, Math.floor(pieces.length / renderCount))
+// the masters ---------------------------------------------------------------
+// **With `--render all`, the handmade pieces are painted too.** They are the
+// ten one-of-ones an illustrator paints by hand, and their placeholder is not
+// art -- it is a file of the right name and size, so the upload pipeline
+// carries 4,000 objects rather than 3,990 and a person replacing the folder on
+// delivery day replaces every one of them.
+const step = renderAll ? 1 : Math.max(1, Math.floor(pieces.length / renderCount))
 let written = 0
 for (let i = 0; i < pieces.length && written < renderCount; i += step) {
   const piece = pieces[i]!
-  if (piece.handmade) continue
+  if (piece.handmade && !renderAll) continue
   writeFileSync(`${out}/pieces/${String(piece.id).padStart(4, '0')}.png`, encodePng(paintPlaceholder(size, piece.traits)))
   written += 1
 }
 
 process.stdout.write(`\nmanifest ${out}/manifest.json\n  sha256 ${hash}\n  ${written} placeholder masters at ${size}px in ${out}/pieces\n`)
-process.stdout.write('\nthe hash above is what `initialize` commits. It changes if any trait changes.\n')
+process.stdout.write(
+  '\nTHE HASH ABOVE IS NOT WHAT `initialize` COMMITS.\n' +
+    '  It commits the ALLOCATION -- id, tier, traits -- and the program commits\n' +
+    '  "id, tier, traits, URI" (InitializeParams). The URIs do not exist until the\n' +
+    '  bytes are uploaded, so the hash C2 uses is the one printed by\n' +
+    '  `scripts/upload-collection.ts`, over manifest.final.json.\n' +
+    '  This hash still changes if any trait changes, which is what it is for.\n',
+)

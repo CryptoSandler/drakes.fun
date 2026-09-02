@@ -807,6 +807,16 @@ the condition is met — it is deliberately **not** a step in
   once, when asked for explicitly.
 - **The `Exhausted` sentence.** D10 is a one-way door and needs its own line of
   copy. Same rule as Q7: written once, when asked for.
+- **The asset's URI is not bound to its piece, and only the program can bind
+  it.** `settle_issuance` takes `name` and `uri` from the caller and mints
+  with them unvalidated; the piece id is chosen inside the same instruction, so
+  the cranker cannot pass the right one and today's default names the asset for
+  the hour instead of the piece. Found by B2 on 2026-09-02
+  (`docs/upload.md`). **The recommendation is that the program build the URI
+  on chain from a `base_uri` written once by `initialize`** — an Anchor
+  change, cheap while Phase 1 holds nothing and impossible after the upgrade
+  authority is revoked (D8). It is a change to the on-chain program, so it gets
+  its own round before a line is written.
 - **A proper trademark clearance search** in classes 9, 35, 41 and 42. D1 used a
   web search over Justia and Trademarkia, which is not clearance. It runs before
   real money goes into the brand.
