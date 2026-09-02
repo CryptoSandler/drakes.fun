@@ -326,13 +326,16 @@ and from where.
 
 ## The daily jobs
 
-Two things run on a schedule beside the cranker, and both exist because a number
-this project publishes can go false with nothing in the repository changing.
+Three things run on a schedule beside the cranker. Two of them exist because a
+number this project publishes can go false with nothing in the repository
+changing; the third is the X bot, which is a separate process for a reason —
+its backoff must never be able to cost an issuance window.
 
 | Job | Cadence | On failure |
 |---|---|---|
 | `node scripts/verify-full.ts` | daily | writes a dated row; `/verify` renders it |
 | `node scripts/check-pump-schedule.ts --alert` | **daily** | exits 4, alerts through the ntfy sink, and `/verify` says **"not confirmed"** |
+| `node scripts/xbot.ts --rig $CRANK_RIG` | **hourly** | exits 3 on a rejection; a rate limit is not a failure and the next pass resumes. `docs/xbot.md` |
 
 `check-pump-schedule.ts` needs `MAINNET_RPC_URL`, `DATABASE_URL` and
 `NTFY_TOPIC`. It reads pump.fun's `FeeConfig` — the real one, owned by

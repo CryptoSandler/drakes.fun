@@ -174,9 +174,22 @@ the Phase 1 temporary-custody disclosure with its trigger and deadline (D8).
 
 ## B7 — The X bot
 
-One post per hour: the piece, its index, its traits, the recipient, the reserve.
-Posts only what it read back from the chain. If the issuance did not settle, it
-says so.
+One post per hour: the piece, the recipient, the slot it was drawn from, and the
+link that recomputes it. Posts only what it read back from the chain. If the
+issuance did not settle, it says so.
+
+**Landed 2026-09-02 in b22.** `scripts/xbot.ts`, hourly on the crank host
+(`docs/crank-hosting.md`), over `src/lib/bot/`. Full doc: `docs/xbot.md`.
+
+**Two things the batch plan said and the build did not.** *Traits* are not in
+the post and neither is *the reserve*: traits are fixed by a manifest that is
+not committed yet, so a tier in a post would be a claim a reader could check and
+find false (D13), and the reserve is the hoard, which D31 keeps out of every
+headline. The tier appears on its own the day the manifest hash on chain matches
+the file we hold — the gate is written and tested, and it is closed.
+
+**Rehearsed over the whole devnet history**: 303 issuances, in hour order, with
+the 3 gaps skipped and the 1 unsettled hour saying so.
 
 **Depends on:** B4.
 
