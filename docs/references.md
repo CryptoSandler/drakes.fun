@@ -483,6 +483,54 @@ assumed $220/SOL. **SOL is $103.62** (2026-09-01). A 0.05 SOL redemption fee is
 unchanged — it is a rounding error against the fee stream — but the number was
 wrong and is corrected here.
 
+## samilore.org — what a creator fee is worth when a coin moves
+
+*Read **2026-09-02** from `https://samilore.org`, and the signatures below were
+re-read from mainnet the same day. Somebody else's project, studied for one
+number and one shape. Nothing about it is copied.*
+
+A third party launched a pump.fun coin. The creator fee it pays goes to a wallet
+that project publishes, and the project's page lists the distributions with a
+signature beside each one.
+
+| | |
+|---|---|
+| coin | `4LHBp4xYs3suKjkCuo1qaNaxufWd4Bdp6QYsBJZNpump` |
+| the mint's program | **Token-2022** (`TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb`), 6 decimals, supply 972,495,081 — read on chain, and an independent confirmation of what D30 found the hard way |
+| the wallet the page names | `HuGrvjfkxzSm8Z2EsA51SFbMaCmto3ZmpJR32T7261tD` |
+| launch | **2026-08-11** |
+
+**The figure, and exactly how solid it is.**
+
+- **~601 SOL, across nine distributions, on the launch day itself.** That is the
+  page's claim.
+- **I sampled it rather than believing it.** Of three signatures the page lists,
+  **two resolve on mainnet and match to the lamport**:
+
+  | signature | SOL to the published wallet | when |
+  |---|---|---|
+  | `3YAeuFw7n4itwcMXNjNkjWzBMohtPrDxNNUcpPNX87MkQX5mxGkpRM87rAqK4gk5q19ZxuDBkEEJgpVxZa2nXDJU` | 3.587828175 | 2026-08-11T06:15:24Z |
+  | `4tkJPCQRRfkYoAZ8a9mKDmLVjAn2MiWosTk6axaBZM2tjRRDen3w5G5Jz95QV45EcqCWBGMfUJYFNt3BeuqgJ5J1` | 44.920810914 | 2026-08-11T06:21:30Z |
+
+- **The third did not resolve**, and I cannot say whether the signature is wrong
+  or my copy of it is: it came out of a summary of the page rather than off the
+  page's own DOM. **It is recorded as unresolved rather than dropped.**
+- **The ~1,000 SOL total is the project's own estimate**, stated on 2026-08-29.
+  It is asserted, not derived, and it is labelled that way here for the same
+  reason D28 labels the seeded conversion: a figure nobody can re-derive is a
+  figure that carries a different weight.
+
+**Why it is in this file.** Two things, and neither is the coin.
+
+1. **A range, not a forecast.** `DESIGN.md` §1.1 states our creator fee as a
+   band pump.fun sets. What the band is *worth* depends entirely on volume, and
+   this is one measured point on that axis — one coin, one day, someone else's.
+   It does not change §1's hierarchy (D31) and it is not evidence about ours.
+2. **The shape of the page.** It is a dated timeline where every entry carries
+   its own primary source — a signature, a link, a capture. That is the same
+   claim `/verify` makes, told as a chronology instead of as two checks, and it
+   is what the timeline view in `/verify/timeline` was built from.
+
 ## pump.fun — the launchpad, the fee schedule and a launched token
 
 *Read 2026-09-02. Supersedes the Meteora entry as the launch venue (owner's

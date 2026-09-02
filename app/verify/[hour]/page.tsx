@@ -133,9 +133,13 @@ export default async function Issuance({ params }: { params: Promise<{ hour: str
                     </>
                   ) : (
                     <>
-                      <p className="verdict" data-ok="0">
-                        This hour issued nothing
-                      </p>
+                      {/* No `data-ok`: the fault colour belongs to a check
+                          that disagreed. An hour that issued nothing is the
+                          protocol working as written -- the oracle missed its
+                          window, or there was nobody to issue to -- and
+                          painting it red would teach a reader that a normal
+                          outcome is a defect. */}
+                      <p className="verdict">This hour issued nothing</p>
                       <p style={{ marginTop: 0, color: 'var(--color-ink-2)', maxWidth: '62ch' }}>
                         The hour was requested and{' '}
                         {permalink.account.settled
@@ -233,8 +237,9 @@ node scripts/snapshot.ts pieces \\
               </pre>
               <p className="note">
                 The full replay, which is the only check that covers <em>which</em> piece this hour
-                issued: that depends on every hour before it. The arithmetic above is complete for
-                the recipient and needs no history at all.
+                issued: that depends on every hour before it.{' '}
+                {permalink.event !== null &&
+                  'The arithmetic above is complete for the recipient and needs no history at all.'}
               </p>
             </section>
           </>

@@ -59,6 +59,24 @@ Meteora plan was a flat 1.6% at any size.
 *Confirmed at runtime, not only from the account: the fee program's `GetFees`
 returned `lp 0 · protocol 95 · creator 30` during a devnet buy.*
 
+**What the rate is worth is volume, and the honest form of that is a range with
+a case beside it.** 0.300% of nothing is nothing, and the percentage on its own
+tells a reader neither the floor nor the ceiling.
+
+*One measured point, someone else's, added 2026-09-02:* a third party's pump.fun
+coin paid its creator **~601 SOL across nine distributions on its launch day**,
+each with a signature; two of the three sampled resolve on mainnet and match to
+the lamport, and the project's own **~1,000 SOL** running total is asserted
+rather than derived. `docs/references.md`, samilore.org.
+
+**It changes nothing above it.** It is one coin, one day, and not a forecast of
+ours: a coin that nobody trades pays 0.300% of nothing for as long as that
+lasts. D31 stands on the *shape* of the schedule — the rate decays as the coin
+grows — and a single case at the loud end of the distribution is not an argument
+against it. The reason it is written down at all is the opposite of a pitch: a
+range with a real number at each end is harder to read optimistically than a
+percentage with no scale attached.
+
 **D31 stands at the corrected number, and this is the reasoning.** 0.300% on
 the curve and up to 0.950% is better than the 0.05% I reported in error, and it
 is still not a reason to put the hoard back in the first three lines:
