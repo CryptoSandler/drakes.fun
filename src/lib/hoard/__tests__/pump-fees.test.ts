@@ -1,41 +1,29 @@
 import { describe, expect, it } from 'vitest'
 import {
-  CREATOR_FEE_BANDS, DOCUMENTED_CURVE_CREATOR_PERCENT, RECORDED_SCHEDULE, creatorFeePercent,
-  hoardPerVolume, MAX_CREATOR_PERCENT, MIN_CREATOR_PERCENT,
+  CREATOR_FEE_BANDS, CURVE_CREATOR_PERCENT, RECORDED_SCHEDULE, creatorFeePercent, hoardPerVolume,
 } from '../pump-fees.ts'
 
 describe("pump.fun's creator fee", () => {
-  it('is 0.300% on the curve and 0.300% in the first band — in the DOCUMENTATION', () => {
-    expect(DOCUMENTED_CURVE_CREATOR_PERCENT).toBe(0.3)
-    expect(creatorFeePercent(0)).toBe(0.3)
-    expect(creatorFeePercent(419)).toBe(0.3)
+  it('is 0.300% on the bonding curve, and the chain agrees', () => {
+    expect(CURVE_CREATOR_PERCENT).toBe(0.3)
+    expect(RECORDED_SCHEDULE.curveCreatorBps).toBe(30)
+    expect(RECORDED_SCHEDULE.curveProtocolBps).toBe(95)
   })
 
-  it('is 0.05% everywhere ON THE CHAIN, which is what anyone actually pays', () => {
-    // Read 2026-09-02 from `Global` under the curve and `GlobalConfig` under
-    // the AMM, on both clusters. The documented tiers are not deployed: no
-    // FeeConfig account exists to hold them.
-    expect(RECORDED_SCHEDULE.creatorFeeBps).toBe(5)
-    expect(RECORDED_SCHEDULE.curveCreatorFeeBps).toBe(5)
-    expect(RECORDED_SCHEDULE.tiered).toBe(false)
-    // The gap the guard exists for: six times what the docs promise on the
-    // curve, and nineteen times at the top of the documented table.
-    expect(DOCUMENTED_CURVE_CREATOR_PERCENT / (RECORDED_SCHEDULE.curveCreatorFeeBps / 100)).toBeCloseTo(6, 10)
+  it('carries 25 tiers on PumpSwap, peaking at 95 bps', () => {
+    // Corrected after being reported as a flat 5 bps: the FeeConfig account is
+    // owned by a third program, not by either of the two that declare it.
+    expect(RECORDED_SCHEDULE.swapTierCount).toBe(25)
+    expect(RECORDED_SCHEDULE.swapCreatorBpsAtZero).toBe(30)
+    expect(RECORDED_SCHEDULE.swapCreatorBpsMax).toBe(95)
+    expect(RECORDED_SCHEDULE.swapCreatorBpsMin).toBe(5)
   })
 
-  it('rises to its maximum between 420 and 1,470 SOL of market cap', () => {
-    // The counter-intuitive part, pinned: it goes UP before it goes down.
-    expect(creatorFeePercent(420)).toBe(0.95)
-    expect(creatorFeePercent(1469)).toBe(0.95)
-    expect(creatorFeePercent(1470)).toBe(0.9)
-    expect(MAX_CREATOR_PERCENT).toBe(0.95)
-  })
-
-  it('decays to a twentieth of that at the top', () => {
-    expect(creatorFeePercent(98_240)).toBe(0.05)
-    expect(creatorFeePercent(10_000_000)).toBe(0.05)
-    expect(MIN_CREATOR_PERCENT).toBe(0.05)
-    expect(MAX_CREATOR_PERCENT / MIN_CREATOR_PERCENT).toBeCloseTo(19, 10)
+  it('has a documented table that matches what the chain carries', () => {
+    expect(creatorFeePercent(0)).toBe(RECORDED_SCHEDULE.swapCreatorBpsAtZero / 100)
+    expect(creatorFeePercent(420)).toBe(RECORDED_SCHEDULE.swapCreatorBpsMax / 100)
+    expect(creatorFeePercent(10_000_000)).toBe(RECORDED_SCHEDULE.swapCreatorBpsMin / 100)
+    expect(CREATOR_FEE_BANDS).toHaveLength(RECORDED_SCHEDULE.swapTierCount)
   })
 
   it('never returns undefined, whatever the market cap', () => {
@@ -55,9 +43,8 @@ describe("pump.fun's creator fee", () => {
     }
   })
 
-  it('is far below the 1.6% the hoard was originally sized on, at scale', () => {
-    // The number the round exists to make impossible to forget.
+  it('is far below the 1.6% the hoard was sized on, at the top', () => {
     expect(hoardPerVolume(10_000, 100_000)).toBe(5)
-    expect(hoardPerVolume(10_000, 100_000) * 32).toBe(160) // what 1.6% would have been
+    expect(hoardPerVolume(10_000, 100_000) * 32).toBe(160)
   })
 })

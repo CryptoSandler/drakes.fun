@@ -8,42 +8,67 @@ date they were read live in `docs/references.md`.
 
 ## 1. The thesis
 
-**4,000 pieces that cannot be bought at issuance. One per hour, issued by the
-protocol to a `$DRAKES` holder chosen in proportion to their holding. **Every
-trade sends its creator fee to the hoard.** Any piece can be burned to redeem
-its share of that hoard, and the slot it leaves never refills.**
+**4,000 pieces that cannot be bought at issuance. One every hour, issued by the
+protocol to a `$DRAKES` holder chosen in proportion to their holding — never
+chosen by us, and recomputable by a stranger.**
 
-*The fine print, and the number is small. `$DRAKES` launches on **pump.fun**
-(D30). **Read from the chain on 2026-09-02** — `Global.creator_fee_basis_points`
-under the bonding curve and `GlobalConfig.coin_creator_fee_basis_points` under
-PumpSwap, on both clusters:*
+*That is the whole claim. It is a claim about a mechanism, and every part of it
+can be checked: the schedule is on chain, the recipient is derived from a
+snapshot published in advance and a value from an oracle, and `/verify` replays
+it.*
 
-| Phase | To the creator | Rest of the fee |
-|---|---|---|
-| bonding curve | **0.05%** | 0.95% protocol |
-| PumpSwap, after graduation | **0.05%** | 0.05% protocol · 0.20% LP |
+**D31, 2026-09-02, the owner's decision: the hoard is a secondary property and
+no longer the thesis.** It was the centre of §1 when the fee was expected to be
+a flat 1.6%. The real schedule (§1.1) pays **0.300% on the curve**, peaks at
+**0.950%** while the coin is small and **decays to 0.050%** as it grows — so the
+hoard earns least exactly when the collection is worth most, and it cannot carry
+the weight of being the reason to hold anything. **Demoting it is the honest response to the number, and it is
+preferable to keeping the sentence and hoping.**
 
-***Their documentation says something else, and the chain is what people pay.***
-`pump.fun/docs/fees` describes 0.300% on the curve and a table tiered from
-0.950% down to 0.050% on PumpSwap. **No `FeeConfig` account is deployed under
-either program on either cluster**, so the tiers exist in the code and are not in
-force. Corroborated by watching real PumpSwap trades pay two identical small
-amounts — the protocol and the creator, both at 5 bps. Anyone who had published
-the documented table would be publishing a rate nobody is paying.
+So the hoard is now stated where it belongs and never above it:
 
-*`scripts/check-pump-schedule.ts` re-reads both accounts, records the verdict,
-and alerts when it moves; `/verify` prints the confirmed figure with its slot
-and date, and **says "not confirmed" rather than repeating a stale one**.*
+- It is **a property of the collection**, described once, with a real number.
+- It is **never a backing, never a floor, never a reason to buy**. §7 already
+  bans `backed`; D31 adds that the hoard may not be the subject of a headline,
+  the masthead, or the first three lines of any pitch.
+- **`redeem` is unchanged and still Phase 2.** Nothing about the mechanism was
+  removed — only its place in the argument.
 
-***What this costs, stated plainly.** The abandoned Meteora plan was a flat 1.6%.
-At 0.05% the hoard receives **thirty-two times less at every size** — 7.5 SOL a
-month on 500 SOL of daily volume, against 240. This is the price of launching
-where the buyers are, and it is not softened anywhere in the copy.*
+### 1.1 The hoard, in its own place
 
-***The schedule is pump.fun's and they can change it.** Meteora's static config
-`HQ6vW45Kug23h2A4LkyUqB4UFfGx4LqY1uZLLfQemEjU` is immutable; this is a config in
-somebody else's program, and the tier table sitting unused in their code is
-evidence they intend to move it.*
+Creator fees from `$DRAKES` trades on pump.fun accrue in SOL to a Squads 2-of-3,
+which converts them to `$PUMP` on the published rule in §3.6. Every conversion
+is a transaction anyone can fetch, and `/verify` lists them.
+
+**The fee is pump.fun's to set.** Read from the real `FeeConfig` on
+**2026-09-02** — owned by `pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ`, not by
+the two programs whose IDLs declare it:
+
+| Phase | To the creator |
+|---|---|
+| bonding curve | **0.300%** (of a 1.25% total) |
+| PumpSwap, market cap under 420 SOL | 0.300% |
+| **PumpSwap, 420 – 1,470 SOL** | **0.950%** |
+| PumpSwap, above 98,240 SOL | **0.050%** |
+
+25 tiers in all. **The rate rises while the coin is small and decays as it
+grows** — the opposite of what this project would have chosen, and the reason
+D31 made the hoard a secondary property rather than the thesis. The abandoned
+Meteora plan was a flat 1.6% at any size.
+
+*Confirmed at runtime, not only from the account: the fee program's `GetFees`
+returned `lp 0 · protocol 95 · creator 30` during a devnet buy.*
+
+**This number was reported wrong once, on 2026-09-02, and the error is recorded
+rather than quietly fixed.** I scanned for the `FeeConfig` discriminator under
+the pump and PumpSwap programs, found none, and reported a flat 0.05% from
+`GlobalConfig`. The account is owned by a third program. **An IDL says what an
+account looks like; it never says who owns it.** What surfaced it was a failed
+`buy`: `AccountOwnedByWrongProgram ... Right: pfeeUxB6...`.
+
+*`scripts/check-pump-schedule.ts` now reads that account, records the verdict,
+and alerts when it moves; `/verify` prints "not confirmed" rather than repeating
+a figure older than a week.*
 
 Three properties follow, and a feature that serves none of them belongs to a
 different product:
@@ -355,8 +380,9 @@ bonding curve and **five days** again at a hundred times the volume, because the
 rate collapses exactly where volume grows (§1). A threshold that produces one
 conversion a year is a rule that reads as a promise and behaves as an excuse.
 Five SOL still clears the ceremony's cost — two approvals and one Jupiter
-route. **At the real 0.05% it is still twenty days of 500 SOL daily volume**, and
-that is the honest shape of the thing rather than a number chosen to look busy. `$PUMP` carried **US$37.75M of on-chain
+route. **On the bonding curve's 0.300% it is about three days of 500 SOL daily
+volume, and above 98,240 SOL of market cap it is twenty** — the wait gets longer
+as the coin gets bigger, which is the schedule's shape and not a choice of ours. `$PUMP` carried **US$37.75M of on-chain
 liquidity** when it was last read (`references.md`, 2026-09-01), so 25 SOL is far
 inside the range where routing is not the interesting variable.
 

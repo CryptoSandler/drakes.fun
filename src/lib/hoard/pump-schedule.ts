@@ -3,20 +3,25 @@
 // Caller: `scripts/check-pump-schedule.ts` (the job) and `app/verify/page.tsx`
 // (to mark the table stale rather than keep asserting it).
 //
-// **Why this exists, and it is not hypothetical.** On 2026-09-02 the
-// documentation at `pump.fun/docs/fees` described a creator fee tiered by
-// market cap, from 0.950% down to 0.050%. The chain said something else:
-// `GlobalConfig` on mainnet carries `coin_creator_fee_basis_points: 5` — a flat
-// **0.05%** — and there is no `FeeConfig` account deployed under the AMM on
-// either cluster, though both IDLs define one with a `fee_tiers` vector.
+// **Why this exists, and it caught me before it caught pump.fun.**
 //
-// So the tiers are defined in the program and **not currently in force**, and a
-// site that had published the tier table would have been publishing a number
-// nobody is paying. The chain is the source; the docs are a claim about it.
+// The fee schedule is a config in somebody else's program, so a number this
+// project publishes can be false tomorrow with nothing here changing. Building
+// this guard is also what exposed my own error: I scanned for the `FeeConfig`
+// discriminator under the pump and PumpSwap programs — both of which DECLARE
+// the account in their IDL — found none, and reported the fee as a flat 5 bps
+// from `GlobalConfig`. The account is **owned by a third program**,
+// `pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ`, and the only thing that said
+// so was a failed `buy`: `AccountOwnedByWrongProgram ... Right: pfeeUxB6...`.
 //
-// This module reads `GlobalConfig` and, if one ever appears, `FeeConfig`.
+// **An IDL says what an account looks like. It never says who owns it.**
+//
+// Read 2026-09-02 from the real account: the bonding curve pays the creator
+// **30 bps**, and PumpSwap carries **25 tiers** from 30 bps at zero market cap
+// up to 95 bps between 420 and 1,470 SOL and down to 5 bps at the top —
+// which is what pump.fun's documentation said all along.
 
-import { decodeBase58, encodeBase58 } from '../solana/base58.ts'
+import { decodeBase58 } from '../solana/base58.ts'
 import { rpc } from '../chain/rpc.ts'
 
 export const PUMP_AMM_PROGRAM = 'pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA'
@@ -27,113 +32,105 @@ export const GLOBAL_CONFIG_DISCRIMINATOR = '95089ccaa0fcb0d9'
 /** `sha256("account:FeeConfig")[..8]`, likewise. No account carries it yet. */
 export const FEE_CONFIG_DISCRIMINATOR = '8f3492bbdb7b4c9b'
 
+export const FEE_PROGRAM = 'pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ'
+
+export interface FeeTier {
+  /** Market cap in lamports at which this tier starts. */
+  thresholdLamports: bigint
+  lpBps: number
+  protocolBps: number
+  creatorBps: number
+}
+
 export interface LiveSchedule {
-  /** The account the numbers came from. */
+  /** The `FeeConfig` account the numbers came from, under the FEE program. */
   account: string
-  lpFeeBps: number
-  protocolFeeBps: number
-  creatorFeeBps: number
-  /** True when a tier table is deployed; today it is not. */
-  tiered: boolean
+  /** The bonding curve's schedule: one tier in practice. */
+  curve: FeeTier[]
+  /** PumpSwap's, after graduation. */
+  swap: FeeTier[]
   slot: bigint
-  /** The bonding curve's own schedule, where a coin spends its first hours. */
-  curve: { protocolFeeBps: number; creatorFeeBps: number }
 }
 
-/** `Global` under the curve program, seeds `["global"]`. */
-const CURVE_GLOBAL_OFFSETS = {
-  // 8 disc, 1 bool initialized, 2 pubkeys, 4 u64 reserves
-  feeBasisPoints: 8 + 1 + 32 * 2 + 8 * 4,
-  // ...then withdraw_authority (32), enable_migrate (1), pool_migration_fee (8)
-  creatorFeeBasisPoints: 8 + 1 + 32 * 2 + 8 * 4 + 8 + 32 + 1 + 8,
-} as const
-
-async function readCurveSchedule(rpcUrl: string): Promise<{ protocolFeeBps: number; creatorFeeBps: number }> {
-  const pda = curveGlobalPda()
-  const account = (await rpc(rpcUrl, 'getAccountInfo', [pda, { encoding: 'base64' }])) as {
-    value?: { data: [string, string] } | null
+function readTiers(data: Buffer): { flat: FeeTier; tiers: FeeTier[] } {
+  // 8 discriminator, 1 bump, 32 admin, then `flat_fees` and the vectors.
+  let o = 8 + 1 + 32
+  const fees = (): FeeTier => {
+    const t: FeeTier = {
+      thresholdLamports: 0n,
+      lpBps: Number(data.readBigUInt64LE(o)),
+      protocolBps: Number(data.readBigUInt64LE(o + 8)),
+      creatorBps: Number(data.readBigUInt64LE(o + 16)),
+    }
+    o += 24
+    return t
   }
-  if (account.value == null) throw new Error(`the curve's Global account ${pda} does not exist`)
-  const data = Buffer.from(account.value.data[0], 'base64')
-  if (data.length < CURVE_GLOBAL_OFFSETS.creatorFeeBasisPoints + 8) {
-    throw new Error(`the curve Global is ${data.length} bytes; this layout does not fit`)
+  const flat = fees()
+  const count = data.readUInt32LE(o)
+  o += 4
+  const tiers: FeeTier[] = []
+  for (let i = 0; i < count; i += 1) {
+    const threshold = data.readBigUInt64LE(o)
+    o += 16 // u128
+    const t = fees()
+    t.thresholdLamports = threshold
+    tiers.push(t)
   }
-  return {
-    protocolFeeBps: Number(data.readBigUInt64LE(CURVE_GLOBAL_OFFSETS.feeBasisPoints)),
-    creatorFeeBps: Number(data.readBigUInt64LE(CURVE_GLOBAL_OFFSETS.creatorFeeBasisPoints)),
-  }
+  return { flat, tiers }
 }
 
-/** Hard-coded because it is a fixed seed under a fixed program. Asserted below. */
-const CURVE_GLOBAL = '4wTV1YmiEkRvAtNtsSGPtUrqRYQMe5SKy2uB4Jjaxnjf'
-const curveGlobalPda = () => CURVE_GLOBAL
-
-const OFFSETS = {
-  admin: 8,
-  lpFeeBps: 8 + 32,
-  protocolFeeBps: 8 + 32 + 8,
-  disableFlags: 8 + 32 + 16,
-  // ...then `protocol_fee_recipients: [pubkey; 8]`
-  creatorFeeBps: 8 + 32 + 16 + 1 + 32 * 8,
-} as const
-
-async function accountsWithDiscriminator(rpcUrl: string, programId: string, hex: string) {
-  return (await rpc(rpcUrl, 'getProgramAccounts', [
-    programId,
-    {
-      encoding: 'base64',
-      withContext: true,
-      filters: [{ memcmp: { offset: 0, bytes: encodeBase58(hexBytes(hex)) } }],
-    },
-  ])) as { context: { slot: number }; value: { pubkey: string; account: { data: [string, string] } }[] }
-}
-
-const hexBytes = (hex: string) => Uint8Array.from(Buffer.from(hex, 'hex'))
-
-/**
- * The schedule in force, read from `GlobalConfig`.
- *
- * Throws when there is not exactly one: zero means the query is wrong (or the
- * program moved) and more than one means the layout assumption is wrong.
- * Neither may be turned into a rate on a page.
- */
 export async function readLiveSchedule(rpcUrl: string): Promise<LiveSchedule> {
-  const globals = await accountsWithDiscriminator(rpcUrl, PUMP_AMM_PROGRAM, GLOBAL_CONFIG_DISCRIMINATOR)
-  if (globals.value.length !== 1) {
-    throw new Error(
-      `expected exactly one GlobalConfig under ${PUMP_AMM_PROGRAM}, found ${globals.value.length}. ` +
-        'A rate is not read from an ambiguous account.',
-    )
-  }
-  const row = globals.value[0]!
-  const data = Buffer.from(row.account.data[0], 'base64')
-  if (data.length < OFFSETS.creatorFeeBps + 8) {
-    throw new Error(`GlobalConfig is ${data.length} bytes; the layout this reads does not fit`)
+  const { PublicKey } = (await import('@solana/web3.js')) as typeof import('@solana/web3.js')
+  const pda = (owner: string) =>
+    PublicKey.findProgramAddressSync(
+      [Buffer.from('fee_config'), new PublicKey(owner).toBytes()],
+      new PublicKey(FEE_PROGRAM),
+    )[0].toBase58()
+
+  const read = async (owner: string) => {
+    const address = pda(owner)
+    const account = (await rpc(rpcUrl, 'getAccountInfo', [address, { encoding: 'base64' }])) as {
+      context?: { slot: number }
+      value?: { owner: string; data: [string, string] } | null
+    }
+    if (account.value == null) throw new Error(`no FeeConfig at ${address} for ${owner}`)
+    if (account.value.owner !== FEE_PROGRAM) {
+      throw new Error(`${address} is owned by ${account.value.owner}, not the fee program`)
+    }
+    return {
+      address,
+      slot: BigInt(account.context?.slot ?? 0),
+      ...readTiers(Buffer.from(account.value.data[0], 'base64')),
+    }
   }
 
-  const fees = await accountsWithDiscriminator(rpcUrl, PUMP_AMM_PROGRAM, FEE_CONFIG_DISCRIMINATOR)
-  const curve = await readCurveSchedule(rpcUrl)
-
+  const curve = await read(PUMP_CURVE_PROGRAM)
+  const swap = await read(PUMP_AMM_PROGRAM)
   return {
-    curve,
-    account: row.pubkey,
-    lpFeeBps: Number(data.readBigUInt64LE(OFFSETS.lpFeeBps)),
-    protocolFeeBps: Number(data.readBigUInt64LE(OFFSETS.protocolFeeBps)),
-    creatorFeeBps: Number(data.readBigUInt64LE(OFFSETS.creatorFeeBps)),
-    tiered: fees.value.length > 0,
-    slot: BigInt(globals.context.slot),
+    account: swap.address,
+    curve: curve.tiers,
+    swap: swap.tiers,
+    slot: swap.slot,
   }
 }
 
-/** What this repository last recorded, and when. Compared, never assumed. */
+/** The creator's basis points at a market cap, from the live tiers. */
+export function creatorBpsAt(tiers: FeeTier[], marketCapLamports: bigint): number {
+  let chosen = tiers[0]
+  for (const tier of tiers) if (marketCapLamports >= tier.thresholdLamports) chosen = tier
+  if (chosen === undefined) throw new Error('the fee config carries no tier')
+  return chosen.creatorBps
+}
+
 export interface RecordedSchedule {
   readAt: string
-  lpFeeBps: number
-  protocolFeeBps: number
-  creatorFeeBps: number
-  tiered: boolean
-  curveCreatorFeeBps: number
-  curveProtocolFeeBps: number
+  curveCreatorBps: number
+  curveProtocolBps: number
+  /** The number of tiers PumpSwap carries, and the ends of the range. */
+  swapTierCount: number
+  swapCreatorBpsAtZero: number
+  swapCreatorBpsMax: number
+  swapCreatorBpsMin: number
 }
 
 export interface ScheduleVerdict {
@@ -145,15 +142,20 @@ export interface ScheduleVerdict {
 
 export function compareSchedule(live: LiveSchedule, recorded: RecordedSchedule): ScheduleVerdict {
   const differences: string[] = []
-  const check = (name: string, a: number | boolean, b: number | boolean) => {
+  const check = (name: string, a: number, b: number) => {
     if (a !== b) differences.push(`${name}: chain says ${a}, we recorded ${b}`)
   }
-  check('creator fee bps', live.creatorFeeBps, recorded.creatorFeeBps)
-  check('lp fee bps', live.lpFeeBps, recorded.lpFeeBps)
-  check('protocol fee bps', live.protocolFeeBps, recorded.protocolFeeBps)
-  check('a tier table is deployed', live.tiered, recorded.tiered)
-  check('curve creator fee bps', live.curve.creatorFeeBps, recorded.curveCreatorFeeBps)
-  check('curve protocol fee bps', live.curve.protocolFeeBps, recorded.curveProtocolFeeBps)
+  const curve = live.curve[0]
+  if (curve === undefined) differences.push('the curve fee config carries no tier at all')
+  else {
+    check('curve creator bps', curve.creatorBps, recorded.curveCreatorBps)
+    check('curve protocol bps', curve.protocolBps, recorded.curveProtocolBps)
+  }
+  check('PumpSwap tier count', live.swap.length, recorded.swapTierCount)
+  const creators = live.swap.map((t) => t.creatorBps)
+  check('PumpSwap creator bps at zero', creators[0] ?? -1, recorded.swapCreatorBpsAtZero)
+  check('PumpSwap creator bps, highest', Math.max(...creators), recorded.swapCreatorBpsMax)
+  check('PumpSwap creator bps, lowest', Math.min(...creators), recorded.swapCreatorBpsMin)
   return { agrees: differences.length === 0, differences, live, recorded }
 }
 

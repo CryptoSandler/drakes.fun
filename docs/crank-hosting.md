@@ -323,3 +323,23 @@ Subscribe at `https://ntfy.sh/<topic>` in a browser, or in the ntfy app.
 
 See `docs/crank-hosting-run.md`, written after the run, for what was measured
 and from where.
+
+## The daily jobs
+
+Two things run on a schedule beside the cranker, and both exist because a number
+this project publishes can go false with nothing in the repository changing.
+
+| Job | Cadence | On failure |
+|---|---|---|
+| `node scripts/verify-full.ts` | daily | writes a dated row; `/verify` renders it |
+| `node scripts/check-pump-schedule.ts --alert` | **daily** | exits 4, alerts through the ntfy sink, and `/verify` says **"not confirmed"** |
+
+`check-pump-schedule.ts` needs `MAINNET_RPC_URL`, `DATABASE_URL` and
+`NTFY_TOPIC`. It reads pump.fun's `FeeConfig` — the real one, owned by
+`pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ` — compares it against
+`RECORDED_SCHEDULE`, and records the verdict either way.
+
+**`/verify` treats a confirmation older than seven days as no confirmation.**
+That is deliberate: a job that silently stops is indistinguishable from a
+schedule that has not moved, and the page must not keep asserting a figure
+nobody has checked. If the cron dies, the page says so on its own.

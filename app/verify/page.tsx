@@ -246,15 +246,41 @@ export default async function Verify() {
           </div>
         </section>
 
+        <section className="colophon">
+          <p className="lede">Run it yourself</p>
+          <p>
+            Node 22.18 or newer. <strong>No install step</strong> — the verification path has no
+            dependencies on purpose, so running it does not mean installing several hundred packages
+            from us.
+          </p>
+          <pre className="cmd">
+            <code>{`git clone <this repository> && cd drakes
+
+export RPC="https://<your-provider>/?api-key=<your key>"
+
+node scripts/snapshot.ts pieces \\
+  --rpc "$RPC" \\
+  --program ${config.programId}${config.config ? ` \\\n  --config  ${config.config}` : ''}`}</code>
+          </pre>
+          <p className="note">
+            The same walk the job above runs. It reads no account of ours and no file of ours.
+          </p>
+        </section>
         <section className="entry">
           <div className="entry__grid">
             <p className="dateline__label" style={{ margin: 0 }}>
-              The hoard
+              Also · the hoard
             </p>
             <div>
               <p style={{ marginTop: 0, color: 'var(--color-ink-2)', maxWidth: '62ch' }}>
-                The fee arrives in SOL. The multisig converts it to <code>$PUMP</code> on a
-                published rule — <strong>at 5 SOL, at most weekly, and at least monthly above
+                {/* D31 moved this below the two checks and below the command.
+                    It is a property of the collection, not the reason for it:
+                    the rate peaks at 0.95% while the coin is small and decays
+                    to 0.05% as it grows, so the hoard earns least exactly when
+                    the collection is worth most. That does not belong above the
+                    thing the page exists to prove. Nothing was removed. */}
+                A secondary property, and a small one. Creator fees from $DRAKES trades arrive in
+                SOL; the multisig converts them to <code>$PUMP</code> on a published rule — <strong>at 5 SOL, at most weekly, and at least monthly above
                 1 SOL</strong> (<code>DESIGN.md</code> §3.6) — and every conversion is a
                 transaction anyone can fetch.
               </p>
@@ -275,7 +301,7 @@ export default async function Verify() {
                           : schedule.agrees
                             ? `last confirmed ${checkedAt!.toISOString().slice(0, 10)}, which is too long ago`
                             : `the chain has moved: ${schedule.differences}`}
-                        {' '}— we last recorded {RECORDED_SCHEDULE.creatorFeeBps / 100}%, and this
+                        {' '}— we last recorded {RECORDED_SCHEDULE.curveCreatorBps / 100}% on the curve, and this
                         page will not state it as current until a check agrees.
                       </span>
                     </>
@@ -360,26 +386,6 @@ export default async function Verify() {
           </div>
         </section>
 
-        <section className="colophon">
-          <p className="lede">Run it yourself</p>
-          <p>
-            Node 22.18 or newer. <strong>No install step</strong> — the verification path has no
-            dependencies on purpose, so running it does not mean installing several hundred packages
-            from us.
-          </p>
-          <pre className="cmd">
-            <code>{`git clone <this repository> && cd drakes
-
-export RPC="https://<your-provider>/?api-key=<your key>"
-
-node scripts/snapshot.ts pieces \\
-  --rpc "$RPC" \\
-  --program ${config.programId}${config.config ? ` \\\n  --config  ${config.config}` : ''}`}</code>
-          </pre>
-          <p className="note">
-            The same walk the job above runs. It reads no account of ours and no file of ours.
-          </p>
-        </section>
       </main>
 
       <footer className="sheet">

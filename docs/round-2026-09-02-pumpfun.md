@@ -9,47 +9,28 @@ Every number below was read on **2026-09-02** from the source named beside it.
 
 ---
 
-> ## CORRECTION, same day, from the chain
+> ## TWO CORRECTIONS, same day
 >
-> **Everything below about the fee schedule came from `pump.fun/docs/fees`, and
-> the chain says something else.** Read 2026-09-02 from
-> `Global.creator_fee_basis_points` (bonding curve) and
-> `GlobalConfig.coin_creator_fee_basis_points` (PumpSwap), on both clusters:
+> **First I reported the documented tiers. Then I reported them as wrong. The
+> second report was the error.**
 >
-> **The creator fee is a flat 0.05% in both phases.** Not 0.300% on the curve,
-> and not a table tiered from 0.950%. **No `FeeConfig` account is deployed** on
-> either program on either cluster, though both IDLs define one holding
-> `fee_tiers` — so the tiers are written and not switched on.
+> Building the schedule guard I scanned for the `FeeConfig` discriminator under
+> the pump and PumpSwap programs — both of which declare the account in their
+> IDL — found nothing, and concluded the tiers were not deployed and the fee was
+> a flat 5 bps from `GlobalConfig`.
 >
-> Every projection in §1 below is therefore **6× to 19× too generous**. At 0.05%
-> the hoard takes 7.5 SOL a month on 500 SOL of daily volume, against 240 under
-> the abandoned 1.6% plan — **thirty-two times less, at every size**, not only
-> at the top.
+> **The account is owned by a third program**,
+> `pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ`. A failed devnet `buy` named it:
+> `AccountOwnedByWrongProgram ... Right: pfeeUxB6...`. Read from the real
+> account, the bonding curve pays the creator **30 bps** and PumpSwap carries
+> **25 tiers** from 30 bps up to 95 and down to 5 — which is what the
+> documentation said. Confirmed at runtime by the fee program's `GetFees`
+> returning `lp 0 · protocol 95 · creator 30`.
 >
-> The document is kept as written because the gap between it and the chain is
-> the reason `scripts/check-pump-schedule.ts` exists. `DESIGN.md` §1 carries the
-> corrected numbers.
-
-> ## CORRECTION, same day, from the chain
->
-> **Everything below about the fee schedule came from `pump.fun/docs/fees`, and
-> the chain says something else.** Read 2026-09-02 from
-> `Global.creator_fee_basis_points` (bonding curve) and
-> `GlobalConfig.coin_creator_fee_basis_points` (PumpSwap), on both clusters:
->
-> **The creator fee is a flat 0.05% in both phases.** Not 0.300% on the curve,
-> and not a table tiered from 0.950%. **No `FeeConfig` account is deployed** on
-> either program on either cluster, though both IDLs define one holding
-> `fee_tiers` — so the tiers are written and not switched on.
->
-> Every projection in §1 below is therefore **6x to 19x too generous**. At 0.05%
-> the hoard takes 7.5 SOL a month on 500 SOL of daily volume, against 240 under
-> the abandoned 1.6% plan — **thirty-two times less, at every size**, not only
-> at the top.
->
-> The document is kept as written because the gap between it and the chain is
-> the reason `scripts/check-pump-schedule.ts` exists. `DESIGN.md` §1 carries the
-> corrected numbers.
+> **So §1 below is right and the numbers stand.** The lesson is the one written
+> into `pump-schedule.ts`: an IDL says what an account looks like and never says
+> who owns it, and a discriminator scan under the wrong program returns zero
+> results that read exactly like "not deployed".
 
 ## What was read, and where
 

@@ -23,7 +23,6 @@ import { missingConfig, readConfig } from '../src/lib/site/config.ts'
 import { encodeBase58 } from '../src/lib/solana/base58.ts'
 import { Countdown } from '../src/components/Countdown.tsx'
 import { ArtSlot } from '../src/components/ArtSlot.tsx'
-import { RECORDED_CREATOR_PERCENT } from '../src/lib/hoard/pump-fees.ts'
 
 export const dynamic = 'force-dynamic'
 
@@ -267,25 +266,15 @@ export default async function Page() {
             can recompute it.
           </p>
           <p>
-            {/* The mechanism, never a promise. `DESIGN.md` §7 lists `backed`
-                among the words this project may never use, and the sentence that
-                would be easiest to write is exactly that one.
-
-                This used to read "sends 2% in $PUMP to the hoard", which D26
-                made false twice over: the pool is quoted in SOL, and 2% is what
-                the trader pays rather than what arrives. Caught by reading a
-                capture — the footer three lines below already said the fee
-                arrives in SOL, so the page contradicted itself.
-
-                Superseded again by D30: the venue is pump.fun and the fee is a
-                band, not a number. A headline with a rate in it is a headline
-                that goes stale the next time their config moves. */}
-            <strong>Every trade sends its creator fee to the hoard.</strong> $DRAKES launches on
-            pump.fun and the creator fee is theirs to set — <strong>{RECORDED_CREATOR_PERCENT}% of
-            a trade</strong> when it was last read from their program. It arrives in SOL and the
-            multisig converts it to $PUMP on a rule published in advance.{' '}
-            <a href="/verify">The rate and the date it was confirmed are on /verify</a>. That is
-            the mechanism, stated as a mechanism.
+            {/* D31: the hoard left the pitch. It was the third line when the fee
+                was expected to be a flat 1.6%; the real schedule peaks at 0.95%
+                and decays to 0.05% as the coin grows, so it cannot carry that
+                place, and keeping it there would be an argument the number does
+                not support. The mechanism is not removed — it moved to /verify,
+                where it is described with its real figure. */}
+            <strong>Nothing here is bought at issuance.</strong> A piece arrives because the
+            schedule came round and the derivation landed on an address — not because somebody
+            was first, or fastest, or paid more.
           </p>
           <p style={{ marginTop: 'var(--space-24)' }}>
             <a className="btn" href="/verify">
@@ -320,10 +309,10 @@ export default async function Page() {
         )}
         <p className="note foot">
           {config.programId} · recomputable, not trustless ·{' '}
-          <strong style={{ color: 'var(--color-ink-2)' }}>
-            the fee arrives in SOL and the hoard is bought on a published rule
-          </strong>{' '}
-          — <a href="/verify">every conversion is listed</a>
+          <span>
+            creator fees are converted to $PUMP on a published rule —{' '}
+            <a href="/verify">every conversion is listed</a>
+          </span>
         </p>
       </footer>
     </>

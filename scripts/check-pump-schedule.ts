@@ -34,13 +34,15 @@ if (cluster !== 'mainnet') {
 
 const live = await readLiveSchedule(rpcUrl)
 const verdict = compareSchedule(live, { ...RECORDED_SCHEDULE })
+const curve = live.curve[0]
+const creators = live.swap.map((t) => t.creatorBps)
 
 process.stdout.write(
-  `GlobalConfig ${live.account} at slot ${live.slot}\n` +
-    `  lp ${live.lpFeeBps} bps · protocol ${live.protocolFeeBps} bps · ` +
-    `creator ${live.creatorFeeBps} bps (${live.creatorFeeBps / 100}%)\n` +
-    `  tier table deployed: ${live.tiered}\n` +
-    `  recorded ${RECORDED_SCHEDULE.readAt}: creator ${RECORDED_SCHEDULE.creatorFeeBps} bps\n\n`,
+  `FeeConfig ${live.account} (owned by the fee program) at slot ${live.slot}\n` +
+    `  bonding curve: creator ${curve?.creatorBps} bps · protocol ${curve?.protocolBps} bps\n` +
+    `  PumpSwap: ${live.swap.length} tiers, creator ${Math.min(...creators)}–${Math.max(...creators)} bps\n` +
+    `  recorded ${RECORDED_SCHEDULE.readAt}: curve ${RECORDED_SCHEDULE.curveCreatorBps} bps, ` +
+    `${RECORDED_SCHEDULE.swapTierCount} tiers\n\n`,
 )
 
 // Recorded whether it agrees or not: `/verify` needs the DATE of the last
@@ -53,9 +55,9 @@ if (dbUrl !== undefined && dbUrl !== '') {
       `insert into schedule_checks (cluster, source_account, slot, lp_fee_bps, protocol_fee_bps,
          creator_fee_bps, tiered, recorded_creator_fee_bps, agrees, differences)
        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
-      [cluster, live.account, live.slot.toString(), live.lpFeeBps, live.protocolFeeBps,
-       live.creatorFeeBps, live.tiered, RECORDED_SCHEDULE.creatorFeeBps, verdict.agrees,
-       verdict.differences.join('; ')],
+      [cluster, live.account, live.slot.toString(), curve?.lpBps ?? 0, curve?.protocolBps ?? 0,
+       curve?.creatorBps ?? 0, live.swap.length > 1, RECORDED_SCHEDULE.curveCreatorBps,
+       verdict.agrees, verdict.differences.join('; ')],
     )
   } finally {
     await db.end()
@@ -91,7 +93,7 @@ if (process.argv.includes('--alert')) {
     title: 'pump.fun changed its fee schedule',
     lines: [
       ...verdict.differences,
-      `the site quotes ${RECORDED_SCHEDULE.creatorFeeBps} bps recorded ${RECORDED_SCHEDULE.readAt}`,
+      `the site quotes ${RECORDED_SCHEDULE.curveCreatorBps} bps on the curve, recorded ${RECORDED_SCHEDULE.readAt}`,
       'update RECORDED_SCHEDULE in src/lib/hoard/pump-fees.ts and the copy',
     ],
   })
