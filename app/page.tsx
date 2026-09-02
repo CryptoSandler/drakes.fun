@@ -264,9 +264,17 @@ export default async function Page() {
           <p>
             {/* The mechanism, never a promise. `DESIGN.md` §7 lists `backed`
                 among the words this project may never use, and the sentence that
-                would be easiest to write is exactly that one. */}
-            <strong>Every trade of $DRAKES sends 2% in $PUMP to the hoard.</strong> That is the
-            mechanism, stated as a mechanism.
+                would be easiest to write is exactly that one.
+
+                This used to read "sends 2% in $PUMP to the hoard", which D26
+                made false twice over: the pool is quoted in SOL, and 2% is what
+                the trader pays rather than what arrives. Caught by reading a
+                capture — the footer three lines below already said the fee
+                arrives in SOL, so the page contradicted itself. */}
+            <strong>1.6% of every trade reaches the hoard.</strong> The pool charges 2% and
+            Meteora keeps 0.4% of the trade as its protocol share, so 1.6% is what arrives. It
+            arrives in SOL, and the multisig converts it to $PUMP on a rule published in advance.
+            That is the mechanism, stated as a mechanism.
           </p>
           <p style={{ marginTop: 'var(--space-24)' }}>
             <a className="btn" href="/verify">
