@@ -51,10 +51,27 @@ That was necessary and **not sufficient**: the buy still refuses.
 
 ## What is NOT established
 
-- **The two buys did not go through.** `bonding_curve_v2` is a remaining account
-  the buy requires and whose identity is still unknown: it is not
-  `["bonding-curve-v2", mint]`, not `["bonding_curve_v2", mint]`, and not the
-  extended curve itself. Guessing seeds was stopped rather than continued.
+- **The two buys did not go through**, and the reason is now specific rather
+  than a mystery. Read off a **real mainnet buy** (18 accounts: the 16 in the
+  IDL, then two more):
+
+      remaining +0   bonding_curve_v2   = ["bonding-curve-v2", mint] under pump
+      remaining +1   ONE buyback recipient from Global, not all eight
+
+  The seeds were **verified against the live address**, not guessed: the
+  account passed in that buy is exactly what those seeds derive. Two things I
+  had wrong: the order — remaining accounts are positional, and passing the
+  recipients first made the program read one as the curve and answer
+  `InvalidBondingCurveV2`, an error about the wrong account in the right slot —
+  and the count, eight where one was wanted.
+
+  **Fixing both did not fix the buy on a `create_v2` coin.** On that mainnet buy
+  the derived `bonding-curve-v2` address **holds no account at all**: the coin
+  was v1 (SPL Token, 151-byte curve), the program finds nothing and proceeds. A
+  `create_v2` coin appears to need the record to exist, and nothing this script
+  calls creates it. **No mainnet coin created with `create_v2` and then traded
+  could be found to read** — the Token-2022 pump coins sampled are v1 coins with
+  Token-2022 mints, which is a different thing.
 - **`collect_creator_fee` was therefore not exercised**, and there is no
   before/after balance on the vault. Its account list is read and its creator is
   a **non-signer**, so the claim is permissionless — but that is read, not run.

@@ -53,6 +53,11 @@ const DISC = {
   extend: Buffer.from('ea66c2cb96483ee5', 'hex'),
 }
 
+const flag = (n: string): string | undefined => {
+  const i = process.argv.indexOf(`--${n}`)
+  return i === -1 ? undefined : process.argv[i + 1]
+}
+
 const rpcUrl = process.env.RPC_URL
 if (rpcUrl === undefined || rpcUrl === '') throw new Error('RPC_URL is not set')
 const cluster = await clusterName(rpcUrl)
@@ -82,7 +87,10 @@ const str = (s: string) => {
 }
 const u64 = (n: bigint) => { const b = Buffer.alloc(8); b.writeBigUInt64LE(n); return b }
 
-const mint = Keypair.generate()
+// `--mint <address>` reuses a coin this script already created, so the buys can
+// be retried without minting a new one each attempt.
+const reuse = flag('mint')
+const mint = reuse === undefined ? Keypair.generate() : { publicKey: new PublicKey(reuse) }
 const bondingCurve = pda([Buffer.from('bonding-curve'), mint.publicKey.toBytes()])
 const global = pda([Buffer.from('global')])
 const eventAuthority = pda([Buffer.from('__event_authority')])
@@ -121,6 +129,7 @@ const solVault = pda([Buffer.from('sol-vault')], MAYHEM)
 const mayhemState = pda([Buffer.from('mayhem-state'), mint.publicKey.toBytes()], MAYHEM)
 const mayhemTokenVault = ata(mayhemState, mint.publicKey)
 
+if (reuse === undefined) {
 const createIx = new TransactionInstruction({
   programId: PUMP,
   keys: [
@@ -157,6 +166,9 @@ const sig1 = await sendAndConfirmTransaction(
   { commitment: 'confirmed' },
 )
 process.stdout.write(`create_v2 ${sig1}\n`)
+} else {
+  process.stdout.write(`reusing ${mint.publicKey.toBase58()}\n`)
+}
 
 // 2 · two buys from a different wallet -------------------------------------
 const buyIx = (amount: bigint, maxCost: bigint) => new TransactionInstruction({
@@ -182,8 +194,15 @@ const buyIx = (amount: bigint, maxCost: bigint) => new TransactionInstruction({
     // Not in the IDL's account list — the program reads them off the end, and
     // omitting them fails with `BuybackFeeRecipientMissing`. Read from the
     // account rather than pasted, so a change on their side is picked up.
-    ...buybackRecipients.map((pubkey) => ({ pubkey, isSigner: false, isWritable: true })),
+    // **Order matters and this is what a real buy taught.** Remaining accounts
+    // are positional: `bonding_curve_v2` comes FIRST, then the buyback
+    // recipient. Passing the eight recipients ahead of it made the program read
+    // a recipient as the curve and answer `InvalidBondingCurveV2` — an error
+    // about the wrong account in the right slot, which reads like a wrong seed.
+    // Read off a mainnet buy: 18 accounts, 16 from the IDL, then exactly these
+    // two.
     { pubkey: bondingCurveV2, isSigner: false, isWritable: true },
+    { pubkey: buybackRecipients[0]!, isSigner: false, isWritable: true },
   ],
   data: Buffer.concat([DISC.buy, u64(amount), u64(maxCost), Buffer.from([0])]),
 })

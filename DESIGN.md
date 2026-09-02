@@ -1119,6 +1119,28 @@ coin's `creator` reads back as an off-curve address. But `set_creator` requires
 a `set_creator_authority` signer that belongs to pump.fun, so **if it is wrong
 at launch it is wrong forever**. This is the one irreversible step of the launch.
 
+**`is_mayhem_mode` and `is_cashback_enabled` are both `false`, and here is why
+rather than a shrug.** `create_v2` takes them, they are per-coin, and the coin's
+creator can never be changed — so a default nobody read is not a default to
+take.
+
+- **Cashback** is a rebate to **traders**, not to the creator. `claim_cashback`
+  takes `user` and `user_volume_accumulator`; its event carries `amount`,
+  `total_claimed` and `total_cashback_earned`. So it pays people for volume on
+  our coin, out of fees, on a schedule pump.fun sets. It is a trading incentive,
+  and this project does not have a view on rewarding trading volume — §9.5
+  already refuses to make rarity a price signal, and paying for volume is the
+  same shape of claim.
+- **Mayhem** is a separate program, `MAyhSmzXzV1pTf7LsNkrNwkWKTo4ougAJ1PPg47MD4e`,
+  with a per-mint `mayhem-state`, a shared `sol-vault` and a token vault. **It
+  publishes no IDL on chain**, so what it does to a coin cannot be read the way
+  everything else here was read. **That is the whole argument for `false`:** an
+  irreversible flag on a mechanic whose rules are not legible is not a thing to
+  enable because it was there.
+
+Either can be studied and turned on later **for a future coin**. Neither can be
+turned off for this one.
+
 **`collect_creator_fee` needs no signer** on either program. The crank can claim
 on a schedule and a stolen crank key cannot redirect a lamport of it, which is
 exactly the property `CLAUDE.md` asks for.
