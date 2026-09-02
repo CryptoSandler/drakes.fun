@@ -464,3 +464,44 @@ assumed $220/SOL. **SOL is $103.62** (2026-09-01). A 0.05 SOL redemption fee is
 **$5.18**, and 1,000 redemptions is **~$5,180**, not ~$11k. The conclusion is
 unchanged — it is a rounding error against the fee stream — but the number was
 wrong and is corrected here.
+
+## pump.fun — the launchpad, the fee schedule and a launched token
+
+*Read 2026-09-02. Supersedes the Meteora entry as the launch venue (owner's
+decision); the Meteora findings stay because they are about Squads and Jupiter.*
+
+| | |
+|---|---|
+| Bonding curve program | `6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P` — live, executable |
+| PumpSwap AMM | `pAMMBay6oceH9fJKBRHGP5D4bD4sWpmSwMn52FMfXEA` — live, executable |
+| Creator fee, bonding curve | **0.300%** of 1.25% total |
+| Creator fee, PumpSwap | **tiered by market cap: 0.950% (420–1,470 SOL) down to 0.050% (98,240+ SOL)** |
+| Fee asset | **wSOL** |
+| Claim | `collect_coin_creator_fee`, **permissionless — no signer** |
+| Creator vault PDA | seeds `["creator_vault", coin_creator]` |
+| Changing the creator later | `admin_set_coin_creator`, **Pump's admin, not ours** |
+
+**A launched token is Token-2022, not SPL Token.** Sampled
+`2gMuEXhrfxEr71Hj1YacP9uRvdGFZtrUscbaNnNFpump`: owner
+`TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb`, 6 decimals, supply 1e15,
+extensions **`metadataPointer` and `tokenMetadata` only** — no transfer hook, no
+transfer fee, no permanent delegate.
+
+**Holder accounts for that mint, by size** (`getProgramAccounts`, 2026-09-02):
+
+| filter | accounts |
+|---|---|
+| `dataSize: 165` — *what `snapshot/rpc.ts` filters on today* | **10** |
+| `dataSize: 170` — Token-2022 ATA | **590** |
+| `dataSize: 182` | 1 |
+| no size filter | **600** |
+
+Our snapshot would see 1.7% of holders and produce a root that verifies over the
+wrong set. `docs/round-2026-09-02-pumpfun.md` §3.
+
+**The mint may be supplied.** The `pump` suffix is a vanity convention and not
+enforced: `F4PaKuUPQ5c5QdkXqqjcprjnWXpQ2Qh4aCadobjNT4vP` was launched without it.
+
+**Not established:** whether `create` accepts a PDA signer, so whether
+`coin_creator` can be a Squads vault from launch. The bonding curve's own claim
+instruction was not read.
