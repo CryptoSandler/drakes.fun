@@ -59,6 +59,24 @@ Meteora plan was a flat 1.6% at any size.
 *Confirmed at runtime, not only from the account: the fee program's `GetFees`
 returned `lp 0 · protocol 95 · creator 30` during a devnet buy.*
 
+**What the rate is worth is volume, and the honest form of that is a range with
+a case beside it.** 0.300% of nothing is nothing, and the percentage on its own
+tells a reader neither the floor nor the ceiling.
+
+*One measured point, someone else's, added 2026-09-02:* a third party's pump.fun
+coin paid its creator **~601 SOL across nine distributions on its launch day**,
+each with a signature; two of the three sampled resolve on mainnet and match to
+the lamport, and the project's own **~1,000 SOL** running total is asserted
+rather than derived. `docs/references.md`, samilore.org.
+
+**It changes nothing above it.** It is one coin, one day, and not a forecast of
+ours: a coin that nobody trades pays 0.300% of nothing for as long as that
+lasts. D31 stands on the *shape* of the schedule — the rate decays as the coin
+grows — and a single case at the loud end of the distribution is not an argument
+against it. The reason it is written down at all is the opposite of a pitch: a
+range with a real number at each end is harder to read optimistically than a
+percentage with no scale attached.
+
 **D31 stands at the corrected number, and this is the reasoning.** 0.300% on
 the curve and up to 0.950% is better than the 0.05% I reported in error, and it
 is still not a reason to put the hoard back in the first three lines:
@@ -400,7 +418,7 @@ Five SOL still clears the ceremony's cost — two approvals and one Jupiter
 route. **On the bonding curve's 0.300% it is about three days of 500 SOL daily
 volume, and above 98,240 SOL of market cap it is twenty** — the wait gets longer
 as the coin gets bigger, which is the schedule's shape and not a choice of ours. `$PUMP` carried **US$37.75M of on-chain
-liquidity** when it was last read (`references.md`, 2026-09-01), so 25 SOL is far
+liquidity** when it was last read (`references.md`, 2026-09-01), so 5 SOL is far
 inside the range where routing is not the interesting variable.
 
 **Why the 7-day ceiling.** It stops a busy week turning into a daily job and
@@ -1098,7 +1116,11 @@ construction: `redeem` computes a share from `live_supply` and reads no trait.
 *Owner's decision, 2026-09-02, after `docs/round-2026-09-02-pumpfun.md`.*
 
 **Retired in full: B3.** There is no pool of ours, so the mint has no sort order
-to satisfy against wSOL and the CI assertion that pinned it is gone. The Meteora
+to satisfy against wSOL and the CI assertion that pinned it is gone — **deleted
+in b22, 2026-09-02**, where `scripts/check-mint-order.ts` became
+`scripts/check-ground-mint.ts` and the test became the one assertion the pin
+still earns: that every document an operator copies the address from prints it
+identically. The Meteora
 token badge request (`docs/meteora-badge-request.md`) was never sent and is now
 moot.
 

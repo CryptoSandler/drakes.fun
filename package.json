@@ -22,6 +22,8 @@
   },
   "devDependencies": {
     "@coral-xyz/anchor": "^0.31.1",
+    "@irys/upload": "^0.0.15",
+    "@irys/upload-solana": "^0.1.8",
     "@meteora-ag/cp-amm-sdk": "^1.4.7",
     "@sqds/multisig": "^2.1.4",
     "@types/node": "^22.10.2",

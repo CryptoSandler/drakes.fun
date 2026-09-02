@@ -577,7 +577,13 @@ worth having. Implemented in `scripts/verify-fee-path.ts` and falsified by
 pointing the receiver at the operator — the script refuses and names both
 addresses.
 
-### D26 — The pair is `$DRAKES`/wSOL, and the hoard is bought on a published rule
+### D26 — ~~The pair is `$DRAKES`/wSOL~~ — **the pair is superseded 2026-09-02 by D30**; the conversion rule survives
+
+**Read D30 first.** There is no pool of ours: `$DRAKES` launches on pump.fun.
+Everything below about the pair, the sort order and the CI assertion is history
+and is kept because the reasoning is what D30 argued against. **The conversion
+rule survives whole** — the fee still arrives in SOL — but two of its numbers
+moved, marked below.
 
 **Decided by the owner, 2026-09-01, after D24 showed the `$PUMP` pool cannot be
 created.** The pool is `$DRAKES`/**wSOL** on the same public static config
@@ -597,9 +603,15 @@ first byte is `0x06`. `scripts/check-mint-order.ts` asserts the order against a
 literal address and the assertion runs in CI, because it is the one property
 that cannot be fixed once the pool exists (T10).
 
-**The conversion rule is published rather than left to judgement** — 25 SOL,
-weekly ceiling, monthly floor above 5 SOL, Jupiter, 2-of-3, every signature on
+**The conversion rule is published rather than left to judgement** — ~~25 SOL,
+weekly ceiling, monthly floor above 5 SOL~~, Jupiter, 2-of-3, every signature on
 `/verify`. `DESIGN.md` §3.6 carries the numbers and the reasons.
+
+**The threshold is 5 SOL and the floor's condition is 1 SOL (D30, 2026-09-02).**
+The figures struck above were sized for a flat 1.6% fee; against pump.fun's
+schedule 25 SOL is 417 days of waiting on the bonding curve. They are struck
+rather than overwritten because a ledger that edits its own numbers cannot be
+audited — `DESIGN.md` §3.6 is the live rule.
 
 **The cost, stated because it is new:** between the trade and the conversion the
 hoard holds SOL and not `$PUMP`. The monthly floor bounds that at thirty days
@@ -661,6 +673,109 @@ would have rendered a stack trace where the page should be. Both pages now say
 *"this deployment is not pointed at a chain"* and show no figures. `CLAUDE.md`:
 refusing is the safe failure.
 
+## D30 — The launch venue is pump.fun, and B3 is retired
+*Decided by the owner, 2026-09-02, after `docs/round-2026-09-02-pumpfun.md`.
+Supersedes D26 and, with it, D3's direct Meteora pool. The reasoning and the
+numbers are `DESIGN.md` §9.6 and §1.1; this is the policy.*
+
+`$DRAKES` launches on pump.fun's own bonding curve and graduates to PumpSwap.
+There is no pool of ours, no liquidity of ours to seed, and no position of ours
+to lock.
+
+**What made the decision.** D24 found that DAMM v2 refuses a pool for a
+Token-2022 mint carrying a `transferHook` without a Meteora badge, `$PUMP` has
+none, and no DAMM v2 pool holds it. D26 routed around that with a
+`$DRAKES`/wSOL pool. The owner's call is that a venue with its own distribution
+is worth more than a venue whose fee we chose, and the fee is the thing being
+traded away — see D31, which is the same decision seen from the copy's side.
+
+**What it retires.**
+
+- **B3 in full**, and with it the one step this project called unfixable: the
+  mint no longer has a sort order to satisfy, because there is no pair of ours
+  for it to sort in (`DESIGN.md` T10 is now history). The CI assertion that
+  pinned the order is deleted in b22; `scripts/check-mint-order.ts` becomes
+  `scripts/check-ground-mint.ts`, an identity check and nothing else.
+- **The Meteora badge request** (`docs/meteora-badge-request.md`). Never sent,
+  now moot.
+- **The `$DRAKES`/wSOL devnet pool as a launch rehearsal.** Its findings survive
+  — the Squads ceremony, the packet ceiling, the destination assertion — because
+  they were about Squads and Jupiter, not about Meteora.
+
+**What it keeps.**
+
+- **The ground mint as an identity pin.** `1212YJcDwzgLXxmwbtmkYaEB53p6y958cn2tENt3C3dM`
+  is still the mint `$DRAKES` launches with, because pump.fun's `create` takes
+  the mint as a signer and a keypair published in advance is a mint nobody can
+  claim was swapped at launch. The `pump` suffix is their grinder's convention
+  and is not enforced by the program — observed on a live coin, 2026-09-02.
+- **§3.6 entire**, because `collect_coin_creator_fee` pays in **wSOL**, which is
+  the premise §3.6 was written on. Its threshold moved; the rule did not.
+
+**Two numbers moved with it, and both are in `DESIGN.md`:**
+
+1. **§3.6's threshold is 5 SOL, and its floor condition is 1 SOL.** It was 25
+   SOL and 5, sized for a flat 1.6% fee. Under pump.fun's schedule 25 SOL is
+   **417 days** of waiting on the bonding curve — a rule that reads as a promise
+   and behaves as an excuse. The ceiling (7 days) and the floor (30 days) are
+   unchanged.
+2. **The headline states no rate.** The fee is a band pump.fun sets — 0.300% on
+   the curve, up to 0.950%, down to 0.050% — so the site says *"every trade
+   sends its creator fee to the hoard"* and puts the read table, with its date,
+   on `/verify`.
+
+**The cost, stated because it is new and permanent.** `create` takes `creator`
+as an argument, so the Squads vault is the creator from launch with no PDA
+signing — but `set_creator` is gated on an authority that belongs to pump.fun.
+**If the creator is wrong at launch it is wrong forever**, which is why C3 is
+one of the three irreversible steps in `docs/launch-runbook.md` and why it was
+rehearsed end to end on devnet (`docs/pumpfun-create-devnet.md`).
+
+**The second cost: the schedule is not ours.** Meteora's static config was
+immutable and pump.fun's `FeeConfig` is theirs to change. `scripts/check-pump-schedule.ts`
+runs daily against the real account and `/verify` degrades to "not confirmed"
+after a week without one, which is the honest failure and not a fix.
+
+**Revisit if:** pump.fun changes the fee schedule against us, or a venue appears
+that pays a flat rate at size. Neither undoes the launch — the creator and the
+mint are fixed — so a revisit is about where the *next* thing launches.
+
+## D31 — The hoard is a secondary property, not the thesis
+*Decided by the owner, 2026-09-02. The full argument and the corrected fee
+table are `DESIGN.md` §1 and §1.1.*
+
+**§1 is the hourly issuance and nothing else**: one piece an hour to a holder,
+chosen in proportion to their holding, never chosen by us, recomputable by a
+stranger. The hoard moved to §1.1 with a real figure, off the front page's
+pitch, and to the bottom of `/verify` below the two checks and the command.
+
+**Why.** The hoard was the centre of §1 when the fee was expected to be a flat
+1.6%. pump.fun's schedule pays **least exactly where the collection is worth
+most** — 0.950% while the coin is small, 0.050% above 98,240 SOL of market cap.
+A property with that shape cannot be the reason to hold anything, and a pitch
+that leads with it is a pitch that gets weaker as the project succeeds.
+
+**What it forbids, on top of §7's ban on `backed`:** the hoard may not be the
+subject of a headline, of the masthead, or of the first three lines of any
+pitch. Describing it with its real number, in its own place, is allowed and is
+what the site does.
+
+**What it does not touch.** `redeem` is unchanged and still Phase 2. Nothing
+about the mechanism was removed — only its place in the argument.
+
+**It survived its own correction, which is the reason to trust it.** The fee was
+reported here as a flat 0.05% and that was wrong: the `FeeConfig` account is
+owned by a third program, `pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ`, so a
+discriminator scan under the two programs whose IDLs declare it returned zero
+results that read exactly like "not deployed". Read from the real account the
+creator's share is 0.300% on the curve and up to 0.950% on PumpSwap. **D31 was
+decided on the shape and not on the magnitude** — the rate decays as the coin
+grows either way — so the better number did not put the hoard back in the first
+three lines.
+
+**Revisit if:** the fee schedule ever pays *more* at size. That would invert the
+shape the decision was made on, and it is pump.fun's to change.
+
 ## D8 addendum — when the upgrade authority is revoked
 *2026-09-02.*
 
@@ -684,13 +799,40 @@ the condition is met — it is deliberately **not** a step in
 
 ## Still open
 
-- **Q3 — Launchpad.** A direct Meteora pool is decided by D3. Whether to *also*
-  do anything on pump.fun's own surface for distribution is not.
+- ~~**Q3 — Launchpad.**~~ **Closed 2026-09-02 by D30**: pump.fun is not an
+  addition to a pool of ours, it is the venue. There is no Meteora pool to be
+  *also* anything to.
 - **Q7 — The floor sentence.** The exact public wording of "the floor is worth
   whatever `$PUMP` is worth" is a promise the moment it ships. It gets written
   once, when asked for explicitly.
 - **The `Exhausted` sentence.** D10 is a one-way door and needs its own line of
   copy. Same rule as Q7: written once, when asked for.
+- **A launcher whose creator fees go to the hoard.** *A question, 2026-09-02,
+  and deliberately nothing more.* `otcdesks.cash` runs a launchpad where each
+  coin's creator fee is assigned to their protocol in the create transaction and
+  claimed by a program on a timer (`docs/references.md`). The same shape points
+  at a Phase 2 question for us: **should `$DRAKES` be the fee destination for
+  coins other people launch, so the hoard grows from more than one coin's
+  volume?**
+
+  **It is asked and not answered, and the reasons it is only a question are the
+  interesting part.** It would make this project a launchpad, which is a
+  different thing to operate and a different thing to be responsible for; it
+  would put the hoard's income under somebody else's launch decisions; and it is
+  the kind of scope that arrives sounding like growth. **Phase 2 is `redeem`,
+  the reserve PDA and an audit** (B9) — this is not in it, and adding it would
+  be the owner's decision and its own round, after the audit rather than before.
+  Recorded so it is not re-derived from scratch in six months.
+- **The asset's URI is not bound to its piece, and only the program can bind
+  it.** `settle_issuance` takes `name` and `uri` from the caller and mints
+  with them unvalidated; the piece id is chosen inside the same instruction, so
+  the cranker cannot pass the right one and today's default names the asset for
+  the hour instead of the piece. Found by B2 on 2026-09-02
+  (`docs/upload.md`). **The recommendation is that the program build the URI
+  on chain from a `base_uri` written once by `initialize`** — an Anchor
+  change, cheap while Phase 1 holds nothing and impossible after the upgrade
+  authority is revoked (D8). It is a change to the on-chain program, so it gets
+  its own round before a line is written.
 - **A proper trademark clearance search** in classes 9, 35, 41 and 42. D1 used a
   web search over Justia and Trademarkia, which is not clearance. It runs before
   real money goes into the brand.

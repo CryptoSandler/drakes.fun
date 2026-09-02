@@ -155,6 +155,12 @@ export default async function Verify() {
           <span className={`chip${cluster === 'mainnet' ? '' : ' chip--rehearsal'}`}>
             {cluster === 'mainnet' ? 'verify' : cluster}
           </span>
+          {/* The register is linked from the body and NOT from here. The
+              masthead is `auto 1fr auto` with `white-space: nowrap`, so its
+              third slot's max-content width is a floor under the whole page:
+              measured 2026-09-02, the page stops fitting below ~490px and
+              clips at 390. Adding a third link to that slot makes a live
+              defect worse for the sake of one more link. */}
           <span className="masthead__end">
             <a href="/">Plate</a>
             <ThemeSwitch />
@@ -234,6 +240,10 @@ export default async function Verify() {
                   </dl>
                 </>
               )}
+              <p className="note" style={{ maxWidth: '62ch' }}>
+                Every settlement is also listed one by one, with its signature and the hour it
+                belongs to, in <a href="/verify/timeline">the register</a>.
+              </p>
               <p className="note" style={{ maxWidth: '62ch' }}>
                 <strong style={{ color: 'var(--color-ink-2)' }}>
                   That row is a record of a job we ran, not evidence about the chain.

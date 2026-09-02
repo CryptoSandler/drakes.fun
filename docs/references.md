@@ -457,6 +457,24 @@ From `uploader.irys.xyz/price/solana/:bytes`. SOL at **$103.62** (Jupiter).
 $8**, and even a generous 1 MB per image lands at $16. This is not a budget line
 item. The earlier "under $100, estimated" is superseded.
 
+### Irys, run rather than quoted — 2026-09-02
+
+The quotes above are still the cost model. What a real run adds:
+
+- **The node is `https://devnet.irys.xyz` for devnet and it works with a
+  Solana devnet keypair.** `Uploader(Solana).withWallet(<base58 secret>).withRpc(<devnet rpc>).devnet()`.
+- **Devnet, 4,000 flat-colour PNGs at 512 px = 25.4 MB**, priced at
+  **12,413,705 lamports** by `getPrice` including a metadata allowance.
+- **A funded balance does not bypass the free-upload rate limit.** With
+  13,655,076 lamports funded, 981 of 4,000 items uploaded and the rest returned
+  `402 Free transaction limit exceeded, funds required - retry after 14s`.
+  Items under the node's free threshold are treated as free whether or not you
+  have paid. `uploadFolder` is resumable — it writes `<folder>-manifest.csv`
+  and skips what is in it — so the recovery is to call it again, which
+  `scripts/upload-collection.ts` now does on a loop.
+- **Untested:** whether real art files (~500 KB each, above the free threshold)
+  avoid the limit entirely. The mainnet run will answer it.
+
 ### Correction: SOL price
 
 Earlier projections in `spec-round-2026-09-01.md` valued redemption fees at an
@@ -464,6 +482,124 @@ assumed $220/SOL. **SOL is $103.62** (2026-09-01). A 0.05 SOL redemption fee is
 **$5.18**, and 1,000 redemptions is **~$5,180**, not ~$11k. The conclusion is
 unchanged — it is a rounding error against the fee stream — but the number was
 wrong and is corrected here.
+
+## samilore.org — what a creator fee is worth when a coin moves
+
+*Read **2026-09-02** from `https://samilore.org`, and the signatures below were
+re-read from mainnet the same day. Somebody else's project, studied for one
+number and one shape. Nothing about it is copied.*
+
+A third party launched a pump.fun coin. The creator fee it pays goes to a wallet
+that project publishes, and the project's page lists the distributions with a
+signature beside each one.
+
+| | |
+|---|---|
+| coin | `4LHBp4xYs3suKjkCuo1qaNaxufWd4Bdp6QYsBJZNpump` |
+| the mint's program | **Token-2022** (`TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb`), 6 decimals, supply 972,495,081 — read on chain, and an independent confirmation of what D30 found the hard way |
+| the wallet the page names | `HuGrvjfkxzSm8Z2EsA51SFbMaCmto3ZmpJR32T7261tD` |
+| launch | **2026-08-11** |
+
+**The figure, and exactly how solid it is.**
+
+- **~601 SOL, across nine distributions, on the launch day itself.** That is the
+  page's claim.
+- **I sampled it rather than believing it.** Of three signatures the page lists,
+  **two resolve on mainnet and match to the lamport**:
+
+  | signature | SOL to the published wallet | when |
+  |---|---|---|
+  | `3YAeuFw7n4itwcMXNjNkjWzBMohtPrDxNNUcpPNX87MkQX5mxGkpRM87rAqK4gk5q19ZxuDBkEEJgpVxZa2nXDJU` | 3.587828175 | 2026-08-11T06:15:24Z |
+  | `4tkJPCQRRfkYoAZ8a9mKDmLVjAn2MiWosTk6axaBZM2tjRRDen3w5G5Jz95QV45EcqCWBGMfUJYFNt3BeuqgJ5J1` | 44.920810914 | 2026-08-11T06:21:30Z |
+
+- **The third did not resolve**, and I cannot say whether the signature is wrong
+  or my copy of it is: it came out of a summary of the page rather than off the
+  page's own DOM. **It is recorded as unresolved rather than dropped.**
+- **The ~1,000 SOL total is the project's own estimate**, stated on 2026-08-29.
+  It is asserted, not derived, and it is labelled that way here for the same
+  reason D28 labels the seeded conversion: a figure nobody can re-derive is a
+  figure that carries a different weight.
+
+**Why it is in this file.** Two things, and neither is the coin.
+
+1. **A range, not a forecast.** `DESIGN.md` §1.1 states our creator fee as a
+   band pump.fun sets. What the band is *worth* depends entirely on volume, and
+   this is one measured point on that axis — one coin, one day, someone else's.
+   It does not change §1's hierarchy (D31) and it is not evidence about ours.
+2. **The shape of the page.** It is a dated timeline where every entry carries
+   its own primary source — a signature, a link, a capture. That is the same
+   claim `/verify` makes, told as a chronology instead of as two checks, and it
+   is what the timeline view in `/verify/timeline` was built from.
+
+## otcdesks.cash — a creator fee claimed by a program, on a timer
+
+*Read **2026-09-02** from `https://otcdesks.cash` and `/docs`; every account
+below was re-read from mainnet the same day. Somebody else's project. What is
+studied is the mechanism.*
+
+**What it is, in their words:** *"Desks that hold real tokenised stock, and a
+launchpad whose creator fees buy it for the people holding."*
+
+**The mechanism, quoted rather than paraphrased:**
+
+- The creator fee is *"assigned to the protocol in the same transaction that
+  creates it"*, and *"pump gives up its own ability to change the split once it
+  is set."*
+- *"Every minute the protocol checks what the coin has earned and claims it."*
+  Permissionless, and *"split four ways inside the same transaction it arrives
+  in."*
+- *"The 70% is swapped into the stock the coin chose and sent straight out to
+  holders… split pro rata."* *"There is nothing to claim and no button to
+  press."*
+
+**The accounts, read from mainnet rather than copied:**
+
+| | | read 2026-09-02 |
+|---|---|---|
+| program | `AjMx5My4YUDHMiCtLpTAtgkiUJgrpJnQqd5AcQnddHQW` | executable, BPFLoaderUpgradeable |
+| config | `9b5VLbpXedgXcjWyboXqHMbDgeHJtb5PBsy6TE18REU4` | **owned by the program**, 1,096 bytes |
+| pot | `BZcvtxDy4WihU24k3pezzajuiqYtTUHPfH7b5m26BucR` | system-owned, 7,061,003 lamports |
+| Metaplex Core | `CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d` | the same program we use |
+
+**And the thing they publish that they may not have meant to.** Their program is
+still upgradeable, and the authority is
+`DqMAVQ1RcQath18PrSLBVZHjwWXXN8cFEua2XuQ2rbQh` — **on the ed25519 curve, so a
+single keypair and not a multisig vault**, holding 20.11 SOL. Read the way C1b
+reads ours: programdata `4eGwwZHpVHaqHgm7RoXNakhcydUKCC4EVaZWB65txmLM`, option
+byte 1, authority at offset 13. That is a live protocol holding value whose code
+one key can replace, which is the exact window D8 and C1b exist to close, and it
+is now a measured example rather than an argument.
+
+### What we take
+
+1. **The claim is a job, not a ceremony.** D30 already established that
+   `collect_creator_fee` needs no signer, so a stolen crank key cannot redirect
+   a lamport of it. This is the same instruction run on a **timer**, in public,
+   by somebody else — evidence that the cadence is a scheduling decision and not
+   a risk. It belongs beside the hourly crank rather than as a step somebody
+   remembers monthly. `DESIGN.md` §3.6's conversion ceremony is unaffected:
+   *claiming* is permissionless, *converting* is the 2-of-3.
+2. **A table of accounts, rendered on `/verify` and read from the config account
+   rather than typed into the page.** Publishing the program, the config and the
+   destinations is what lets a stranger check the rest, and their config is
+   owned by their program — so the honest version of that table reads the
+   addresses out of the account at request time. Typing them into a component
+   would make the page a claim about the chain instead of a read of it. **Not
+   built here; recorded as the shape when it is.**
+
+### What we do not take
+
+**The distribution.** Fees swapped into an asset and pushed pro rata to every
+holder is a different product from ours in three ways, and each one is a rule
+this project already wrote down:
+
+- It makes the fee **the reason to hold**, which is what D31 decided against on
+  the shape of pump.fun's schedule.
+- It **pushes value to holders on a schedule**, which is a characterisation
+  `DESIGN.md` §7 declines to make for itself — our redemption is Phase 2,
+  burn-based and opt-in, and the piece is what is redeemed.
+- The asset is **tokenised stock**. This project does not have a view on that
+  and is not going to acquire one in a reference file.
 
 ## pump.fun — the launchpad, the fee schedule and a launched token
 

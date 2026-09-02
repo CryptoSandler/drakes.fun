@@ -71,9 +71,29 @@ public before anyone knows who will be issued anything.
 Verification is behavioural, not a spot check: fetch a random 5% back from
 Arweave gateways and diff against local bytes.
 
-**Depends on:** B1 + final art.
+**The pipeline landed 2026-09-02 in b22 and was run end to end on Irys devnet
+against flat-colour placeholders** — 4,000 images and 4,000 metadata documents,
+uploaded, sampled back and diffed. `docs/upload.md` is the procedure and the
+findings. **The day the art lands is three commands**, and the folder is the
+only thing that changes.
 
-## B3 — Mint, pool, liquidity ⛔
+**Two things the run established that the plan did not know:**
+
+1. **There are two manifests and C2 commits the second.** The program's
+   `InitializeParams` says the hash covers "id, tier, traits, **URI**", and a
+   URI cannot exist before the bytes have an address. `generate-collection.ts`
+   printed its own hash as the one `initialize` commits; it now prints the
+   opposite.
+2. **Nothing binds the asset to its piece.** `settle_issuance` takes `name`
+   and `uri` as caller-supplied arguments and mints with them unvalidated,
+   while the piece id is chosen inside that same instruction — so the cranker
+   cannot know which piece it is minting. The crank's current default names the
+   asset for the HOUR. Three ways out in `docs/upload.md`; it is a program
+   decision and it is on "Still open".
+
+**Depends on:** B1 + final art. **The pipeline no longer does** — it runs today.
+
+## B3 — ~~Mint, pool, liquidity~~ — **RETIRED 2026-09-02 by D30**
 
 Three things in order, each irreversible:
 
@@ -90,12 +110,22 @@ Three things in order, each irreversible:
 Full devnet rehearsal first, including a fee claim that lands in the PUMP-side
 token, asserted rather than eyeballed.
 
-**⛔ BLOCKED as written, 2026-09-01 (D24).** DAMM v2 refuses a pool for a
-Token-2022 mint carrying a `transferHook` extension without a Meteora token
-badge, `$PUMP` has none, and there are zero DAMM v2 pools holding it. **Step 1 —
-grinding the mint keypair — must not run until the venue is settled**, because
-the sort order is a property of the pair. The rest of the money path was
-rehearsed against an equivalent pool and works: `docs/moneypath-devnet.md`.
+**⛔ RETIRED IN FULL, 2026-09-02 (D30).** `$DRAKES` launches on pump.fun's own
+bonding curve: there is no pool of ours, no liquidity of ours to seed, and no
+position of ours to lock. **All three steps above are dead**, including the one
+this document called unfixable — a mint has no sort order to satisfy when there
+is no pair of ours for it to sort in. The CI assertion that pinned it was
+deleted in b22 and `scripts/check-mint-order.ts` became
+`scripts/check-ground-mint.ts`, an identity check.
+
+**What replaced it** is C3 in `docs/launch-runbook.md`: one `create_v2` with the
+Squads vault as `creator`, rehearsed end to end on devnet
+(`docs/pumpfun-create-devnet.md`). It is still irreversible, for a different
+reason — `set_creator` is gated on an authority that belongs to pump.fun.
+
+**Kept:** the ground mint `1212YJcDwzgLXxmwbtmkYaEB53p6y958cn2tENt3C3dM` as an
+identity pin, and the money-path findings from `docs/moneypath-devnet.md`, which
+were about Squads and Jupiter rather than about Meteora.
 
 **Depends on:** B0. **Gate:** owner signs each mainnet transaction.
 
@@ -146,9 +176,11 @@ migrations first, then the one with them, per CLAUDE.md):
    the `disposable_database` stamp, the event runner, and a minimal front page
    that reads the chain and not the database (D23).
 
-**Still outstanding in B5:** the snapshot Merkle work already shipped in B4, but
-the rendered verify page, the per-issuance permalink and the proof widget are
-not built. The reconciliation and the replay exist as commands.
+**Closed 2026-09-02.** The rendered `/verify` page went to production with the
+site (D29, D31). The **per-issuance permalink `/verify/<n>`** and its proof
+widget landed in b22, because B7's post has to link somewhere that shows the
+reader the recipient, the piece and the proof it was derived rather than chosen.
+The reconciliation and the replay remain commands.
 
 ## B6 — Site
 
@@ -162,9 +194,22 @@ the Phase 1 temporary-custody disclosure with its trigger and deadline (D8).
 
 ## B7 — The X bot
 
-One post per hour: the piece, its index, its traits, the recipient, the reserve.
-Posts only what it read back from the chain. If the issuance did not settle, it
-says so.
+One post per hour: the piece, the recipient, the slot it was drawn from, and the
+link that recomputes it. Posts only what it read back from the chain. If the
+issuance did not settle, it says so.
+
+**Landed 2026-09-02 in b22.** `scripts/xbot.ts`, hourly on the crank host
+(`docs/crank-hosting.md`), over `src/lib/bot/`. Full doc: `docs/xbot.md`.
+
+**Two things the batch plan said and the build did not.** *Traits* are not in
+the post and neither is *the reserve*: traits are fixed by a manifest that is
+not committed yet, so a tier in a post would be a claim a reader could check and
+find false (D13), and the reserve is the hoard, which D31 keeps out of every
+headline. The tier appears on its own the day the manifest hash on chain matches
+the file we hold — the gate is written and tested, and it is closed.
+
+**Rehearsed over the whole devnet history**: 303 issuances, in hour order, with
+the 3 gaps skipped and the 1 unsettled hour saying so.
 
 **Depends on:** B4.
 

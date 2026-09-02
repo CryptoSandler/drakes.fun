@@ -7,6 +7,12 @@ of our own. This supersedes **D26** (the `$DRAKES`/wSOL DAMM v2 pool) and **B3**
 **No code was written and nothing on the program or the site was touched.**
 Every number below was read on **2026-09-02** from the source named beside it.
 
+**Recorded as D30 and D31 in `docs/decisions.md` on 2026-09-02.** One number
+below did not survive the round it belongs to: **§3.6's threshold is 5 SOL, not
+the 25 discussed here**, and its floor condition is 1 SOL. The argument is left
+as it was argued — it is the record of a round, not the rule — and `DESIGN.md`
+§3.6 is the rule.
+
 ---
 
 > ## TWO CORRECTIONS, same day
