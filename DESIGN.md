@@ -59,6 +59,23 @@ Meteora plan was a flat 1.6% at any size.
 *Confirmed at runtime, not only from the account: the fee program's `GetFees`
 returned `lp 0 · protocol 95 · creator 30` during a devnet buy.*
 
+**D31 stands at the corrected number, and this is the reasoning.** 0.300% on
+the curve and up to 0.950% is better than the 0.05% I reported in error, and it
+is still not a reason to put the hoard back in the first three lines:
+
+- **The shape did not change, only the magnitude.** The rate *decays as the coin
+  grows* — the hoard earns least when the collection is worth most. D31 was
+  decided on that shape.
+- **It is not our number.** A pitch line whose value lives in somebody else's
+  config is a line we amend whenever they change it, and `/verify` already has
+  to say "not confirmed" when a week passes without a check.
+- **§7 forbids the framing anyway.** The hoard may be described; it may not be
+  offered as backing, floor or reason to buy, and a three-line pitch has room
+  for exactly one of those readings.
+
+So it stays in §1.1, described with its real figure. *The owner asked the
+question and this is the applied recommendation, not a decision taken for them.*
+
 **This number was reported wrong once, on 2026-09-02, and the error is recorded
 rather than quietly fixed.** I scanned for the `FeeConfig` discriminator under
 the pump and PumpSwap programs, found none, and reported a flat 0.05% from

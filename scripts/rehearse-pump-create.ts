@@ -30,8 +30,10 @@ const {
 } = require('@solana/web3.js')
 
 const PUMP = new PublicKey('6EF8rrecthR5Dkzon8Nwu78hRvfCKubJ14M5uBEwF6P')
-const MPL = new PublicKey('metaqbxxUerdq28cj1RbAWkYQm3ybzjb6a8bt518x1s')
-const TOKEN = new PublicKey('TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA')
+// `create_v2` mints under Token-2022, which is what every real pump.fun coin
+// turned out to be (`docs/references.md`, 2026-09-02).
+const TOKEN = new PublicKey('TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb')
+const MAYHEM = new PublicKey('MAyhSmzXzV1pTf7LsNkrNwkWKTo4ougAJ1PPg47MD4e')
 const ATA_PROGRAM = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL')
 /**
  * The fee program, and finding it is the point of this comment.
@@ -45,9 +47,10 @@ const ATA_PROGRAM = new PublicKey('ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL'
  */
 const FEE_PROGRAM = new PublicKey('pfeeUxB6jkeY1Hxd7CsFCAjcbHA9rWtchMGdZ6VojVZ')
 const DISC = {
-  create: Buffer.from('181ec828051c0777', 'hex'),
+  createV2: Buffer.from('d6904cec5f8b31b4', 'hex'),
   buy: Buffer.from('66063d1201daebea', 'hex'),
   collect: Buffer.from('1416567bc61cdb84', 'hex'),
+  extend: Buffer.from('ea66c2cb96483ee5', 'hex'),
 }
 
 const rpcUrl = process.env.RPC_URL
@@ -84,9 +87,6 @@ const bondingCurve = pda([Buffer.from('bonding-curve'), mint.publicKey.toBytes()
 const global = pda([Buffer.from('global')])
 const eventAuthority = pda([Buffer.from('__event_authority')])
 const mintAuthority = pda([Buffer.from('mint-authority')])
-const metadata = PublicKey.findProgramAddressSync(
-  [Buffer.from('metadata'), MPL.toBytes(), mint.publicKey.toBytes()], MPL,
-)[0]
 const creatorVault = pda([Buffer.from('creator-vault'), vault.toBytes()])
 
 process.stdout.write(
@@ -103,7 +103,24 @@ const before = {
   vault: await conn.getBalance(vault),
 }
 
-// 1 · create ---------------------------------------------------------------
+// 1 · create_v2 ------------------------------------------------------------
+// **`create_v2`, not `create`, and the program chose for us.** A v1 coin builds
+// fine and then its buys fail with `InvalidBondingCurveV2`: the live buy path
+// wants a v2 curve that a v1 create never made. `create_v2_enabled` is true on
+// both clusters. So v1 is legacy in everything but name.
+//
+// `is_mayhem_mode: false` and `is_cashback_enabled: false` — two pump.fun
+// mechanics we do not need and did not investigate. Opting in to a mechanic
+// whose rules live in somebody else's program, on the coin whose creator can
+// never be changed, is not a thing to do casually.
+// Under the MAYHEM program, not under pump — the IDL lists the seeds and never
+// says which program derives them, and the wrong guess fails with
+// `ConstraintSeeds` naming the address it wanted.
+const globalParams = pda([Buffer.from('global-params')], MAYHEM)
+const solVault = pda([Buffer.from('sol-vault')], MAYHEM)
+const mayhemState = pda([Buffer.from('mayhem-state'), mint.publicKey.toBytes()], MAYHEM)
+const mayhemTokenVault = ata(mayhemState, mint.publicKey)
+
 const createIx = new TransactionInstruction({
   programId: PUMP,
   keys: [
@@ -112,30 +129,34 @@ const createIx = new TransactionInstruction({
     { pubkey: bondingCurve, isSigner: false, isWritable: true },
     { pubkey: ata(bondingCurve, mint.publicKey), isSigner: false, isWritable: true },
     { pubkey: global, isSigner: false, isWritable: false },
-    { pubkey: MPL, isSigner: false, isWritable: false },
-    { pubkey: metadata, isSigner: false, isWritable: true },
     { pubkey: payer.publicKey, isSigner: true, isWritable: true },
     { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
     { pubkey: TOKEN, isSigner: false, isWritable: false },
     { pubkey: ATA_PROGRAM, isSigner: false, isWritable: false },
-    { pubkey: SYSVAR_RENT_PUBKEY, isSigner: false, isWritable: false },
+    { pubkey: MAYHEM, isSigner: false, isWritable: true },
+    { pubkey: globalParams, isSigner: false, isWritable: false },
+    { pubkey: solVault, isSigner: false, isWritable: true },
+    { pubkey: mayhemState, isSigner: false, isWritable: true },
+    { pubkey: mayhemTokenVault, isSigner: false, isWritable: true },
     { pubkey: eventAuthority, isSigner: false, isWritable: false },
     { pubkey: PUMP, isSigner: false, isWritable: false },
   ],
   data: Buffer.concat([
-    DISC.create,
+    DISC.createV2,
     str('Drakes Rehearsal'), str('DRAKESR'),
     str('https://drakes.fun/rehearsal.json'),
     vault.toBuffer(),
+    Buffer.from([0]), // is_mayhem_mode
+    Buffer.from([0]), // is_cashback_enabled
   ]),
 })
 const sig1 = await sendAndConfirmTransaction(
   conn,
-  new Transaction().add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }), createIx),
+  new Transaction().add(ComputeBudgetProgram.setComputeUnitLimit({ units: 600_000 }), createIx),
   [payer, mint],
   { commitment: 'confirmed' },
 )
-process.stdout.write(`create   ${sig1}\n`)
+process.stdout.write(`create_v2 ${sig1}\n`)
 
 // 2 · two buys from a different wallet -------------------------------------
 const buyIx = (amount: bigint, maxCost: bigint) => new TransactionInstruction({
@@ -162,6 +183,7 @@ const buyIx = (amount: bigint, maxCost: bigint) => new TransactionInstruction({
     // omitting them fails with `BuybackFeeRecipientMissing`. Read from the
     // account rather than pasted, so a change on their side is picked up.
     ...buybackRecipients.map((pubkey) => ({ pubkey, isSigner: false, isWritable: true })),
+    { pubkey: bondingCurveV2, isSigner: false, isWritable: true },
   ],
   data: Buffer.concat([DISC.buy, u64(amount), u64(maxCost), Buffer.from([0])]),
 })
@@ -173,6 +195,24 @@ const BUYBACK_OFFSET = 741
 const buybackRecipients = Array.from({ length: 8 }, (_, i) =>
   new PublicKey(globalData.subarray(BUYBACK_OFFSET + i * 32, BUYBACK_OFFSET + i * 32 + 32)))
 
+// `create_v2` writes a 115-byte BondingCurve; the full record is 151, and the
+// buy path wants the extended one. `extend_account` grows it in place, so the
+// `bonding_curve_v2` remaining account is the SAME address — a name in the IDL
+// that is about the record's shape, not about a second account.
+const extendIx = new TransactionInstruction({
+  programId: PUMP,
+  keys: [
+    { pubkey: bondingCurve, isSigner: false, isWritable: true },
+    { pubkey: payer.publicKey, isSigner: true, isWritable: true },
+    { pubkey: SystemProgram.programId, isSigner: false, isWritable: false },
+    { pubkey: eventAuthority, isSigner: false, isWritable: false },
+    { pubkey: PUMP, isSigner: false, isWritable: false },
+  ],
+  data: DISC.extend,
+})
+const sigExtend = await sendAndConfirmTransaction(conn, new Transaction().add(extendIx), [payer], { commitment: 'confirmed' })
+process.stdout.write(`extend    ${sigExtend}  (${(await conn.getAccountInfo(bondingCurve))!.data.length} bytes)\n`)
+const bondingCurveV2 = bondingCurve
 const buys: string[] = []
 for (const [amount, cost] of [[500_000_000_000n, 30_000_000n], [300_000_000_000n, 30_000_000n]] as const) {
   const tx = new Transaction().add(
