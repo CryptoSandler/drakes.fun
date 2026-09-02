@@ -49,6 +49,63 @@ Each failure named the next thing, and none of it is in the documentation:
 `extend_account` grows the 115-byte curve `create_v2` writes to the full 151.
 That was necessary and **not sufficient**: the buy still refuses.
 
+## The buy and the claim, run
+
+    extend    4rm4Y6T1CTJKwBU5WdHDJ3v7xfDVACtHM1SjJPN6x9S2...   151 bytes
+    buy       5qPPFwaQPHAwmzHiJzwBaBCNpH6pPe1sWhcftPoAWLUd...   creator-vault +560
+    buy       3P7xQWcAyDMiYpLoZVfCKZPp7sDL6WmSL9d5anLNmXA9...   creator-vault +420
+    collect   ymkoWReYMgnkQiXZRyyLngLNqVYDxvSUUs1WLaLSpZMY...
+
+    vault SOL        0.010000000 -> 0.010001540   (+1,540 lamports)
+    creator-vault    0.000812164 -> 0.000810624
+    BondingCurve.creator = 8Mxzqgfo... = the Squads vault
+
+**The claim was signed by the payer**, who is not the creator and not a member
+of the multisig. `collect_creator_fee` is permissionless with a fixed
+destination, confirmed by running it rather than by reading its account list.
+
+**It moves only what sits above rent exemption.** The creator-vault held 812,164
+lamports and 1,540 moved: the PDA keeps its rent and hands over the rest.
+
+**The fee arithmetic checks out at 30 bps.** 980 lamports reached the vault from
+the two buys, which is 0.300% of 326,667 lamports of volume — the rate the fee
+program's `GetFees` returned and the one `FeeConfig` carries. *(The vault gained
+1,540 rather than 980 because the claim also swept what an earlier attempt had
+accrued.)*
+
+## What it took, and the last two mistakes were mine
+
+Beyond the four errors listed above:
+
+- **The order of the remaining accounts.** `bonding_curve_v2` first, then **one**
+  buyback recipient — read off a real mainnet buy, not guessed. I had been
+  passing eight recipients ahead of the curve, so the program read a recipient
+  where it expected the curve.
+- **And then an edit of mine had overwritten the derived address with the
+  bonding curve**, so a corrected order was carrying a wrong value and the error
+  did not change. Two different bugs producing one identical message; the second
+  was found by checking that the fix was in the file rather than trusting that
+  the patch applied.
+- A no-op `SystemProgram` instruction with empty data is **not** a no-op: the
+  runtime rejects it as `invalid instruction data`.
+
+## `create` or `create_v2`: the sample answers it
+
+The 20 most recent coin creations on mainnet, by discriminator:
+
+| instruction | count |
+|---|---|
+| `create_v2` | **all of them** |
+| `create` | **zero** |
+
+**Nobody is calling v1.** And none of those coins has a `bonding-curve-v2`
+account — the record is derived, found absent, and the buy proceeds. So the
+account never needed creating; it needed to be *the right address in the right
+slot*.
+
+**Recommendation, applied: `create_v2`.** It is what the live product calls, its
+coins trade, and the whole path is now exercised end to end on devnet.
+
 ## What is NOT established
 
 - **The two buys did not go through**, and the reason is now specific rather

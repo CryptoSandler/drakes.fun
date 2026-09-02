@@ -231,22 +231,27 @@ const extendIx = new TransactionInstruction({
 })
 const sigExtend = await sendAndConfirmTransaction(conn, new Transaction().add(extendIx), [payer], { commitment: 'confirmed' })
 process.stdout.write(`extend    ${sigExtend}  (${(await conn.getAccountInfo(bondingCurve))!.data.length} bytes)\n`)
-const bondingCurveV2 = bondingCurve
+// Derived, and it does NOT have to exist: on real mainnet buys this address
+// holds no account at all — the program derives it, finds nothing, and treats
+// the coin as not-v2. An earlier edit overwrote this with `bondingCurve`, so a
+// correct order was carrying the wrong address and the error stayed identical.
+const bondingCurveV2 = pda([Buffer.from('bonding-curve-v2'), mint.publicKey.toBytes()])
 const buys: string[] = []
-for (const [amount, cost] of [[500_000_000_000n, 30_000_000n], [300_000_000_000n, 30_000_000n]] as const) {
-  const tx = new Transaction().add(
-    ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }),
-    await ataIfMissing(buyer, mint.publicKey),
-    buyIx(amount, cost),
-  )
+for (const [amount, cost] of [[200_000_000_000n, 12_000_000n], [150_000_000_000n, 12_000_000n]] as const) {
+  // A no-op System instruction with empty data is not a no-op: the runtime
+  // rejects it as `invalid instruction data`. Omit the instruction instead.
+  const tx = new Transaction().add(ComputeBudgetProgram.setComputeUnitLimit({ units: 400_000 }))
+  const create = await ataIfMissing(buyer, mint.publicKey)
+  if (create !== null) tx.add(create)
+  tx.add(buyIx(amount, cost))
   buys.push(await sendAndConfirmTransaction(conn, tx, [buyer], { commitment: 'confirmed' }))
   process.stdout.write(`buy      ${buys.at(-1)}\n`)
 }
 
-async function ataIfMissing(owner: ReturnType<typeof load>, m: InstanceType<typeof PublicKey>) {
+async function ataIfMissing(owner: ReturnType<typeof load>, m: InstanceType<typeof PublicKey>): Promise<InstanceType<typeof TransactionInstruction> | null> {
   const address = ata(owner.publicKey, m)
   const info = await conn.getAccountInfo(address)
-  if (info !== null) return new TransactionInstruction({ programId: SystemProgram.programId, keys: [], data: Buffer.alloc(0) })
+  if (info !== null) return null
   return new TransactionInstruction({
     programId: ATA_PROGRAM,
     keys: [
