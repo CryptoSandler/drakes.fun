@@ -531,6 +531,76 @@ signature beside each one.
    claim `/verify` makes, told as a chronology instead of as two checks, and it
    is what the timeline view in `/verify/timeline` was built from.
 
+## otcdesks.cash — a creator fee claimed by a program, on a timer
+
+*Read **2026-09-02** from `https://otcdesks.cash` and `/docs`; every account
+below was re-read from mainnet the same day. Somebody else's project. What is
+studied is the mechanism.*
+
+**What it is, in their words:** *"Desks that hold real tokenised stock, and a
+launchpad whose creator fees buy it for the people holding."*
+
+**The mechanism, quoted rather than paraphrased:**
+
+- The creator fee is *"assigned to the protocol in the same transaction that
+  creates it"*, and *"pump gives up its own ability to change the split once it
+  is set."*
+- *"Every minute the protocol checks what the coin has earned and claims it."*
+  Permissionless, and *"split four ways inside the same transaction it arrives
+  in."*
+- *"The 70% is swapped into the stock the coin chose and sent straight out to
+  holders… split pro rata."* *"There is nothing to claim and no button to
+  press."*
+
+**The accounts, read from mainnet rather than copied:**
+
+| | | read 2026-09-02 |
+|---|---|---|
+| program | `AjMx5My4YUDHMiCtLpTAtgkiUJgrpJnQqd5AcQnddHQW` | executable, BPFLoaderUpgradeable |
+| config | `9b5VLbpXedgXcjWyboXqHMbDgeHJtb5PBsy6TE18REU4` | **owned by the program**, 1,096 bytes |
+| pot | `BZcvtxDy4WihU24k3pezzajuiqYtTUHPfH7b5m26BucR` | system-owned, 7,061,003 lamports |
+| Metaplex Core | `CoREENxT6tW1HoK8ypY1SxRMZTcVPm7R94rH4PZNhX7d` | the same program we use |
+
+**And the thing they publish that they may not have meant to.** Their program is
+still upgradeable, and the authority is
+`DqMAVQ1RcQath18PrSLBVZHjwWXXN8cFEua2XuQ2rbQh` — **on the ed25519 curve, so a
+single keypair and not a multisig vault**, holding 20.11 SOL. Read the way C1b
+reads ours: programdata `4eGwwZHpVHaqHgm7RoXNakhcydUKCC4EVaZWB65txmLM`, option
+byte 1, authority at offset 13. That is a live protocol holding value whose code
+one key can replace, which is the exact window D8 and C1b exist to close, and it
+is now a measured example rather than an argument.
+
+### What we take
+
+1. **The claim is a job, not a ceremony.** D30 already established that
+   `collect_creator_fee` needs no signer, so a stolen crank key cannot redirect
+   a lamport of it. This is the same instruction run on a **timer**, in public,
+   by somebody else — evidence that the cadence is a scheduling decision and not
+   a risk. It belongs beside the hourly crank rather than as a step somebody
+   remembers monthly. `DESIGN.md` §3.6's conversion ceremony is unaffected:
+   *claiming* is permissionless, *converting* is the 2-of-3.
+2. **A table of accounts, rendered on `/verify` and read from the config account
+   rather than typed into the page.** Publishing the program, the config and the
+   destinations is what lets a stranger check the rest, and their config is
+   owned by their program — so the honest version of that table reads the
+   addresses out of the account at request time. Typing them into a component
+   would make the page a claim about the chain instead of a read of it. **Not
+   built here; recorded as the shape when it is.**
+
+### What we do not take
+
+**The distribution.** Fees swapped into an asset and pushed pro rata to every
+holder is a different product from ours in three ways, and each one is a rule
+this project already wrote down:
+
+- It makes the fee **the reason to hold**, which is what D31 decided against on
+  the shape of pump.fun's schedule.
+- It **pushes value to holders on a schedule**, which is a characterisation
+  `DESIGN.md` §7 declines to make for itself — our redemption is Phase 2,
+  burn-based and opt-in, and the piece is what is redeemed.
+- The asset is **tokenised stock**. This project does not have a view on that
+  and is not going to acquire one in a reference file.
+
 ## pump.fun — the launchpad, the fee schedule and a launched token
 
 *Read 2026-09-02. Supersedes the Meteora entry as the launch venue (owner's

@@ -807,6 +807,22 @@ the condition is met — it is deliberately **not** a step in
   once, when asked for explicitly.
 - **The `Exhausted` sentence.** D10 is a one-way door and needs its own line of
   copy. Same rule as Q7: written once, when asked for.
+- **A launcher whose creator fees go to the hoard.** *A question, 2026-09-02,
+  and deliberately nothing more.* `otcdesks.cash` runs a launchpad where each
+  coin's creator fee is assigned to their protocol in the create transaction and
+  claimed by a program on a timer (`docs/references.md`). The same shape points
+  at a Phase 2 question for us: **should `$DRAKES` be the fee destination for
+  coins other people launch, so the hoard grows from more than one coin's
+  volume?**
+
+  **It is asked and not answered, and the reasons it is only a question are the
+  interesting part.** It would make this project a launchpad, which is a
+  different thing to operate and a different thing to be responsible for; it
+  would put the hoard's income under somebody else's launch decisions; and it is
+  the kind of scope that arrives sounding like growth. **Phase 2 is `redeem`,
+  the reserve PDA and an audit** (B9) — this is not in it, and adding it would
+  be the owner's decision and its own round, after the audit rather than before.
+  Recorded so it is not re-derived from scratch in six months.
 - **The asset's URI is not bound to its piece, and only the program can bind
   it.** `settle_issuance` takes `name` and `uri` from the caller and mints
   with them unvalidated; the piece id is chosen inside the same instruction, so
