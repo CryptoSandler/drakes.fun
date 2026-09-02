@@ -119,3 +119,67 @@ describe('the rehearsal disclosure', () => {
     expect(read('app/verify/page.tsx')).toMatch(/missingConfig\(\)/)
   })
 })
+
+/**
+ * The theme, guarded where it can be lost silently.
+ *
+ * The pre-paint script is the whole reason the page does not flash light and
+ * then flip; delete it and everything still renders, correctly, one frame
+ * late. That is exactly the kind of regression a rendering test does not see.
+ */
+describe('the theme switch', () => {
+  it('sets the attribute before React, in the document head', () => {
+    const layout = read('app/layout.tsx')
+    // The USE, not the import. A first version of this asserted
+    // /PRE_PAINT_SCRIPT/ and passed with the script tag deleted, because the
+    // import line still carried the word — a guard that cannot fail.
+    expect(layout).toMatch(/dangerouslySetInnerHTML=\{\{\s*__html:\s*PRE_PAINT_SCRIPT\s*\}\}/)
+    expect(layout).toMatch(/<head>/)
+    expect(layout).toMatch(/data-theme=\{DEFAULT_THEME\}/)
+    // The server renders the default and the script overwrites it on purpose.
+    expect(layout).toMatch(/suppressHydrationWarning/)
+  })
+
+  it('is a switch with a state, not a picture of one', () => {
+    const c = read('src/components/ThemeSwitch.tsx')
+    expect(c).toMatch(/role="switch"/)
+    expect(c).toMatch(/aria-checked=/)
+    expect(c).toMatch(/aria-label=/)
+  })
+
+  it('persists the choice and survives storage being unavailable', () => {
+    const c = read('src/components/ThemeSwitch.tsx')
+    expect(c).toMatch(/localStorage\.setItem/)
+    expect(c).toMatch(/catch/)
+  })
+
+  it('rides in every masthead', () => {
+    for (const page of ['app/page.tsx', 'app/verify/page.tsx', 'app/gallery/page.tsx']) {
+      expect(read(page)).toMatch(/<ThemeSwitch \/>/)
+    }
+  })
+
+  it('offers no third option anywhere a reader can reach', () => {
+    for (const file of [
+      'src/components/ThemeSwitch.tsx',
+      'app/layout.tsx',
+      'src/lib/site/theme.ts',
+    ]) {
+      expect(read(file)).not.toMatch(/'system'|"system"|matchMedia/)
+    }
+  })
+
+  it('never animates the plate or the clock', () => {
+    // 4,000 elements and a counting digit. Both opt out by name; if the opt-out
+    // is deleted the transition silently becomes a jank on a phone.
+    const css = read('app/globals.css')
+    expect(css).toMatch(/\.specimen,\s*\n\.dateline__clock \{\s*\n\s*transition: none;/)
+  })
+
+  it('collapses the transition under prefers-reduced-motion', () => {
+    const css = read('app/globals.css')
+    const block = css.slice(css.lastIndexOf('@media (prefers-reduced-motion: reduce)'))
+    expect(block).toMatch(/\.themeswitch__disc/)
+    expect(block).toMatch(/transition: none/)
+  })
+})

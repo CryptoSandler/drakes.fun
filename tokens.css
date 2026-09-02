@@ -8,20 +8,39 @@
   --font-display: "Instrument Serif", "Iowan Old Style", Georgia, "Times New Roman", serif;
   --font-body: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Helvetica, sans-serif;
 
+  /* ---- the light band, the default (DESIGN.md 10.3) --------------------- */
   --color-paper:     oklch(96% 0.008 85);
   --color-paper-2:   oklch(93% 0.011 85);
   --color-ink:       oklch(21% 0.012 60);
   --color-ink-2:     oklch(42% 0.012 60);
-  --color-ink-3:     oklch(60% 0.010 60);
+  /* Was 60%: 3.52 on paper and 3.22 on paper-2, under the 4.5 text floor, and
+     `.note` carries real prose. Measured down to 51% -> 5.13 / 4.69. */
+  --color-ink-3:     oklch(51% 0.010 60);
   --color-rule:      oklch(84% 0.012 70);
   --color-rule-firm: oklch(21% 0.012 60);
   --color-accent:    oklch(46% 0.18 27);
-  --color-accent-2:  oklch(70% 0.11 27);
+  /* Ancient. Was 70%: 2.49 on paper, under the 3.0 floor for the issued disc. */
+  --color-accent-2:  oklch(64% 0.11 27);
   --color-focus:     oklch(46% 0.18 27);
   /* The rehearsal chip. Loud on purpose: drakes.fun serves devnet data to
-     real traffic, and a neutral pill reading "devnet" is a label nobody
-     reads. Contrast checked against --color-ink. */
+     real traffic, and a neutral pill reading "devnet" is a label nobody reads. */
   --color-warn:      oklch(78% 0.15 75);
+  /* The chip's text, dark in BOTH themes. In dark, `--color-ink` is a warm
+     off-white and off-white on amber is 1.6:1 — the pair nobody thinks of. */
+  --color-warn-ink:  oklch(21% 0.012 60);
+  /* The chip's edge. The amber fill is 1.82 against the parchment — a hue
+     difference that luminance-only contrast cannot see, and a floor is a floor.
+     A darker amber rim carries the boundary at 3.59 without turning the chip
+     into a different colour. In dark the fill is already 9.87 on the ground,
+     so the rim is the fill. */
+  --color-warn-edge: oklch(60% 0.15 75);
+
+  /* The three lower tiers: warm greys of increasing darkness, so the plate
+     reads as a field with rare things in it. Whelp was 72% -> 2.22 on paper,
+     under the 3.0 floor that the issued disc has to clear to be seen at all. */
+  --tier-whelp:      oklch(63% 0.02 60);
+  --tier-wyrm:       oklch(58% 0.03 60);
+  --tier-elder:      oklch(40% 0.04 60);
 
   --space-2: 0.125rem; --space-4: 0.25rem; --space-8: 0.5rem;
   --space-12: 0.75rem; --space-16: 1rem;  --space-24: 1.5rem;
@@ -40,4 +59,40 @@
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --dur-fast: 120ms; --dur-base: 220ms;
+  /* The theme crossfade. Long enough to read as a change of light rather than
+     a flicker, short enough that nobody waits for it. */
+  --dur-theme: 300ms;
+}
+
+/* ---- the dark band -----------------------------------------------------
+   Measured, not inverted. Same warm hue family, same Instrument Serif, and
+   every pair recomputed in `src/lib/site/__tests__/contrast.test.ts` — an
+   inverted palette produces ratios nobody measured, and the pair that breaks
+   is the one nobody thought of.
+
+   Selected ONLY by `[data-theme="dark"]`. There is deliberately no
+   `prefers-color-scheme` rule anywhere in this project: light is the default
+   and the reader chooses, so there is no third "system" state to explain, to
+   persist, or to get wrong. */
+[data-theme="dark"] {
+  --color-paper:     oklch(18% 0.012 70);
+  --color-paper-2:   oklch(23% 0.014 70);
+  --color-ink:       oklch(93% 0.012 85);
+  --color-ink-2:     oklch(78% 0.012 80);
+  --color-ink-3:     oklch(64% 0.011 75);
+  --color-rule:      oklch(34% 0.012 70);
+  /* The masthead's firm 2px rule is the ink colour in both themes. */
+  --color-rule-firm: oklch(93% 0.012 85);
+  --color-accent:    oklch(68% 0.19 27);
+  --color-accent-2:  oklch(58% 0.10 27);
+  --color-focus:     oklch(68% 0.19 27);
+  --color-warn:      oklch(80% 0.15 75);
+  --color-warn-ink:  oklch(21% 0.012 60);
+  --color-warn-edge: oklch(80% 0.15 75);
+
+  /* Increasing lightness rather than increasing darkness: the same idea --
+     a field with rare things in it -- against a ground that moved. */
+  --tier-whelp:      oklch(52% 0.02 70);
+  --tier-wyrm:       oklch(63% 0.03 70);
+  --tier-elder:      oklch(76% 0.04 70);
 }

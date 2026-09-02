@@ -3,6 +3,7 @@
 // Caller: linked from the plate on `/`. The home plate answers "how much of the
 // collection is out"; this answers "which ones, and what are they".
 
+import { ThemeSwitch } from '../../src/components/ThemeSwitch.tsx'
 import { placeholderTier, readCollectionState, TIERS } from '../../src/lib/site/collection.ts'
 import { readConfig } from '../../src/lib/site/config.ts'
 import { clusterName } from '../../src/lib/snapshot/rpc.ts'
@@ -59,7 +60,10 @@ export default async function Gallery({ searchParams }: { searchParams: Promise<
           <span>
             {state.issuedCount.toLocaleString('en')} issued · {state.remaining.toLocaleString('en')} remain
           </span>
-          <a href="/verify">Verify</a>
+          <span className="masthead__end">
+            <a href="/verify">Verify</a>
+            <ThemeSwitch />
+          </span>
         </div>
         <div className="dateline">
           <p className="dateline__label">Plate II</p>

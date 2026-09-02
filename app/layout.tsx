@@ -4,6 +4,7 @@
 
 import type { Metadata } from 'next'
 import './globals.css'
+import { DEFAULT_THEME, PRE_PAINT_SCRIPT } from '../src/lib/site/theme.ts'
 
 export const metadata: Metadata = {
   title: 'Drakes',
@@ -15,7 +16,14 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme={DEFAULT_THEME} suppressHydrationWarning>
+      <head>
+        {/* Before paint, ahead of React. Without it the page renders light and
+            then flips, which is a worse artefact than no dark theme at all.
+            `suppressHydrationWarning` on <html> because this script rewrites
+            the attribute the server rendered, on purpose. */}
+        <script dangerouslySetInnerHTML={{ __html: PRE_PAINT_SCRIPT }} />
+      </head>
       <body>{children}</body>
     </html>
   )

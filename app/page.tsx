@@ -15,6 +15,7 @@
 //
 // Caller: Next's router, at `/`.
 
+import { ThemeSwitch } from '../src/components/ThemeSwitch.tsx'
 import { clusterName } from '../src/lib/snapshot/rpc.ts'
 import { fetchLatestSettled } from '../src/lib/chain/latest.ts'
 import { nextIssuanceAt, placeholderTier, readCollectionState, TIERS } from '../src/lib/site/collection.ts'
@@ -117,7 +118,10 @@ export default async function Page() {
         <div className="masthead__top">
           <b>Drakes</b>
           <span className={`chip${cluster === 'mainnet' ? '' : ' chip--rehearsal'}`}>{cluster}</span>
-          <a href="/verify">Verify</a>
+          <span className="masthead__end">
+            <a href="/verify">Verify</a>
+            <ThemeSwitch />
+          </span>
         </div>
 
         {/* The clock. First thing on the screen at every width. */}

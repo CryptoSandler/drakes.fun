@@ -1071,30 +1071,109 @@ tabular figures).
 The clock is capped at 5.5 rem rather than pushed higher so the header stays
 short enough that the plate is still inside the fold at 1440 × 900.
 
-### 10.3 Colour
+### 10.3 Colour, in two measured bands
 
-OKLCH, light band, warm. Tokens live in `tokens.css`; nothing in the CSS
+OKLCH, warm, in two bands. Tokens live in `tokens.css`; nothing in the CSS
 declares a colour that is not one of them.
 
-| Token | Value | Where |
-|---|---|---|
-| `--color-paper` | `oklch(96% 0.008 85)` | ground — parchment, not white |
-| `--color-paper-2` | `oklch(93% 0.011 85)` | issued fill, table stripe, `<pre>` |
-| `--color-ink` | `oklch(21% 0.012 60)` | display, values |
-| `--color-ink-2` | `oklch(42% 0.012 60)` | prose |
-| `--color-ink-3` | `oklch(60% 0.010 60)` | notes |
-| `--color-rule` | `oklch(84% 0.012 70)` | empty slots, hairlines |
-| `--color-accent` | `oklch(46% 0.18 27)` | Sovereign, a failed verdict |
-| `--color-accent-2` | `oklch(70% 0.11 27)` | Ancient |
+**Light is the default and dark is measured, not inverted.** An inverted palette
+produces ratios nobody measured, and the pair that breaks is the one nobody
+thought of — here it was the amber chip with light text, which is fine in the
+head and 1.6:1 on the screen.
 
-The three lower tiers are warm greys of increasing darkness, so the plate reads
-as a field with rare things in it rather than as five categories.
+| Token | Light | Dark | Where |
+|---|---|---|---|
+| `--color-paper` | `oklch(96% 0.008 85)` | `oklch(18% 0.012 70)` | ground — parchment, then a warm dark |
+| `--color-paper-2` | `oklch(93% 0.011 85)` | `oklch(23% 0.014 70)` | issued fill, table stripe, `<pre>` |
+| `--color-ink` | `oklch(21% 0.012 60)` | `oklch(93% 0.012 85)` | display, values |
+| `--color-ink-2` | `oklch(42% 0.012 60)` | `oklch(78% 0.012 80)` | prose |
+| `--color-ink-3` | `oklch(51% 0.010 60)` | `oklch(64% 0.011 75)` | notes |
+| `--color-rule` | `oklch(84% 0.012 70)` | `oklch(34% 0.012 70)` | empty slots, hairlines |
+| `--color-rule-firm` | `oklch(21% 0.012 60)` | `oklch(93% 0.012 85)` | the masthead's 2 px rule |
+| `--color-accent` | `oklch(46% 0.18 27)` | `oklch(68% 0.19 27)` | Sovereign, a failed verdict |
+| `--color-accent-2` | `oklch(64% 0.11 27)` | `oklch(58% 0.10 27)` | Ancient |
+| `--color-warn` | `oklch(78% 0.15 75)` | `oklch(80% 0.15 75)` | the rehearsal chip's fill |
+| `--color-warn-ink` | `oklch(21% 0.012 60)` | *the same* | the chip's word — dark on amber in both |
+| `--color-warn-edge` | `oklch(60% 0.15 75)` | `oklch(80% 0.15 75)` | the chip's rim |
+| `--tier-whelp` | `oklch(63% 0.02 60)` | `oklch(52% 0.02 70)` | |
+| `--tier-wyrm` | `oklch(58% 0.03 60)` | `oklch(63% 0.03 70)` | |
+| `--tier-elder` | `oklch(40% 0.04 60)` | `oklch(76% 0.04 70)` | |
+
+The three lower tiers are warm greys of increasing distance from the ground, so
+the plate reads as a field with rare things in it rather than as five
+categories — increasing darkness in light, increasing lightness in dark.
+
+#### The floors, and they are not all 4.5
+
+| Role | Floor | What it covers |
+|---|---|---|
+| text | **4.5** | all prose, including `.note`, plus the clock and the chip's word |
+| large text | 3 | display type above 24 px — the clock is held to 4.5 anyway |
+| non-text | **3** | anything whose meaning is only visual: the issued disc, the chip's rim, the switch, the focus ring |
+| hairline | 1.4 | a rule that separates and carries no meaning; the layout does not depend on seeing it |
+
+**The plate's floor is about `issued`, not about rarity.** A filled disc is the
+only thing that says a piece has gone out, so the weakest tier fill carries the
+non-text floor. *Which* tier it is is carried in text — the caption counts every
+one of them (§10.1.4) — so the hue is not the accessible path and is not
+floored as one.
+
+**The chip's rim rather than its fill.** The amber ground is 1.82 against the
+parchment: a hue difference that a luminance-only ratio cannot see. Lowering the
+floor would have been the easy answer; a darker amber rim carries the boundary
+at 3.59 and leaves the chip amber.
+
+#### Measured, on every run
+
+`src/lib/site/__tests__/contrast.test.ts` parses `tokens.css`, converts OKLCH to
+sRGB and recomputes **every pair in both bands**. A table of ratios in a
+document goes stale the first time a token moves, and a stale table is worse
+than none: it reports the old palette as passing. This one is generated from the
+tokens that ship.
+
+| Pair | Floor | Light | Dark |
+|---|---|---|---|
+| body prose | 4.5 | 7.55 | 9.40 |
+| values | 4.5 | 15.80 | 15.31 |
+| notes | 4.5 | 5.13 | 5.59 |
+| notes, raised | 4.5 | 4.69 | 5.02 |
+| a failed verdict | 4.5 | 6.97 | 6.00 |
+| the clock | 4.5 | 15.80 | 15.31 |
+| DEVNET chip text | 4.5 | 8.68 | 9.31 |
+| the chip edge | 3 | 3.59 | 9.87 |
+| tier Whelp | 3 | 3.13 | 3.41 |
+| tier Wyrm | 3 | 3.84 | 5.36 |
+| tier Elder | 3 | 8.28 | 8.72 |
+| tier Ancient | 3 | 3.15 | 4.19 |
+| tier Sovereign | 3 | 6.97 | 6.00 |
+| the button | 4.5 | 15.80 | 15.31 |
+| the switch disc | 3 | 6.90 | 8.45 |
+| the focus ring | 3 | 6.97 | 6.00 |
+| a hairline | 1.4 | 1.46 | 1.60 |
+
+Three tokens moved to reach those numbers, all of them in the **light** band and
+all of them already live: `--color-ink-3` was 60% and 3.52 on paper, under the
+text floor while `.note` carries real prose; Whelp was 72% and 2.22, under the
+floor that makes an issued piece visible at all; Ancient was 70% and 2.49. The
+dark band was drawn against the floors from the start.
 
 ### 10.4 Motion
 
-**The seconds, and a 120 ms colour change on hover.** Nothing reveals, nothing
-parallaxes, nothing animates on scroll. `prefers-reduced-motion` collapses even
-the hover.
+**The seconds, a 120 ms colour change on hover, and the theme.** Nothing
+reveals, nothing parallaxes, nothing animates on scroll.
+`prefers-reduced-motion` collapses all of it, the theme change included.
+
+**The theme is a 300 ms crossfade of the paper and a disc sliding across its
+track**, and two things are named as not moving:
+
+- **The plate.** It is 4,000 elements. A transition on the universal selector
+  would hand a phone's compositor four thousand simultaneous colour animations,
+  which is a jank and not a crossfade.
+- **The clock.** It is the first thing on the screen and it is counting; a
+  colour animation on a digit that changes every second reads as a fault.
+
+So the transition is listed by surface in `app/globals.css` and those two opt
+out explicitly.
 
 ### 10.5 The two checks on `/verify`, and why they are two
 

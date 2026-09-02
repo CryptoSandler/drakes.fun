@@ -47,8 +47,11 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px
    public and the data is a rehearsal; the cluster is not a detail here. */
 .chip--rehearsal {
   background: var(--color-warn);
-  border-color: var(--color-warn);
-  color: var(--color-ink);
+  border-color: var(--color-warn-edge);
+  /* Not `--color-ink`: in dark that is a warm off-white, and off-white on amber
+     is 1.6:1. The chip carries its meaning in its text, so its text is dark on
+     both grounds. */
+  color: var(--color-warn-ink);
   font-weight: 600;
 }
 @media (max-width: 30rem) { .masthead__top { letter-spacing: 0.12em; } }
@@ -108,9 +111,9 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px
   border-color: var(--tier, var(--color-ink-3));
   background: var(--color-paper-2);
 }
-.specimen.t--whelp     { --tier: oklch(72% 0.02 60); }
-.specimen.t--wyrm      { --tier: oklch(58% 0.03 60); }
-.specimen.t--elder     { --tier: oklch(40% 0.04 60); }
+.specimen.t--whelp     { --tier: var(--tier-whelp); }
+.specimen.t--wyrm      { --tier: var(--tier-wyrm); }
+.specimen.t--elder     { --tier: var(--tier-elder); }
 .specimen.t--ancient   { --tier: var(--color-accent-2); }
 .specimen.t--sovereign { --tier: var(--color-accent); background: var(--color-accent); }
 
@@ -247,4 +250,73 @@ a { color: inherit; text-underline-offset: 0.2em; text-decoration-thickness: 1px
   padding-left: var(--space-12);
   margin-bottom: var(--space-16);
   max-width: 62ch;
+}
+
+/* --- the theme ----------------------------------------------------------
+   The paper crossfades and the switch's disc slides. **Nothing else moves**,
+   and two things are named here rather than left to inherit:
+
+   - The plate is 4,000 elements. A transition on the universal selector would
+     hand the compositor four thousand simultaneous colour animations on a
+     phone, which is a jank, not a crossfade.
+   - The clock is the first thing on the screen and it is counting. A colour
+     animation on a digit that changes every second reads as a fault.
+
+   So the transition is listed by surface, and those two opt out explicitly. */
+body,
+.masthead,
+.plate,
+.entry,
+.colophon,
+.chip,
+.rows th,
+.rows tbody tr,
+.cmd,
+.pager a,
+.btn,
+.artslot__square,
+.artslot__circle,
+.foot.rehearsal {
+  transition:
+    background-color var(--dur-theme) var(--ease-in-out),
+    border-color var(--dur-theme) var(--ease-in-out),
+    color var(--dur-theme) var(--ease-in-out);
+}
+.specimen,
+.dateline__clock {
+  transition: none;
+}
+
+/* --- the switch ---------------------------------------------------------
+   A switch, not a button with a word in it: the masthead is three fixed slots
+   at 390 px and a label would be a fourth thing competing with the wordmark
+   and `Verify`. It is a real `role="switch"`, so a screen reader gets the
+   state that the drawn disc gives everyone else. */
+.masthead__end { display: flex; align-items: center; gap: var(--space-12); justify-self: end; }
+.themeswitch {
+  appearance: none; border: var(--rule) solid var(--color-rule);
+  background: var(--color-paper-2);
+  width: 2.75rem; height: 1.5rem; border-radius: 999px;
+  padding: 0; margin: 0; cursor: pointer; position: relative;
+  flex: 0 0 auto;
+  transition: background-color var(--dur-theme) var(--ease-in-out),
+              border-color var(--dur-theme) var(--ease-in-out);
+}
+.themeswitch__disc {
+  position: absolute; top: 50%; left: 0.1875rem;
+  width: 1.0625rem; height: 1.0625rem; border-radius: 50%;
+  background: var(--color-ink-2);
+  transform: translate(0, -50%);
+  transition: transform var(--dur-theme) var(--ease-out),
+              background-color var(--dur-theme) var(--ease-in-out);
+}
+.themeswitch[aria-checked="true"] .themeswitch__disc { transform: translate(1.1875rem, -50%); }
+.themeswitch:hover { border-color: var(--color-ink-3); }
+
+@media (prefers-reduced-motion: reduce) {
+  body, .masthead, .plate, .entry, .colophon, .chip, .rows th, .rows tbody tr,
+  .cmd, .pager a, .btn, .artslot__square, .artslot__circle, .foot.rehearsal,
+  .themeswitch, .themeswitch__disc {
+    transition: none;
+  }
 }

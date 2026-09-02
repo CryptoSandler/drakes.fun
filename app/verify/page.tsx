@@ -13,6 +13,7 @@
 // in a clone. The row below is a RECORD OF A JOB WE RAN and is labelled as one;
 // the chain stays the evidence.
 
+import { ThemeSwitch } from '../../src/components/ThemeSwitch.tsx'
 import { missingConfig, readConfig } from '../../src/lib/site/config.ts'
 import { clusterName } from '../../src/lib/snapshot/rpc.ts'
 import { provenanceLabel } from '../../src/lib/site/provenance.ts'
@@ -112,7 +113,10 @@ export default async function Verify() {
           <span className={`chip${cluster === 'mainnet' ? '' : ' chip--rehearsal'}`}>
             {cluster === 'mainnet' ? 'verify' : cluster}
           </span>
-          <a href="/">Plate</a>
+          <span className="masthead__end">
+            <a href="/">Plate</a>
+            <ThemeSwitch />
+          </span>
         </div>
         <div className="dateline">
           <div className="dateline__clockwrap">
